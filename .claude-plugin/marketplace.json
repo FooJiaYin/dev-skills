@@ -1,0 +1,14 @@
+{
+  "name": "dev-skills",
+  "owner": {
+    "name": "Foo Jia Yin",
+    "email": "candy23198@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "dev-skills",
+      "source": "./",
+      "description": "A collection of reusable Agent Skills for software development workflows."
+    }
+  ]
+}
