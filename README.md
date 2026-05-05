@@ -23,6 +23,9 @@ The skills cover three phases of a development task — **planning**, **wrap-up*
                                                           │
                                                           ▼
                                                   git commit (optional)
+                                                          │
+                                                          ▼
+                                                   deploy (optional)
 ```
 
 | Skill | Phase | Purpose |
@@ -33,14 +36,14 @@ The skills cover three phases of a development task — **planning**, **wrap-up*
 | [code-review](skills/code-review/SKILL.md) | wrap-up | Multi-agent review of the local git diff. Writes a single `REVIEW.md` filtered by a confidence rubric (≥80). |
 | [report](skills/report/SKILL.md) | wrap-up | Distills the conversation, file changes, and decisions into `docs/reports/YYYY-MM-DD-[title].md`. |
 | [rename-session](skills/rename-session/SKILL.md) | housekeeping | Renames the current Claude Code session JSONL with a short title. Auto-invoked after `report` runs. |
-| [wrap-up](skills/wrap-up/SKILL.md) | orchestrator | Runs `verify → update-docs → code-review → report → rename-session → git commit` in order, stopping on the first failure. |
+| [wrap-up](skills/wrap-up/SKILL.md) | orchestrator | Runs `verify → update-docs → code-review → report → rename-session → git commit → deploy` in order, stopping on the first failure. |
 
 ### How to use them
 
 - **Starting a non-trivial task?** Begin with `/discuss` (or just enter plan mode — `discuss` auto-invokes) to surface design alternatives before writing code.
-- **Done implementing?** Run `/wrap-up`. It chains the five wrap-up steps so you don't have to remember the order or rerun them by hand. Stop and surface failures rather than pushing through.
+- **Done implementing?** Run `/wrap-up`. It chains the wrap-up steps end-to-end (verify → docs → review → report → rename → commit → deploy) so you don't have to remember the order or rerun them by hand. Stop and surface failures rather than pushing through.
 - **Need just one step?** Each skill is invocable on its own — `/verify`, `/update-docs`, `/code-review`, `/report`, `/rename-session` — and `wrap-up` will skip steps you've already run earlier in the session if nothing relevant changed.
-- **Manual flow without `wrap-up`:** `/verify` → `/update-docs` → `/code-review` → fix any ≥80-confidence findings → `/report` → `/rename-session` → commit.
+- **Manual flow without `wrap-up`:** `/verify` → `/update-docs` → `/code-review` → fix any ≥80-confidence findings → `/report` → `/rename-session` → commit → deploy.
 
 
 ## Folder Structure
