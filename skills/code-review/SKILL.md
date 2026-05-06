@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: Multi-agent review of the local git diff. Spawns parallel agents covering bugs+security, CLAUDE.md adherence, git history, performance, plan adherence, and quality+architecture; filters findings through a confidence rubric (≥80); writes REVIEW.md. Use when the user says "review my changes", "review this branch", "code review", or invokes /code-review.
+description: Multi-agent review of the local git diff. Spawns parallel agents covering bugs+security, CLAUDE.md adherence, git history, performance, plan adherence, and quality+architecture; tiers findings by confidence (Critical/Warning/Suggestion/Nit) and drops only auto-zeroed false positives; writes REVIEW.md. Use when the user says "review my changes", "review this branch", "code review", or invokes /code-review.
 ---
 
 # Code Review
@@ -69,16 +69,18 @@ The scorer returns a single integer 0–100 per the **Confidence Rubric** below.
 
 ### Phase 4 — Filter & Format
 
-1. Drop every finding with confidence < 80.
+1. Drop only findings scoring exactly 0 (auto-zeroed false positives per the **False-Positive Categories** below). All other findings are kept.
 2. If zero remain → write `REVIEW.md` with `status: clean` (template below) and stop.
-3. Else → map to severity:
-   - For `performance` findings: `verdict: critical` AND confidence ≥80 → Critical; `verdict: high` or `moderate` at any confidence → Warning.
-   - For all other `source_aspect`s: confidence 95–100 → Critical; confidence 80–94 → Warning.
-4. Write `REVIEW.md` per the **Output Format** template, grouped first by `source_aspect`, then by severity within each group.
+3. Else → map confidence to severity (uniform across all `source_aspect`s, including `performance`; the performance agent's `verdict` is preserved as a displayed metadata field but does not override the tier):
+   - 90–100 → Critical
+   - 70–89 → Warning
+   - 50–69 → Suggestion
+   - 1–49 → Nit
+4. Write `REVIEW.md` per the **Output Format** template, grouped first by `source_aspect`, then sorted within each group: Critical → Warning → Suggestion → Nit, then by confidence descending.
 
 ### Phase 5 — Summary to User
 
-One line: `Found N high-confidence issues. See REVIEW.md.` (or `Clean — no issues found above the confidence threshold.` / `Skipped — no source files in diff scope.`).
+One line: `Found N findings (X critical, Y warning, Z suggestion, W nit). See REVIEW.md.` (or `Clean — no findings after dropping auto-zeroed false positives.` / `Skipped — no source files in diff scope.`).
 
 Do not post anywhere external. No `gh pr comment`. Local-only.
 
@@ -138,6 +140,8 @@ files_reviewed_list:
 findings:
   critical: N
   warning: N
+  suggestion: N
+  nit: N
   total: N
 status: clean | issues_found | skipped
 ---
@@ -156,7 +160,7 @@ status: clean | issues_found | skipped
 ```markdown
 # Code Review
 
-**Status:** clean — N files reviewed, no findings above the confidence threshold (80).
+**Status:** clean — N files reviewed, no findings after dropping auto-zeroed false positives.
 
 **Files reviewed:** N
 **Diff range:** `<BASE>..<HEAD>`
@@ -165,10 +169,10 @@ status: clean | issues_found | skipped
 
 ### Body — `status: issues_found`
 
-```markdown
+````markdown
 # Code Review
 
-**Status:** issues_found — N findings (X critical, Y warning).
+**Status:** issues_found — N findings (X critical, Y warning, Z suggestion, W nit).
 
 **Files reviewed:** N
 **Diff range:** `<BASE>..<HEAD>`
@@ -228,6 +232,15 @@ status: clean | issues_found | skipped
 **Issue:** <description>
 **Fix:** <suggestion>
 
+### SR-01 — <short title>
+
+**File:** `path/to/file.ext:71`
+**Severity:** Suggestion
+**Confidence:** 62
+**Anchor:** <path/to/neighbor.ext:line — what pattern it establishes, OR path/to/duplicate.ext:line — what's duplicated>
+**Issue:** <description>
+**Fix:** <suggestion>
+
 ## Performance
 
 ### WR-05 — <short title>
@@ -242,6 +255,18 @@ status: clean | issues_found | skipped
 **Issue:** <description>
 **Fix:** <suggestion>
 
+### NR-01 — <short title>
+
+**File:** `path/to/file.ext:104`
+**Severity:** Nit
+**Confidence:** 35
+**Hot path:** <hot_path_class>
+**Frequency:** <e.g., once per request>
+**Per-call cost:** <e.g., extra allocation>
+**Verdict:** <moderate>
+**Issue:** <description>
+**Fix:** <suggestion>
+
 ## Plan Adherence
 
 ### CR-02 — <short title>
@@ -251,9 +276,9 @@ status: clean | issues_found | skipped
 **Confidence:** 96
 **Issue:** <description of missing requirement / scope creep / undocumented breaking change>
 **Fix:** <suggestion>
-```
+````
 
-Omit any section whose finding count is zero. ID prefix is `CR-` for Critical, `WR-` for Warning, numbered globally.
+Omit any section whose finding count is zero. ID prefixes: `CR-` for Critical, `WR-` for Warning, `SR-` for Suggestion, `NR-` for Nit. Each prefix is its own counter.
 
 ---
 
