@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: Multi-agent review of the local git diff. Spawns parallel agents covering bugs+security, CLAUDE.md adherence, git history, plan adherence, and quality+architecture; filters findings through a confidence rubric (≥80); writes REVIEW.md. Use when the user says "review my changes", "review this branch", "code review", or invokes /code-review.
+description: Multi-agent review of the local git diff. Spawns parallel agents covering bugs+security, CLAUDE.md adherence, git history, performance, plan adherence, and quality+architecture; filters findings through a confidence rubric (≥80); writes REVIEW.md. Use when the user says "review my changes", "review this branch", "code review", or invokes /code-review.
 ---
 
 # Code Review
@@ -42,20 +42,21 @@ Spawn a single Haiku agent with this task:
 
 Store the result as `CONTEXT = {claude_md_paths, plan_path, intent_summary}`.
 
-### Phase 2 — Parallel Fan-Out (5 Sonnet agents in ONE tool-call block)
+### Phase 2 — Parallel Fan-Out (6 Sonnet agents in ONE tool-call block)
 
-Spawn all five in a single message. Each receives `BASE`, `HEAD`, the file list, and `CONTEXT`. Each returns `[{description, evidence, source_aspect}]` where `source_aspect` is one of `bugs-security`, `claude-md`, `git-history`, `plan-adherence`, `quality-architecture`.
+Spawn all six in a single message. Each receives `BASE`, `HEAD`, the file list, and `CONTEXT`. Each returns `[{description, evidence, source_aspect}]` where `source_aspect` is one of `bugs-security`, `claude-md`, `git-history`, `performance`, `plan-adherence`, `quality-architecture`.
 
 Agent prompts live in:
 - `agents/bugs-security.md`
 - `agents/claude-md.md`
 - `agents/git-history.md`
+- `agents/performance.md`
 - `agents/plan-adherence.md`
 - `agents/quality-architecture.md`
 
 Read the prompt file, substitute `{BASE}`, `{HEAD}`, `{FILES}`, `{CLAUDE_MD_PATHS}`, `{PLAN_PATH}`, `{INTENT}`, and pass the result to the subagent.
 
-**Agent modes:** Agents A (`bugs-security`) and E (`quality-architecture`) operate in **adversarial-recall mode** — surface every plausible candidate; the downstream confidence filter prunes false positives. Agents B (`claude-md`), C (`git-history`), and D (`plan-adherence`) operate in **citation-only mode** — every finding must quote a verbatim source (CLAUDE.md rule, commit/PR reference, or plan section). Both modes feed the same Phase 3 scorer.
+**Agent modes:** Agents `bugs-security`, `quality-architecture`, and `performance` operate in **adversarial-recall mode** — surface every plausible candidate; the downstream confidence filter prunes false positives. Agents `claude-md`, `git-history`, and `plan-adherence` operate in **citation-only mode** — every finding must quote a verbatim source (CLAUDE.md rule, commit/PR reference, or plan section). Both modes feed the same Phase 3 scorer.
 
 ### Phase 3 — Confidence Scoring (parallel Haiku agents, one per finding)
 
@@ -64,15 +65,15 @@ For each finding from Phase 2, spawn a Haiku scorer in parallel (single tool-cal
 - The diff (`git diff $BASE..HEAD` for the affected file)
 - The CLAUDE.md path list
 
-The scorer returns a single integer 0–100 per the **Confidence Rubric** below. For `claude-md` findings, the scorer must open the cited CLAUDE.md and verify it *literally* contains the rule the finding cites — if not, score 0.
+The scorer returns a single integer 0–100 per the **Confidence Rubric** below. For `claude-md` findings, the scorer must open the cited CLAUDE.md and verify it *literally* contains the rule the finding cites — if not, score 0. For `performance` findings, the scorer must verify `evidence.cost_model` has all four fields (`hot_path_class`, `frequency`, `per_call`, `verdict`) filled with concrete values — vague or missing values score 0; `hot_path_class: init/cold` with no startup-budget evidence scores 0; `verdict: negligible` should never appear (the agent should have dropped it) — if it does, score 0.
 
 ### Phase 4 — Filter & Format
 
 1. Drop every finding with confidence < 80.
 2. If zero remain → write `REVIEW.md` with `status: clean` (template below) and stop.
-3. Else → map confidence to severity:
-   - 95–100 → Critical
-   - 80–94 → Warning
+3. Else → map to severity:
+   - For `performance` findings: `verdict: critical` AND confidence ≥80 → Critical; `verdict: high` or `moderate` at any confidence → Warning.
+   - For all other `source_aspect`s: confidence 95–100 → Critical; confidence 80–94 → Warning.
 4. Write `REVIEW.md` per the **Output Format** template, grouped first by `source_aspect`, then by severity within each group.
 
 ### Phase 5 — Summary to User
@@ -227,6 +228,20 @@ status: clean | issues_found | skipped
 **Issue:** <description>
 **Fix:** <suggestion>
 
+## Performance
+
+### WR-05 — <short title>
+
+**File:** `path/to/file.ext:47-49`
+**Severity:** Warning
+**Confidence:** 86
+**Hot path:** <hot_path_class — request-path | loop-body | render-path | batch/cron>
+**Frequency:** <e.g., per HTTP request × len(userIds), unbounded>
+**Per-call cost:** <e.g., DB roundtrip>
+**Verdict:** <moderate | high | critical>
+**Issue:** <description>
+**Fix:** <suggestion>
+
 ## Plan Adherence
 
 ### CR-02 — <short title>
@@ -248,6 +263,6 @@ Omit any section whose finding count is zero. ID prefix is `CR-` for Critical, `
 - **Don't run typecheck / lint / tests.** CI handles those.
 - **Cite `file:line` for every finding.** Never "somewhere in this file".
 - **Skip findings on lines the diff doesn't touch.**
-- **Phase 2 must be parallel.** Spawn all five fan-out agents in a single tool-call block, not sequentially.
+- **Phase 2 must be parallel.** Spawn all six fan-out agents in a single tool-call block, not sequentially.
 - **Phase 3 must be parallel.** Spawn all scorers in one tool-call block.
 - **Don't paraphrase the rubric or false-positive list when passing to scorer agents** — copy them verbatim.
