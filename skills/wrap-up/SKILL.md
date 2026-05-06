@@ -7,6 +7,8 @@ description: Post-implementation checklist. Walks through verify → update docs
 
 Run these steps in order. Stop and surface failures rather than pushing through.
 
+**Always prompt with `AskUserQuestion` (popup) for the decision points in this flow** — open-a-PR, push confirmation, manual-deploy check, deploy-command confirmation, and "fix or defer" choices in code review. Inline text questions are too easy to miss. Provide 2–4 concrete options per question; the user can still pick "Other" to type a custom response.
+
 ## 1. Verify correctness
 
 - Invoke `/verify` (the `verify` skill) to execute the implementation plan's Test plan section. It handles plan lookup, skip-if-already-run, command resolution, and per-item pass/fail reporting.
@@ -20,7 +22,7 @@ Run these steps in order. Stop and surface failures rather than pushing through.
 ## 3. Code review
 
 - Invoke `/code-review` (the `code-review` skill) to run a multi-agent review of the diff (including the doc updates from step 2). It writes findings to `REVIEW.md` filtered through a confidence threshold.
-- Read `REVIEW.md`. If it has `status: issues_found`, surface the findings to the user and pause for them to decide which to fix.
+- Read `REVIEW.md`. If it has `status: issues_found`, surface the findings, then use `AskUserQuestion` to ask how to proceed. Suggested options: "Fix all", "Fix selected (I'll list them)", "Defer all to report". For per-item triage on a small number of findings, you may ask one `AskUserQuestion` per finding with options like "Fix now" / "Defer".
 - Items the user fixes: fix them, then re-run `/code-review` to confirm. Items the user defers: note them so step 4 (report) carries them into the report's `# Unsolved Issues` section. Items the user fixed during this step go into the report's `# Updates` section.
 - Wait for `/code-review` and any user fixes to finish before continuing.
 
@@ -36,12 +38,12 @@ Run these steps in order. Stop and surface failures rather than pushing through.
 ## 6. Commit (PR optional)
 
 - Stage specific files (avoid `git add -A`, which can grab secrets or unrelated junk).
-- Write the commit message focused on **why**, not what. Follow the repo's existing commit style (check `git log` for tone).
+- Write the commit message focused on **why**, not what. Follow the repo's existing commit style (check `git log` for tone). If the preferred commit styles are mentioned in the docs, such as `AGENTS.md`, `README.md`, or `docs/*.md`, follow those.
 - Commit.
-- **Do not open a PR by default.** After the commit, ask the user: _"Open a PR?"_
-  - If yes: confirm before pushing, then push and run `gh pr create` with a summary + test plan.
+- **Do not open a PR by default.** After the commit, use `AskUserQuestion` (header: "Open PR?") with options like "Yes, open PR", "No, stop here".
+  - If yes: use a second `AskUserQuestion` (header: "Push?") to confirm the push before running `git push`, then run `gh pr create` with a summary + test plan.
   - If no: stop here.
-- ASK FIRST before any push, force-push, or destructive git operation.
+- ASK FIRST via `AskUserQuestion` before any push, force-push, or destructive git operation — never inline-ask for these.
 
 ## 7. Deploy
 
@@ -75,14 +77,14 @@ If found, print `Looks like deploy already happened in this session: <evidence>.
 
 ### Branch C — Ask the user, then offer to deploy
 
-Ask the user: _"Have you deployed this change manually (outside this session)?"_
+Use `AskUserQuestion` (header: "Deployed?") with question _"Have you deployed this change manually (outside this session)?"_ and options "Yes, already deployed" / "No, need to deploy".
 
 - **Yes** → end.
 - **No** → run deploy-docs detection and offer to deploy:
 
   1. Look for deploy instructions in `AGENTS.md` / `CLAUDE.md` / `README.md` (sections titled "Deployment", "Deploy", "Release", "Shipping"), `docs/deploy*`, `docs/deployment*`, `docs/release*`, `docs/runbook*`. Also note provider configs: `Dockerfile`, `Procfile`, `fly.toml`, `vercel.json`, `wrangler.toml`, `netlify.toml`, `app.yaml`, `serverless.yml`, `package.json`.
   2. Show the user the doc excerpt, the exact command(s) to run, and any preconditions the docs mention (env vars, login state, branch).
-  3. **Wait for explicit user confirmation before executing.** Never run a deploy command without the user saying go in the same turn.
+  3. **Use `AskUserQuestion` (header: "Run deploy?") to confirm execution** — options "Yes, run it" / "No, stop". Never run a deploy command without an explicit popup confirmation in the same turn.
   4. On confirm, execute. On failure, surface output and stop — do not retry or fall back to a different command.
   5. After successful deploy, if a URL was emitted or detected from docs, print `Reminder: verify deploy at <url>`.
 
@@ -93,4 +95,4 @@ Ask the user: _"Have you deployed this change manually (outside this session)?"_
 
 - Match the global "executing actions with care" rules.
 - If `/verify` reports any failure, stop the wrap-up flow.
-- Never push or open a PR without explicit user confirmation.
+- Never push or open a PR without explicit user confirmation **via `AskUserQuestion`** — inline text questions are too easy to miss in a long wrap-up flow.
