@@ -30,6 +30,7 @@ Run these steps in order. Stop and surface failures rather than pushing through.
 
 - Invoke `/report` (the `report` skill) to capture what was done — conversation, file changes, actions — into `docs/reports/YYYY-MM-DD-[title].md`.
 - Skip if the change is trivial (typo, single-line fix) or the user opts out.
+- After `/report` completes successfully, delete `REVIEW.md` — its findings are now folded into the report's `# Updates` and `# Unsolved Issues` sections, and leaving it behind causes stale-state confusion on the next wrap-up. If `/report` was skipped, leave `REVIEW.md` in place.
 
 ## 5. Session hygiene
 
