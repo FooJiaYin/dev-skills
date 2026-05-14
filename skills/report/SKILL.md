@@ -10,6 +10,32 @@ Save the report as `docs/reports/YYYY-MM-DD-[title].md`
 
 The date should be the date when the task is mainly worked on, not the date when the report is generated.
 
+## 0. Resolve Target File (lifecycle-aware)
+
+Before generating, decide whether this report is **appending to an existing `docs/tasks/<slug>.md`** (Notion-task lifecycle path) or **synthesizing fresh from conversation** (today's behavior).
+
+1. **Scan the conversation** for explicit Notion task URLs or task-name mentions (e.g. "working on auto-notification").
+2. **Match against `docs/tasks/*.md`** via frontmatter `notion.page` URL or filename slug.
+3. **If matched** → use that file as the target. Skip to "Target = task file" below.
+4. **Otherwise**, scan `docs/tasks/*.md` for files with `notion.page` frontmatter:
+   - 0 matches → fresh report (today's behavior); see "Target = fresh".
+   - 1 match → use it as the target.
+   - 2+ matches → prompt via `AskUserQuestion` which file to report on; offer a "fresh report (no task file)" escape hatch.
+
+### Target = task file
+
+When a task file is resolved:
+
+1. **Refresh `# Context` from Notion first.** Invoke `/fetch-task <task-url>` (URL pulled from the task file's `notion.page` frontmatter). This guarantees the report carries the latest meeting context, including any subsections appended by `/create-tasks` while the dev was working. Skip this step if the file has no `notion.page` frontmatter (orphaned local file).
+2. **Append, don't synthesize.** Generate `# Changes Made` and `# Result` (plus optional `# Updates` / `# Unsolved Issues`) from conversation + file diff, and **append** them to the existing task file. `# Context` is preserved from `/fetch-task`. `# Plan` is inserted by the existing `attach-plan.sh prepend` flow — but the insertion point shifts from "after line 1" to **"after the `# Context` block"** when the file came from `/fetch-task`.
+3. **Final section order:** `# Context` → `# Plan` → `# Changes Made` → `# Result` (→ `# Updates` / `# Unsolved Issues` if applicable).
+4. **Dev-authored notes inside `# Context`** are treated as part of context — they may be overwritten on the next `/fetch-task`. That's the convention; documented via the managed-marker comment.
+5. **Rename the file.** `docs/tasks/<slug>.md` → `docs/reports/<YYYY-MM-DD>-<slug>.md`. The frontmatter (`notion.page`, `notion.last_synced`) carries over unchanged.
+
+### Target = fresh
+
+No task file detected → behave as today: synthesize a fresh `docs/reports/YYYY-MM-DD-<title>.md` from conversation. **No `/fetch-task` call.** Auto-refresh on reference applies only when a task file is detected.
+
 ## Report Generation Process
 
 1. **Analyze Chat History**: Review the conversation to capture only the core issue, discussion points and decisions made, solutions attempted and their outcomes

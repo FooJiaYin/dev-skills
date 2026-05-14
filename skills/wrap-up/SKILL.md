@@ -5,6 +5,8 @@ description: Post-implementation checklist. Walks through verify → update docs
 
 # wrap-up — post-implementation checklist
 
+**Flow:** verify → update docs → code review → report → rename session → commit (+ `/sync-report` if Notion configured, PR optional) → deploy.
+
 Run these steps in order. Stop and surface failures rather than pushing through.
 
 **Always prompt with `AskUserQuestion` (popup) for the decision points in this flow** — open-a-PR, push confirmation, manual-deploy check, deploy-command confirmation, and "fix or defer" choices in code review. Inline text questions are too easy to miss. Provide 2–4 concrete options per question; the user can still pick "Other" to type a custom response.
@@ -39,9 +41,13 @@ Run these steps in order. Stop and surface failures rather than pushing through.
 ## 6. Commit (PR optional)
 
 - Stage specific files (avoid `git add -A`, which can grab secrets or unrelated junk).
+- **If a report was generated in step 4**, before staging, use `AskUserQuestion` (header: "Include report?") with question _"Include the report file in this commit?"_ and options:
+  - `Defer to /sync-report` (default — keeps the code commit focused; `/sync-report` owns the report commit and can resolve Github Link from HEAD reliably).
+  - `Include now` — stage the report alongside the code.
 - Write the commit message focused on **why**, not what. Follow the repo's existing commit style (check `git log` for tone). If the preferred commit styles are mentioned in the docs, such as `AGENTS.md`, `README.md`, or `docs/*.md`, follow those.
 - Commit.
-- **Do not open a PR by default.** After the commit, use `AskUserQuestion` (header: "Open PR?") with options like "Yes, open PR", "No, stop here".
+- **Notion sync (auto, gated).** After the commit succeeds, check whether `AGENTS.md` (preferred) or `CLAUDE.md` mentions a Notion URL in a `## Notion` section. If it does, **auto-invoke `/sync-report`** on the report from step 4. `/sync-report` resolves Github Link from HEAD, pushes the body to Notion, writes frontmatter back, and owns its own report-commit prompt. If no Notion URL is configured, skip silently. Skip silently when step 4 produced no report.
+- **Do not open a PR by default.** After the commit (and after `/sync-report` if it ran), use `AskUserQuestion` (header: "Open PR?") with options like "Yes, open PR", "No, stop here".
   - If yes: use a second `AskUserQuestion` (header: "Push?") to confirm the push before running `git push`, then run `gh pr create` with a summary + test plan.
   - If no: stop here.
 - ASK FIRST via `AskUserQuestion` before any push, force-push, or destructive git operation — never inline-ask for these.
