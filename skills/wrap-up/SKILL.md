@@ -1,11 +1,11 @@
 ---
 name: wrap-up
-description: Post-implementation checklist. Walks through verify → update docs → code-review → generate report → rename session → commit (PR optional) → deploy. Use when the user says "wrap up", "finalize feature", "ready to ship", "done with this feature", or invokes /wrap-up.
+description: Post-implementation checklist. Walks through verify → update docs → code-review → generate report → rename session → clean up temp files → commit (PR optional) → deploy. Use when the user says "wrap up", "finalize feature", "ready to ship", "done with this feature", or invokes /wrap-up.
 ---
 
 # wrap-up — post-implementation checklist
 
-**Flow:** verify → update docs → code review → report → rename session → commit (+ `/sync-report` if Notion configured, PR optional) → deploy.
+**Flow:** verify → update docs → code review → report → rename session → clean up temp files → commit (+ `/sync-report` if Notion configured, PR optional) → deploy.
 
 Run these steps in order. Stop and surface failures rather than pushing through.
 
@@ -32,13 +32,37 @@ Run these steps in order. Stop and surface failures rather than pushing through.
 
 - Invoke `/report` (the `report` skill) to capture what was done — conversation, file changes, actions — into `docs/reports/YYYY-MM-DD-[title].md`.
 - Skip if the change is trivial (typo, single-line fix) or the user opts out.
-- After `/report` completes successfully, delete `REVIEW.md` — its findings are now folded into the report's `# Updates` and `# Unsolved Issues` sections, and leaving it behind causes stale-state confusion on the next wrap-up. If `/report` was skipped, leave `REVIEW.md` in place.
+- After `/report` completes successfully, delete `REVIEW.md` — its findings are now folded into the report's `# Updates` and `# Unsolved Issues` sections, and leaving it behind causes stale-state confusion on the next wrap-up. If `/report` was skipped, leave `REVIEW.md` in place — step 6 will offer to clean it up.
 
 ## 5. Session hygiene
 
 - After saving the report (and any plan integration), invoke the `rename-session` skill with the report's `YYYY-MM-DD-[title]` as the argument so the session name matches the report. For multiple reports, use the first report's title.
 
-## 6. Commit (PR optional)
+## 6. Clean up temp files
+
+Sweep session-created files before commit. Scan untracked files (`git status --short` `??` entries) + known temp paths; skip in non-git repos. Classify each candidate, then ask three `AskUserQuestion` prompts (all `multiSelect: true`) **in order: Move → Gitignore → Delete**. Skip step if all buckets empty.
+
+**Move** → relocate, don't delete:
+- Agent scratchpads (`findings.md`, `*-analysis.md`, `*-notes.md`) → `docs/reports/<YYYY-MM-DD>-<slug>-artifacts/`
+- `PLAN.md` at root → `docs/plans/<YYYY-MM-DD>-<slug>.md`
+
+**Gitignore** → keep local, block commit:
+- Experimental variants: `*-v2.*`, `*-experimental.*`, `*.old.*`, `*-approach-*.*`, `*-draft.*`
+- Append to `.gitignore` and auto-stage it. Print: `Reminder: gitignored variants stay on disk — move to a branch if you need them; they must not land on main.`
+
+**Delete:**
+- Unreferenced one-off scripts at root (`.py`/`.ts`/`.sh`)
+- Debug output (`*.log`, `output.log`, `stderr.txt`, `test-output.*`)
+- Editor cruft (`*.swp`, `*~`, `.#*`, `.DS_Store`)
+- Untracked temp dirs (`tmp/`, `scratch/`, `playground/`)
+- Root screenshots/recordings (`screenshot-*.*`, `recording-*.*`)
+- `REVIEW.md` if `/report` was skipped
+
+**Never surface:** anything git-tracked; `docs/**` documentation (move, don't delete); `AGENTS.md`/`CLAUDE.md`/`README.md`/configs/lockfiles; gitignored caches (`node_modules/`, `dist/`, `__pycache__/`, `.venv/`); `.env*`.
+
+**Guardrails:** never delete a doc file (route to Move if in doubt); never delete anything not surfaced via these buckets; `rm -rf` only for the temp dirs listed above.
+
+## 7. Commit (PR optional)
 
 - Stage specific files (avoid `git add -A`, which can grab secrets or unrelated junk).
 - **If a report was generated in step 4**, before staging, use `AskUserQuestion` (header: "Include report?") with question _"Include the report file in this commit?"_ and options:
@@ -52,7 +76,7 @@ Run these steps in order. Stop and surface failures rather than pushing through.
   - If no: stop here.
 - ASK FIRST via `AskUserQuestion` before any push, force-push, or destructive git operation — never inline-ask for these.
 
-## 7. Deploy
+## 8. Deploy
 
 Three branches, evaluated in order. The first match wins; each branch ends the step.
 
