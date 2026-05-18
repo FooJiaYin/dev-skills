@@ -10,6 +10,16 @@ Save the report as `docs/reports/YYYY-MM-DD-[title].md`
 
 The date should be the date when the task is mainly worked on, not the date when the report is generated.
 
+## Pre-flight: split decision
+
+Before resolving the target file or choosing a template, decide whether to write multiple reports:
+
+**Skill edits split into their own report.** If the session touched any `SKILL.md`, its siblings, or files under a `.claude/skills/` or `*-skills/` directory, ask whether to split (default yes). The skill report saves to the nearest ancestor of the skill file that contains a `docs/reports/` directory, as `<that-root>/docs/reports/YYYY-MM-DD-<title>.md`.
+
+**Unrelated topics split.** If the conversation covers multiple **unrelated** tasks (e.g. designing a framework AND building a CLI tool), ask the user whether to split into separate reports. Each report should be a self-contained document with its own title and file.
+
+For multiple reports: §0 (target file) and the template choice apply per report. Plan integration and session rename happen after all reports are written.
+
 ## 0. Resolve Target File (lifecycle-aware)
 
 Before generating, decide whether this report is **appending to an existing `docs/tasks/<slug>.md`** (Notion-task lifecycle path) or **synthesizing fresh from conversation** (today's behavior).
@@ -49,10 +59,6 @@ Please choose a template to follow:
 1. Task Report: (`./templates/report-task.md`)
 2. Bug Fix Report: (`./templates/report-bug-fix.md`)
 3. Planning Report: (`./templates/report-planning.md`) — for brainstorming, design discussions, trade-off analysis, decision records. May cover multiple related topics. **STRONG DEFAULT: raw conversation paste per topic.** Only upgrade a topic to the structured form (Discussion / Solutions / Decision) when the topic spanned **7 or more conversation turns** (back-and-forth exchanges on the same topic). A short topic stays as raw paste even if it contains a decision, compared options, or discussed trade-offs. Decide per topic when first drafting it — don't switch modes mid-topic. Mixed modes across topics in one report are fine.
-
-## Multiple Reports
-
-If the conversation covers multiple **unrelated** tasks (e.g. designing a framework AND building a CLI tool), ask the user whether to split into separate reports before writing. Each report should be a self-contained document with its own title and file.
 
 ## Issue Resolution
 
