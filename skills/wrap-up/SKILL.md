@@ -1,11 +1,11 @@
 ---
 name: wrap-up
-description: Post-implementation checklist. Walks through verify → update docs → code-review → generate report → rename session → clean up temp files → commit (PR optional) → deploy. Use when the user says "wrap up", "finalize feature", "ready to ship", "done with this feature", or invokes /wrap-up.
+description: Post-implementation checklist. Walks through verify → update docs → code-review → generate report → rename session → clean up temp files → commit (PR optional) → deploy → improve. Use when the user says "wrap up", "finalize feature", "ready to ship", "done with this feature", or invokes /wrap-up.
 ---
 
 # wrap-up — post-implementation checklist
 
-**Flow:** verify → update docs → code review → report → rename session → clean up temp files → commit (+ `/sync-report` if Notion configured, PR optional) → deploy.
+**Flow:** verify → update docs → code review → report → rename session → clean up temp files → commit (+ `/sync-report` if Notion configured, PR optional) → deploy → improve.
 
 Run these steps in order. Stop and surface failures rather than pushing through.
 
@@ -125,6 +125,12 @@ Use `AskUserQuestion` (header: "Deployed?") with question _"Have you deployed th
 
 - If no deploy docs are found in the "no" branch: tell the user `No deploy docs found. Add deploy instructions to AGENTS.md or docs/deploy.md and re-run wrap-up.` and end.
 - Never invent deploy commands. If docs are silent, stop and tell the user — don't guess `yarn deploy`, `npm run deploy`, `make deploy`, etc.
+
+## 9. Self-improve
+
+- Invoke `/improve` (the `improve` skill) to surface refinement suggestions from session friction — skill instructions, workflow sequencing, user-instructions analysis, and `REVIEW.md` findings.
+- `/improve` exits silently when no concrete friction is detected; on a clean run, /wrap-up simply ends here.
+- If suggestions are surfaced, `/improve` owns its own scope prompts (Global / Org / Local) and applies edits inline. 
 
 ## Guardrails
 
