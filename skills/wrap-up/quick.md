@@ -16,14 +16,7 @@ Steps in order:
 
 ## Step 7 — Safe commit + push
 
-Apply shared commit hygiene from `./commit.md` (pre-commit safety + smart staging + push fallback). Then Quick mode adds:
-
-- **Default staging**: session-related files (touched by this conversation's Edit / Write / Bash). The shared multi-select popup still surfaces sensitive / temp / other-session for confirmation.
-- **Commit message** — agent-generated, not hand-written:
-  - Type = `wip:`. One-line summary from `git diff --staged` + session context. Footer: `[Quick wrap-up by Claude Code]` + session ID.
-  - If Step 0 flagged large diff, include `⚠️ LARGE DIFF — 建議拆分` in body.
-  - Popup to confirm: Use as-is (default) / Edit / Cancel.
-- **Always push** after commit (no PR popup — partner doesn't open PRs). Use shared push fallback on non-ff.
+Apply shared commit hygiene from `./commit.md` (pre-commit safety + smart staging + push fallback). 
 
 ## Closing message (人話)
 

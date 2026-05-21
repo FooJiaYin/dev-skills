@@ -69,9 +69,7 @@ Apply shared commit hygiene from `./commit.md` (pre-commit safety + smart stagin
 - Write the commit message focused on **why**, not what. Follow the repo's existing commit style (check `git log` for tone). If the preferred commit styles are mentioned in the docs, such as `AGENTS.md`, `README.md`, or `docs/*.md`, follow those.
 - Commit.
 - **Notion sync (auto, gated).** After the commit succeeds, check whether `AGENTS.md` (preferred) or `CLAUDE.md` mentions a Notion URL in a `## Notion` section. If it does, **auto-invoke `/sync-report`** on the report from step 4. `/sync-report` resolves Github Link from HEAD, pushes the body to Notion, writes frontmatter back, and owns its own report-commit prompt. If no Notion URL is configured, skip silently. Skip silently when step 4 produced no report.
-- **Do not open a PR by default.** After the commit (and after `/sync-report` if it ran), use `AskUserQuestion` (header: "Open PR?") with options like "Yes, open PR", "No, stop here".
-  - If yes: use a second `AskUserQuestion` (header: "Push?") to confirm the push before running `git push`, then run `gh pr create` with a summary + test plan.
-  - If no: stop here (don't push — Full mode only pushes when opening a PR).
+- **Push popup** (header: "Push?") with three options: **Open PR** (`git push` + `gh pr create`), **Push direct** (`git push` to tracked branch), **Stop** (commit stays local).
 - ASK FIRST via `AskUserQuestion` before any push, force-push, or destructive git operation — never inline-ask for these.
 
 ## 8. Deploy
@@ -122,8 +120,7 @@ Use `AskUserQuestion` (header: "Deployed?") with question _"Have you deployed th
 
 ## 9. Self-improve
 
-- Invoke `/improve` (the `improve` skill) to surface refinement suggestions from session friction — skill instructions, workflow sequencing, user-instructions analysis, and `REVIEW.md` findings.
-- `/improve` exits silently when no concrete friction is detected; on a clean run, /wrap-up simply ends here.
+- Always invoke `/improve` (the `improve` skill) to surface refinement suggestions from session friction — skill instructions, workflow sequencing, user-instructions analysis, and `REVIEW.md` findings.
 - If suggestions are surfaced, `/improve` owns its own scope prompts (Global / Org / Local) and applies edits inline.
 
 ## Guardrails
