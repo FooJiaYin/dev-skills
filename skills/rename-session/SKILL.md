@@ -15,7 +15,7 @@ Rename the current session by appending a `custom-title` entry to its JSONL file
 2. Run the helper script, quoting the title:
 
    ```bash
-   bash ~/.claude/skills/rename-session/rename.sh '<TITLE>'
+   bash rename.sh '<TITLE>'
    ```
 
 3. Confirm to the user that the session was renamed. Note: the VS Code sidebar may show the old name until a window reload.
