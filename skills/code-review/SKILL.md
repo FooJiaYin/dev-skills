@@ -282,6 +282,12 @@ Omit any section whose finding count is zero. ID prefixes: `CR-` for Critical, `
 
 ---
 
+## Applying Fixes
+
+If the user asks to fix the findings after `REVIEW.md` is written: group findings by file, spawn one subagent per file in a single parallel tool-call block, each receiving all findings for its file. Serialize cross-file findings (e.g. signature changes that ripple to callers) into one agent.
+
+---
+
 ## Critical Rules
 
 - **Read-only.** Do not modify source files. The only file you may write is `REVIEW.md`.
