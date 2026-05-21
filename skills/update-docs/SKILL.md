@@ -79,6 +79,27 @@ After the user confirms, apply the changes:
 - If unrelated drift is noticed in the same file, **flag it but don't fix it inline** — surface as a follow-up at the end.
 - Per global rule: prefer `AGENTS.md` over `CLAUDE.md`; prefer the `docs/` folder over scattered top-level files.
 
+### How to write the update: edit in place, annotate inline
+
+For each fact that changed, **find the upstream section that already documents that concept** (Goal, Flow, Pages, Schema, etc.) and edit it directly so the section reflects current behavior. Add a small inline marker right next to the changed bullet / paragraph / table row:
+
+```md
+- /login dispatcher renders welcome OR quick-profile OR redirect _(2026-05-21: 從單純 welcome 改為 RSC dispatcher; 取代 /profile/complete)_
+```
+
+Or for larger structural changes, an inline HTML comment also works:
+
+```md
+<!-- 2026-05-21: court→capacity 3-button selector restored (was plain number input) -->
+- WR-13: 1場 ≤ 8 / 2場 ≤ 17 / 3場 ≤ 26 ...
+```
+
+The marker says **when** + **what** in one line. The body around it stays the source-of-truth description of current behavior.
+
+**Only create a new heading if the concept didn't exist in the doc at all** (e.g. a new sub-feature, a new component). Place it at the right spot in the existing section order — not at the end.
+
+**Anti-pattern to avoid:** appending a single trailing section titled `## YYYY-MM-DD updates` that mirrors upstream content. Two problems: (1) readers have to cross-reference top + bottom to know current state; (2) stale appended sections accumulate over time and bury the real source-of-truth. Edit upstream in place; the inline marker carries the date.
+
 ## Guardrails
 
 - **Never edit before user confirmation.**

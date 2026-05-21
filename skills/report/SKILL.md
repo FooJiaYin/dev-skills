@@ -84,7 +84,7 @@ If there are no issues in a bucket, omit that bucket's content — do not stub t
 After writing the report, if a plan was used during the conversation:
 
 1. Identify the plan file path (e.g. `~/.claude/plans/some-plan-name.md`)
-2. Run: `bash ~/.claude/skills/report/attach-plan.sh <mode> <plan-file> <report-file>`
+2. Run `bash <skill-base>/attach-plan.sh <mode> <plan> <report>` where `<skill-base>` is announced at skill load. If unknown, fallback: `find ~/agent-skills ~/.claude -name attach-plan.sh -path '*/report/*' | head -1`.
    - `<mode>` is `prepend` for Task / Bug Fix reports, `append` for Planning reports
 
 Do NOT read the plan file yourself. The script handles everything.

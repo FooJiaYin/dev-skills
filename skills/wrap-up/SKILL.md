@@ -11,6 +11,10 @@ Run these steps in order. Stop and surface failures rather than pushing through.
 
 **Always prompt with `AskUserQuestion` (popup) for the decision points in this flow** — open-a-PR, push confirmation, manual-deploy check, deploy-command confirmation, and "fix or defer" choices in code review. Inline text questions are too easy to miss. Provide 2–4 concrete options per question; the user can still pick "Other" to type a custom response.
 
+## 0. Scope check (large diffs only)
+
+Run `git diff --stat HEAD~1..HEAD | tail -1`. If **>25 files or >2000 lines**, ask the user via `AskUserQuestion` which steps to defer — common skips: `/code-review`, `/update-docs`, or E2E in `/verify`. Capture deferred scope in the report's `# Unsolved Issues` or the plan's Verification section. Skip this step for small diffs.
+
 ## 1. Verify correctness
 
 - Invoke `/verify` (the `verify` skill) to execute the implementation plan's Test plan section. It handles plan lookup, skip-if-already-run, command resolution, and per-item pass/fail reporting.
