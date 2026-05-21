@@ -20,47 +20,49 @@ Grouped by workflow:
 
 ### Dev flow
 
-Three phases of a development task — **planning**, **wrap-up**, and **session housekeeping** — plus one orchestrator that ties wrap-up together.
+Four phases — **start-of-day sync**, **planning**, **wrap-up**, and **session housekeeping** — plus one orchestrator that ties wrap-up together.
 
 ```
-   PLANNING                IMPLEMENTATION              WRAP-UP
- ┌────────────┐                                  ┌──────────────────┐
- │  discuss   │ ───►  (you write the code)  ───► │     wrap-up      │
- └────────────┘                                  └────────┬─────────┘
-                                                          │ orchestrates
-                                       ┌──────────────────┼──────────────────┐
-                                       ▼                  ▼                  ▼
-                                    verify          update-docs         code-review
-                                       │                  │                  │
-                                       └────────────►  report  ◄─────────────┘
-                                                          │
-                                                          ▼
-                                                   rename-session
-                                                          │
-                                                          ▼
-                                                    sync-report (if Notion-configured)
-                                                          │
-                                                          ▼
-                                                  git commit (optional)
-                                                          │
-                                                          ▼
-                                                   deploy (optional)
+   SYNC          PLANNING                IMPLEMENTATION              WRAP-UP
+ ┌────────┐   ┌────────────┐                                  ┌──────────────────┐
+ │  sync  │──►│  discuss   │ ───►  (you write the code)  ───► │     wrap-up      │
+ └────────┘   └────────────┘                                  └────────┬─────────┘
+                                                                       │ orchestrates
+                                                  ┌────────────────────┼──────────────┐
+                                                  ▼                    ▼              ▼
+                                               verify            update-docs     code-review
+                                                  │                    │              │
+                                                  └─────────────►   report   ◄────────┘
+                                                                       │
+                                                                       ▼
+                                                                rename-session
+                                                                       │
+                                                                       ▼
+                                                                sync-report (if Notion-configured)
+                                                                       │
+                                                                       ▼
+                                                              git commit (optional)
+                                                                       │
+                                                                       ▼
+                                                                deploy (optional)
 ```
 
 | Skill | Phase | Purpose |
 |---|---|---|
+| [sync](skills/sync/SKILL.md) | start-of-day | Safety net for git-illiterate collaborators. Fetches, auto-merges upstream (current branch + `origin/main` + teammate branches updated in last 24h), pushes. Dirty tree → defers to `/wrap-up` Quick. Any merge conflict aborts cleanly. |
 | [discuss](skills/discuss/SKILL.md) | planning | Senior design/architecture advisor that drives a collaborative back-and-forth before any plan is written. Auto-invoked during plan mode. |
 | [verify](skills/verify/SKILL.md) | wrap-up | Executes the implementation plan's Test plan / Verification section. **Runner, not author** — does not write new tests. |
 | [update-docs](skills/update-docs/SKILL.md) | wrap-up | Detection-driven docs updater. Scans the project's doc layout, classifies the diff, and proposes per-file edits. |
 | [code-review](skills/code-review/SKILL.md) | wrap-up | Multi-agent review of the local git diff. Writes a single `REVIEW.md` with findings tiered Critical/Warning/Suggestion/Nit (drops only auto-zeroed false positives). |
 | [report](skills/report/SKILL.md) | wrap-up | Distills the conversation, file changes, and decisions into `docs/reports/YYYY-MM-DD-[title].md`. |
 | [rename-session](skills/rename-session/SKILL.md) | housekeeping | Renames the current Claude Code session JSONL with a short title. Auto-invoked after `report` runs. |
-| [wrap-up](skills/wrap-up/SKILL.md) | orchestrator | Runs `verify → update-docs → code-review → report → rename-session → sync-report → git commit → deploy` in order, stopping on the first failure. |
+| [wrap-up](skills/wrap-up/SKILL.md) | orchestrator | Two modes. **Full** runs `verify → update-docs → code-review → report → rename-session → cleanup → commit → deploy → improve` for the primary developer. **Quick** skips quality/deploy gates and ships report + safe commit + push only — for time-constrained or git-illiterate collaborators, or when auto-invoked from `/sync`. |
 
 **How to use:**
 
+- **Opening Claude Code on a shared repo?** Run `/sync` first. It pulls the latest from `origin/main` + teammates' recent branches into your current branch so you start from the freshest state. If your tree is dirty, `/sync` will offer to run `/wrap-up` Quick to save first.
 - **Starting a non-trivial task?** Begin with `/discuss` (or just enter plan mode — `discuss` auto-invokes) to surface design alternatives before writing code.
-- **Done implementing?** Run `/wrap-up`. It chains the wrap-up steps end-to-end so you don't have to remember the order or rerun them by hand. Stop and surface failures rather than pushing through.
+- **Done implementing?** Run `/wrap-up`. Picks Full or Quick mode. Full chains the full wrap-up steps; Quick ships report + safe commit + push only (for collaborators with low git literacy or anyone short on time).
 - **Need just one step?** Each skill is invocable on its own — `/verify`, `/update-docs`, `/code-review`, `/report`, `/rename-session` — and `wrap-up` will skip steps you've already run earlier in the session if nothing relevant changed.
 - **Manual flow without `wrap-up`:** `/verify` → `/update-docs` → `/code-review` → fix Critical/Warning findings (Suggestion/Nit are advisory) → `/report` → `/rename-session` → `/sync-report` → commit → deploy.
 
@@ -183,7 +185,7 @@ gh skill install FooJiaYin/dev-skills <skill-name> --agent gemini-cli --scope us
 gh skill install FooJiaYin/dev-skills <skill-name>                         # defaults to github-copilot, project scope
 ```
 
-`<skill-name>` is one of: `code-review`, `create-tasks`, `discuss`, `fetch-task`, `find-session`, `meeting-notes`, `rename-session`, `report`, `setup-notion`, `spec`, `spec-review`, `sync-report`, `update-docs`, `upload-meeting`, `verify`, `wrap-up`. See [`gh skill install`](https://cli.github.com/manual/gh_skill_install) for the full list of supported agents and flags.
+`<skill-name>` is one of: `code-review`, `create-tasks`, `discuss`, `fetch-task`, `find-session`, `meeting-notes`, `rename-session`, `report`, `setup-notion`, `spec`, `spec-review`, `sync`, `sync-report`, `update-docs`, `upload-meeting`, `verify`, `wrap-up`. See [`gh skill install`](https://cli.github.com/manual/gh_skill_install) for the full list of supported agents and flags.
 
 ### Manual
 
