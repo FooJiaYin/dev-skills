@@ -19,6 +19,7 @@ Result: [Success / any error messages or unexpected behavior]
 
 - **Step-by-Step**: Show what was tried and what finally worked
 - Follow up requests and bug fixed process
+- Request after complete the plan or different decision on the plan
 
 # Result
 

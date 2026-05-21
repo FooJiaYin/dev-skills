@@ -11,9 +11,8 @@
 
 # [Topic 1 Title]
 
-[DEFAULT MODE — paste the relevant conversation text for this topic.
-Do not use dialogue format; paste as flowing prose or bullets from the original messages. Trim tangents but preserve wording of anything
-substantive.]
+[DEFAULT MODE — copy and paste the relevant conversation text for this topic.
+Do not use dialogue format; paste as flowing prose or bullets from the original messages. Trim greetings and confirmation message but preserve the original content text.]
 
 <!--
 UPGRADE TO STRUCTURED MODE when the topic discussion is too long to scan as raw paste. for example, if the topic spanned 7 or more conversation turns (back-and-forth exchanges on the same topic), or if the user explicitly asks to structure it.

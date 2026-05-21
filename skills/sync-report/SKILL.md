@@ -39,7 +39,7 @@ Rank candidates by:
 Show top 8 via `AskUserQuestion`:
 - Columns: `Name · scope · Status · Time`. - - Options:
   - Pick a candidate → step 6.
-  - Create new → `notion-create-pages` in Roadmap with `Status=Completed 🙌`, `Type=Task 🔨`, `Assignee=me` (from `~/.claude/memory/notion-me.md`; prompt via `/fetch-task` flow if missing), `Project=` prompt, `Release=`current quarter, **body = report body directly** (no `# Context` — no meeting source), `Time` blank. Continue at step 6; **skip step 8** (body already written).
+  - Create new → `notion-create-pages` in Roadmap with `Status=Completed 🙌`, `Type=Task 🔨`, `Assignee=me` (from `~/.claude/memory/notion-me.md`; prompt via `/fetch-task` flow if missing), `Project=` prompt, `Release=`current quarter, **body = full report body verbatim (copy-paste; no rewriting, no skipping, no omitting any sections)** (no `# Context` — no meeting source), `Time` blank. Continue at step 6; **skip step 8** (body already written).
   - Search deeper → re-query without time filter, include no-`Time` tasks; same ranking minus time weight.
   - Cancel → exit.
 
@@ -68,7 +68,9 @@ Detect URL:
 
 If detected, `AskUserQuestion`: `Apply <url>` / `Skip`.
 
-**8. Append body.** Skip if step 5 took `[n]`. Otherwise `notion-fetch` target, then `notion-update-page` `update_content` with one op: `old_str` = last non-empty line of current body (stable anchor), `new_str` = same anchor + `\n\n` + report body (frontmatter stripped). Raw paste, no divider. Fold Status + Github Link from steps 6–7 into the same `update_page` call as `update_properties`.
+**8. Append body.** Skip if step 5 took `[n]`. Otherwise `notion-fetch` target, then `notion-update-page` `update_content` with one op: `old_str` = last non-empty line of current body (stable anchor), `new_str` = same anchor + `\n\n` + the full report body (frontmatter stripped, nothing else removed). Verbatim copy-paste. Never rewrite, summarize, rephrase, reformat, skip, or omit any section of the body — even minor cleanup is forbidden. No divider. Fold Status + Github Link from steps 6–7 into the same `update_page` call as `update_properties`.
+
+> **Property-name foot-gun:** the `userDefined:` prefix is ONLY for properties literally named `id` or `url` (case-insensitive). Property *types* that hold URLs — `Github Link`, `Slack Link`, `Spec URL`, etc. — use their plain name. A wrongly-prefixed property is silently ignored: the API returns `{page_id}` with no error, but the field stays empty. After writing properties, re-fetch and verify each field changed before claiming success.
 
 **9. Frontmatter write-back.** Update local report: set/refresh `notion.page` (in case 5 picked/created) and `notion.last_synced = <now>`. Body unchanged. Minimal in-place edit.
 
@@ -85,7 +87,7 @@ No uncommitted changes → skip silently.
 - **Linked fast path skips the picker.** Frontmatter `notion.page` is authoritative.
 - **Never overwrite a non-empty Github Link.**
 - **Never overwrite Status without explicit confirmation.**
-- **Body append is raw paste.** No decorator, no auto-divider.
+- **Body append is verbatim copy-paste.** Never rewrite, summarize, rephrase, reformat, skip, or omit any section.
 - **Frontmatter stripped before sending to Notion.**
 - **`[n]` branch puts report body directly into task body** (no `# Context`) and skips step 8.
 
