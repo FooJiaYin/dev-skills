@@ -34,4 +34,4 @@ For third-party/built-in skills you don't own, the "local" option becomes a wrap
 - Never auto-edit before asking. Never invent findings.
 
 ## Wrap up
-- After applying edits, if any edit touched a `SKILL.md` or skill supporting file, proactively suggest running `/wrap-up` to commit + report. Don't auto-fire.
+- After applying edits, if any edit touched a `SKILL.md` or skill supporting file, proactively suggest running `/wrap-up quick` to commit + report. Don't auto-fire.
