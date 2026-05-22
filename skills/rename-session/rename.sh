@@ -8,13 +8,15 @@ TITLE="$1"
 
 PROJECT_DIR="$HOME/.claude/projects/$(pwd | sed 's|/|-|g')"
 
-if [ -n "$CLAUDE_SESSION_ID" ] && [ -f "$PROJECT_DIR/$CLAUDE_SESSION_ID.jsonl" ]; then
-  SESSION_FILE="$PROJECT_DIR/$CLAUDE_SESSION_ID.jsonl"
-  SESSION_ID="$CLAUDE_SESSION_ID"
+SID="${CLAUDE_CODE_SESSION_ID:-$CLAUDE_SESSION_ID}"
+if [ -n "$SID" ] && [ -f "$PROJECT_DIR/$SID.jsonl" ]; then
+  SESSION_FILE="$PROJECT_DIR/$SID.jsonl"
+  SESSION_ID="$SID"
 else
   SESSION_FILE=$(ls -t "$PROJECT_DIR"/*.jsonl 2>/dev/null | head -1)
   [ -z "$SESSION_FILE" ] && { echo "no session file found in $PROJECT_DIR" >&2; exit 1; }
   SESSION_ID=$(basename "$SESSION_FILE" .jsonl)
+  echo "warning: CLAUDE_CODE_SESSION_ID not set; guessing newest jsonl ($SESSION_ID) — may rename wrong session" >&2
 fi
 
 if command -v jq >/dev/null 2>&1; then
