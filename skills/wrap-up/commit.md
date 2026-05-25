@@ -4,7 +4,7 @@ Universal commit hygiene. Wrapped by `./full.md` Step 7 and `./quick.md` Step 7 
 
 ## Pre-commit safety (parallel; stop on blocker)
 
-- On `main` / `master` / `develop` → `git switch -c wip/<YYYYMMDD-HHMM>` first, tell user 人話: 「你在 main 上，我先幫你開了一個暫存 branch」.
+- On `main` / `master` / `develop` → check if the project is main-direct first: count last 5 commits on the branch; if ≥3 landed directly on `main`/`master`/`develop` (no merge commits from feature branches), treat as main-direct and commit in place. Otherwise `git switch -c wip/<YYYYMMDD-HHMM>` and tell user 人話: 「你在 main 上，我先幫你開了一個暫存 branch」.
 - Detached HEAD / `MERGE_HEAD` / `REBASE_HEAD` → stop, refer to reviewer.
 - Files > 10MB → exclude from staging, warn user.
 
