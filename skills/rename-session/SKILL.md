@@ -18,6 +18,8 @@ Rename the current session by appending a `custom-title` entry to its JSONL file
    bash rename.sh '<TITLE>'
    ```
 
+   The script derives the project dir from `pwd`. Invoke it from the session's original cwd (the one announced at session start), not from a subdirectory you may have `cd`-ed into for earlier steps. If unsure, use a subshell: `(cd "$ORIGINAL_CWD" && bash rename.sh '<TITLE>')`.
+
 3. Confirm to the user that the session was renamed. Note: the VS Code sidebar may show the old name until a window reload.
 
 ## Triggers
