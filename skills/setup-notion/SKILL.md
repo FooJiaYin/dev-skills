@@ -36,6 +36,8 @@ Notion is already set up — nothing to do.
 
 Use `AskUserQuestion` for each missing field. Don't batch all prompts into one call — validate each URL before accepting the next.
 
+**Parent-folder import:** Check `../AGENTS.md` for a `## Notion` section. If found, offer `Import from ../AGENTS.md` as the first option (with URL preview); on accept, copy the section verbatim and skip per-field prompts. Omit the option entirely if not found.
+
 **Roadmap DB URL** (if missing):
 - Question: "Notion DB URL for the Roadmap / tasks database?"
 - Options: paste-URL escape hatch only (no preset options).
@@ -63,8 +65,9 @@ Use `AskUserQuestion` for each missing field. Don't batch all prompts into one c
 
 **`AGENTS.md`:**
 - If `AGENTS.md` exists, locate the `## Notion` section and update it in place with minimal edits (preserve any existing content; only insert/replace the specific missing lines). If there's no `## Notion` section, append one at the end of the file.
-- If only `CLAUDE.md` exists, create `AGENTS.md`, copy its content, then `ln -sf AGENTS.md CLAUDE.md` (per the global convention). Subsequent writes go to `AGENTS.md`.
-- If neither exists, create `AGENTS.md` with just the `## Notion` section.
+- If only `CLAUDE.md` exists as a regular file, create `AGENTS.md`, copy its content, then `ln -sf AGENTS.md CLAUDE.md` (per the global convention). Subsequent writes go to `AGENTS.md`.
+- **Dangling symlink** — if `CLAUDE.md` is a symlink pointing at `AGENTS.md` (check `git ls-files -s CLAUDE.md` → mode `120000`, or `readlink CLAUDE.md`) but `AGENTS.md` is missing, the target is almost certainly an untracked-but-loadbearing file. STOP and `AskUserQuestion`: "AGENTS.md is missing but CLAUDE.md symlinks to it — is it intentionally untracked, or should I create it from scratch?" Never overwrite blindly.
+- If neither exists (and no dangling symlink), create `AGENTS.md` with just the `## Notion` section.
 
 Canonical section shape (insert verbatim; team roster only when collected):
 
