@@ -90,6 +90,8 @@ After writing the report, if a plan was used during the conversation:
 Do NOT read the plan file yourself. The script handles everything.
 If no plan was used, skip this step.
 
+**Run this unconditionally whenever a plan was used this session** — do NOT skip on a subjective "the plan's topic doesn't match the report" judgment. The plan file may have been overwritten/rewritten mid-session (e.g. a planning task then a different implementation task reusing the same plan file), so its current content often *does* match the report even when it didn't earlier. If genuinely unrelated, still attach it and note so in the report; never silently omit.
+
 For multiple reports: run the script once per report with the matching plan file and mode.
 
 ## Session Rename
