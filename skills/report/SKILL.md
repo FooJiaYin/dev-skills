@@ -18,6 +18,8 @@ Before resolving the target file or choosing a template, decide whether to write
 
 **Unrelated topics split.** If the conversation covers multiple **unrelated** tasks (e.g. designing a framework AND building a CLI tool), ask the user whether to split into separate reports. Each report should be a self-contained document with its own title and file.
 
+**Distinct deliverable = its own report.** A distinct deliverable or implementation phase gets its OWN report file **even when related to a prior report** — never hand-append a feature write-up into another report's body. Create a new file, cross-reference the related report, and still run the Plan Integration (`attach-plan.sh`) step on the new file. If you hand-authored a report outside this skill, you still owe it the attach-plan step — don't skip it.
+
 For multiple reports: §0 (target file) and the template choice apply per report. Plan integration and session rename happen after all reports are written.
 
 ## 0. Resolve Target File (lifecycle-aware)
