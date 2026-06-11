@@ -66,6 +66,8 @@ Detect URL:
 3. most-recent PR on current branch. 
 4. None → skip. 
 
+Build the URL **even if the commit is local/unpushed** — resolve the GitHub base from `git remote -v` (`…:OWNER/REPO.git` → `https://github.com/OWNER/REPO`) + `/commit/<full-sha>`. Unpushed is not a reason to skip; only skip if there's no GitHub remote.
+
 If detected, `AskUserQuestion`: `Apply <url>` / `Skip`.
 
 **8. Append body.** Skip if step 5 took `[n]`. Otherwise `notion-fetch` target, then `notion-update-page` `update_content` with one op: `old_str` = last non-empty line of current body (stable anchor), `new_str` = same anchor + `\n\n` + the full report body (frontmatter stripped, nothing else removed). Verbatim copy-paste. Never rewrite, summarize, rephrase, reformat, skip, or omit any section of the body — even minor cleanup is forbidden. No divider. Fold Status + Github Link from steps 6–7 into the same `update_page` call as `update_properties`.
