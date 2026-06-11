@@ -21,6 +21,8 @@ Run `git diff --stat HEAD~1..HEAD | tail -1`. If **>25 files or >2000 lines**, a
 ## 3. Code review
 
 - Invoke `/code-review` (the `code-review` skill) to run a multi-agent review of the diff (including the doc updates from step 2). It writes findings to `REVIEW.md` filtered through a confidence threshold.
+- **If you substitute a scoped reviewer for `/code-review`** (e.g. a multi-session dirty tree where the full skill would sweep dozens of other-session files, so you point a single reviewer agent at just this session's diff), you MUST still **persist its findings to `REVIEW.md`** yourself (with the `status: issues_found | clean` frontmatter). Steps 3–4 depend on the file existing — it's read here and folded into the report + deleted in step 4. An inline-only review that skips the file leaves the user without the expected artifact.
+- **Before writing `REVIEW.md`, check whether one already exists from a DIFFERENT session** (frontmatter `scope` / `session` / `date` describes work that isn't yours — common in a multi-session repo). If so, **do NOT overwrite or delete it** — write your findings to a distinct filename (e.g. `REVIEW-<slug>.md`) and read / fold / delete THAT file in steps 3–4–6 instead. Clobbering another session's review destroys their unaddressed findings.
 - Read `REVIEW.md`. If it has `status: issues_found`, surface the findings, then use `AskUserQuestion` to ask how to proceed. Suggested options: "Fix all", "Fix selected (I'll list them)", "Defer all to report". For per-item triage on a small number of findings, you may ask one `AskUserQuestion` per finding with options like "Fix now" / "Defer".
 - Items the user fixes: fix them, then re-run `/code-review` to confirm. Items the user defers: note them so step 4 (report) carries them into the report's `# Unsolved Issues` section. Items the user fixed during this step go into the report's `# Updates` section.
 - Wait for `/code-review` and any user fixes to finish before continuing.
@@ -68,11 +70,19 @@ Apply shared commit hygiene from `./commit.md` (pre-commit safety + smart stagin
   - `Include now` — stage the report alongside the code.
 - Write the commit message focused on **why**, not what. Follow the repo's existing commit style (check `git log` for tone). If the preferred commit styles are mentioned in the docs, such as `AGENTS.md`, `README.md`, or `docs/*.md`, follow those.
 - Commit.
-- **Notion sync (auto, gated).** After the commit succeeds, check whether `AGENTS.md` (preferred) or `CLAUDE.md` mentions a Notion URL in a `## Notion` section. If it does, **auto-invoke `/sync-report`** on the report from step 4. `/sync-report` resolves Github Link from HEAD, pushes the body to Notion, writes frontmatter back, and owns its own report-commit prompt. If no Notion URL is configured, skip silently. Skip silently when step 4 produced no report.
 - **Push popup** (header: "Push?") with three options: **Open PR** (`git push` + `gh pr create`), **Push direct** (`git push` to tracked branch), **Stop** (commit stays local).
 - ASK FIRST via `AskUserQuestion` before any push, force-push, or destructive git operation — never inline-ask for these.
 
-## 8. Deploy
+## 8. Sync report to Notion
+
+Independent of the commit/push in step 7 — its **own** step so it isn't swallowed next to the push popup. **Skip the whole step** only when `AGENTS.md` (preferred) / `CLAUDE.md` has no `## Notion` section, or step 4 produced no report. Otherwise it runs every time.
+
+When it runs: **auto-invoke `/sync-report`** on the report from step 4. `/sync-report` resolves the Github Link from the wrap-up commit (builds the sha URL from `git remote` even when **unpushed**), appends the report body to the Notion task, suggests Status, writes `last_synced` back to the report frontmatter, and owns its own report-commit prompt.
+
+- **The push decision (step 7) does NOT gate this.** Notion sync and `git push` are independent — a `Stop` / hold-push choice only defers the git push and is never a reason to skip the sync. Only skip if the user explicitly says so.
+- If HEAD advanced under you (another session committed on top mid-wrap-up), point the Github Link at THIS session's wrap-up commit (match by message / slug), not bare HEAD.
+
+## 9. Deploy
 
 Three branches, evaluated in order. The first match wins; each branch ends the step.
 
@@ -118,7 +128,7 @@ Use `AskUserQuestion` (header: "Deployed?") with question _"Have you deployed th
 - If no deploy docs are found in the "no" branch: tell the user `No deploy docs found. Add deploy instructions to AGENTS.md or docs/deploy.md and re-run wrap-up.` and end.
 - Never invent deploy commands. If docs are silent, stop and tell the user — don't guess `yarn deploy`, `npm run deploy`, `make deploy`, etc.
 
-## 9. Self-improve
+## 10. Self-improve
 
 - Always invoke `/improve` (the `improve` skill) to surface refinement suggestions from session friction — skill instructions, workflow sequencing, user-instructions analysis, and `REVIEW.md` findings.
 - If suggestions are surfaced, `/improve` owns its own scope prompts (Global / Org / Local) and applies edits inline.

@@ -1,6 +1,6 @@
 ---
 name: wrap-up
-description: Post-implementation checklist with two modes. Full mode walks verify → update docs → code-review → report → rename session → cleanup → commit → deploy → improve (for the primary developer). Quick mode skips quality/deploy gates and ships report + commit + push only (for a time-constrained / non-git-literate collaborator, or when auto-invoked from /sync). Use when the user says "wrap up", "finalize feature", "ready to ship", "done with this feature", or invokes /wrap-up.
+description: Post-implementation checklist with two modes. Full mode walks verify → update docs → code-review → report → rename session → cleanup → commit → sync to Notion → deploy → improve (for the primary developer). Quick mode skips quality/deploy gates and ships report + commit + push only (for a time-constrained / non-git-literate collaborator, or when auto-invoked from /sync). Use when the user says "wrap up", "finalize feature", "ready to ship", "done with this feature", or invokes /wrap-up.
 ---
 
 # wrap-up — post-implementation checklist
