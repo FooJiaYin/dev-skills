@@ -11,7 +11,7 @@ Steps in order:
 | 2 Report | Invoke `/report` to write `docs/reports/YYYY-MM-DD-<title>.md`. Append `# Suggested Doc Updates` section with Step 1's propose markdown (skip section if empty). |
 | 3 Rename session | Invoke `rename-session` skill with Step 2's report title. |
 | 4 Commit + push | See below — includes auto-cleanup of safe cruft (`.DS_Store`, `*.swp`, `*~`, `.#*`, `*.orig`) before staging. |
-| 5 Notion sync | If `AGENTS.md`/`CLAUDE.md` declares Notion URL AND Step 2 produced a report → invoke `/sync-report`. Else skip silently. |
+| 5 Notion sync | If `AGENTS.md`/`CLAUDE.md` declares Notion URL AND Step 2 produced a report → **actually invoke `/sync-report`** — do NOT downgrade it to an "I can run it if you want" offer, and do NOT skip it for speed/quick-mode. Notion sync is independent of the push decision. Skip ONLY when there's no Notion config / no report, or the user explicitly declines. Else skip silently. |
 | 6 Deploy check | Detect CI/CD signals (`.github/workflows/*.yml` with a deploy job, `vercel.json`, `fly.toml` + workflow, `netlify.toml`, or docs saying "deploys automatically on merge"). If found → print「CI 會自動 deploy，跳過」. If not → print「沒偵測到 CI deploy，請手動 deploy 或請 reviewer 處理」. Never run a manual deploy command. |
 
 ## Step 7 — Safe commit + push
