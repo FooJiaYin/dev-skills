@@ -7,6 +7,7 @@ Universal commit hygiene. Wrapped by `./full.md` Step 7 and `./quick.md` Step 7 
 - On `main` / `master` / `develop` → check if the project is main-direct first: count last 5 commits on the branch; if ≥3 landed directly on `main`/`master`/`develop` (no merge commits from feature branches), treat as main-direct and commit in place. Otherwise `git switch -c wip/<YYYYMMDD-HHMM>` and tell user 人話: 「你在 main 上，我先幫你開了一個暫存 branch」.
 - Detached HEAD / `MERGE_HEAD` / `REBASE_HEAD` → stop, refer to reviewer.
 - Files > 10MB → exclude from staging, warn user.
+- **Multi-session: re-check `git branch --show-current` right before committing.** Another session can switch the branch under you between turns, so a branch you confirmed earlier (e.g. committed on `main` in an earlier step) may have changed (e.g. to `demo`) by the time you commit a follow-up — landing the commit on the wrong branch and separating a fix from the feature it fixes. If the current branch isn't the one you expect, stop and confirm with the user before committing.
 
 ## Smart staging (avoid `git add -A`)
 
