@@ -225,6 +225,8 @@ N items · X create · Y link · Z skip · W meeting-note annotations
 
 On iteration (step 8 comments), regenerate the plan markdown and **overwrite the same file** so the user always reads a current snapshot. Re-prompt by referencing the file path, not by re-rendering inline.
 
+> ⚠️ **Overwrite ONLY applies while the plan file is still skill-owned and the user has only replied in chat.** The moment the user may have hand-edited the file (they opened it in the IDE, pasted edits, restructured it, or another session touched it), STOP regenerating: `Read` it live first, apply **additive `Edit`s per row**, and **never** `cp`/`Write` the whole file over it. Verify "additive" by diffing against the bytes you just read — never against an earlier backup (that's circular and misses concurrent edits). If another session/IDE may be writing the same file, do not write at all until coordinated.
+
 ### 8. Iterate on free-form comments
 
 Recognized recipes:
@@ -311,6 +313,7 @@ For each selected URL, dispatch `/fetch-task <url>`. Skipped silently if 0 tasks
 ## Hard constraints (load-bearing)
 
 - **No Notion writes before plan approval.** User's chat reply against the plan file (step 7) is the gate. Reads are fine.
+- **Never regenerate-overwrite a hand-edited plan file.** Once the user may have touched `docs/tasks/_plan-*.md` (IDE-opened, edited, restructured) or a second session is involved, switch to additive `Edit`s after a fresh live `Read`; never `Write`/`cp` the whole file. Prove additivity by diffing against the just-read bytes, not a backup. One writer per file. (See §7 overwrite caveat — this is the most expensive failure mode this skill has caused: full data loss of a user's multi-source curated plan.)
 - **Never call `ExitPlanMode`.** Popups displace plan text.
 - **Body writes only inside `# Context`.** Never touch `# Description`, `# Updates`, `# Changes Made`, `# Result`, `# Release Notes`, `# Resource`, or legacy dated `# <mention-date>` blocks.
 - **Never overwrite existing properties on existing tasks.** LINK targets only get `# Context` appends + relation inclusion.
