@@ -16,6 +16,7 @@ Run `git diff --stat HEAD~1..HEAD | tail -1`. If **>25 files or >2000 lines**, a
 ## 2. Update docs
 
 - Invoke `/update-docs` (the `update-docs` skill) scoped to the current diff. That skill detects the project's doc layout, proposes a per-file update plan, and waits for confirmation before editing.
+- **Run the skill — don't substitute hand-picked manual doc edits.** Even when you think you know which 2–3 docs changed, the detection pass catches stale references in docs you wouldn't open (glossary, architecture, feature-index status rows, sibling feature docs). Editing a few by hand and skipping detection leaves drift the user will catch later ("why didn't update-docs get this?").
 - Wait for `/update-docs` to finish before continuing.
 
 ## 3. Code review
