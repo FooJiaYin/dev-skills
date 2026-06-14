@@ -28,6 +28,7 @@ Notion is master. One of two skills that write to Notion (the other is `/create-
 - **Unlinked, single-feature** → step 4.
 
 **4. Query candidates** (unlinked, single-feature). Compute `reportDate` from filename `YYYY-MM-DD-<slug>.md` (fall back to mtime). Query Roadmap for tasks where `Time` overlaps `[reportDate − 3d, reportDate + 7d]`. No-`Time` tasks excluded here.
+ **`notion-query-database-view` has no filter param — it dumps the full view (often >token cap; the result is saved to a file). Don't read it inline: parse the saved file by Time window with python/jq on `date:Time:start` / `date:Time:end` (+ `Name` / `Status` / `url`).**
 
 **5. Picker** (unlinked only). 
 
