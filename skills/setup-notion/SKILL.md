@@ -17,6 +17,7 @@ Read `AGENTS.md` (preferred) or `CLAUDE.md` in CWD. Look for a `## Notion` secti
 
 - **Roadmap DB URL** — line like `Roadmap (tasks): https://www.notion.so/...` or any `notion.so/<id>` URL near the word "roadmap" / "tasks".
 - **Meetings DB URL** — line like `Meetings: https://www.notion.so/...` or any `notion.so/<id>` URL near "meeting".
+- **Project page ID** (optional, per-repo) — a line like `Project (<repo-name>): https://www.notion.so/<id>`. Used by skills that filter Meetings/Tasks by this repo's Project relation.
 - **Meetings title format** (optional) — a line like `Meetings title format: ...` near the Meetings URL.
 - **Team roster** (optional) — a `### Team` subsection with markdown list items.
 
@@ -45,6 +46,11 @@ Use `AskUserQuestion` for each missing field. Don't batch all prompts into one c
 
 **Meetings DB URL** (if missing):
 - Same flow as Roadmap. Always collect, even if the dispatching skill is `/sync-report` or `/fetch-task` (cheap, the dev will likely need it later).
+
+**Project page ID** (auto-detect, if missing and Meetings URL is set):
+- Query the Meetings DB (first ~50 rows). Group by `Project` relation values, count frequency, and fetch the page title of the most-common Project ID.
+- If a single Project dominates (≥30% of tagged rows) AND its title contains or matches the repo dir name (case-insensitive, ignore CJK/punctuation), persist as `Project (<repo-name>): <url>` without prompting.
+- Otherwise omit silently. No prompt — user can hand-add later if needed.
 
 **Meetings title format** (if missing, and Meetings URL is set):
 - Query the ~5 most recent rows from the Meetings data source. Derive a `<date> <sep> <topic>` pattern guess.
