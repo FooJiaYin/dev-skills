@@ -48,6 +48,7 @@ If the plan specifies an exact command, use it verbatim; do not substitute.
 
 - Run each non-skipped check.
 - For UI / manual checks, follow the plan's instructions (e.g., "start dev server, walk golden path"); state explicitly when manual verification was skipped because no UI is reachable.
+- **Before deferring an e2e / integration check as "needs a running server", check whether the test harness auto-boots one.** Many runners start (and reuse) their own server — e.g. Playwright's `webServer` block (`reuseExistingServer: true`) in `playwright.config.*`, Cypress `start-server-and-test`, a `pretest` script. If present, the suite is runnable in-session: run it (one command) rather than marking it deferred. Only defer for genuinely unavailable deps (real external service, secrets absent). Don't defer a happy-path write e2e on a false "no server" assumption.
 - Report per item: **pass** / **fail** / **skipped — already passed at \<point\>** / **deferred — \<reason\>** (e.g., "requires fresh session", "requires real test project").
 - If anything fails, **stop here** — surface the failure with the failing output. Do not continue running later checks; do not paper over.
 
