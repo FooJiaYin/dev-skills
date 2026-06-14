@@ -66,6 +66,7 @@ For each finding from Phase 2, spawn a Haiku scorer in parallel (single tool-cal
 - The CLAUDE.md path list
 
 The scorer returns a single integer 0–100 per the **Confidence Rubric** below. For `claude-md` findings, the scorer must open the cited CLAUDE.md and verify it *literally* contains the rule the finding cites — if not, score 0. For `performance` findings, the scorer must verify `evidence.cost_model` has all four fields (`hot_path_class`, `frequency`, `per_call`, `verdict`) filled with concrete values — vague or missing values score 0; `hot_path_class: init/cold` with no startup-budget evidence scores 0; `verdict: negligible` should never appear (the agent should have dropped it) — if it does, score 0.
+For any finding asserting a **DB schema fact** (a column / table / enum / RPC exists or not), verify against an **authoritative live source** — generated types (e.g. `database.types.ts`), the live DB via Supabase MCP, or migrations confirmed applied to remote — **NOT** local `docs/migrations/` or `docs/schemas/` files, which drift. If unconfirmable against such a source, cap at 25 (cannot be Critical).
 
 ### Phase 4 — Filter & Format
 
