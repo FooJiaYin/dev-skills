@@ -34,6 +34,8 @@ Before generating, decide whether this report is **appending to an existing `doc
    - 1 match → use it as the target.
    - 2+ matches → prompt via `AskUserQuestion` which file to report on; offer a "fresh report (no task file)" escape hatch.
 
+**When the session's work genuinely spans multiple fetched tasks** (e.g. you `/fetch-task`'d two tasks and implemented both — a player-side and a host-side of one feature), don't force-pick one or synthesize a single fresh report: **split per task**. Append the relevant slice of `# Changes Made` / `# Result` to *each* matched task file (cross-reference the sibling report), then run the per-target steps (rename into `docs/reports/`, plan-attach) once per file. The "pick one" prompt is for ambiguity over *which* task; it is not for collapsing multi-task work into one report.
+
 ### Target = task file
 
 When a task file is resolved:
@@ -46,7 +48,7 @@ When a task file is resolved:
 
 ### Target = fresh
 
-No task file detected → behave as today: synthesize a fresh `docs/reports/YYYY-MM-DD-<title>.md` from conversation. **No `/fetch-task` call.** Auto-refresh on reference applies only when a task file is detected.
+No task file detected → **first scan `docs/reports/` for a very recent report on the SAME feature/topic** (same-day or adjacent-day filename date + overlapping subject). **If one is found, ASK the user** via `AskUserQuestion` whether to **append the delta to that existing report** (additive edits + dated `_(YYYY-MM-DD)_` markers) or **create a new file** — do NOT auto-decide. If none found, or the user picks new: synthesize a fresh `docs/reports/YYYY-MM-DD-<title>.md` from conversation. **No `/fetch-task` call.** Auto-refresh on reference applies only when a task file is detected.
 
 ## Report Generation Process
 
