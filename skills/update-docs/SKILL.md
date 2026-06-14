@@ -47,7 +47,7 @@ Read the scoped diff. Tag each change as one or more of:
 
 ## 4. Propose
 
-Print a single proposal showing both the detected layout and the file-by-file update plan, then **wait for user confirmation**:
+Print a single proposal showing both the detected layout and the file-by-file plan, then **wait for user confirmation**. Default to editing existing docs; propose a new doc file when the change warrants standalone treatment.
 
 ```
 Detected docs layout:
@@ -65,7 +65,7 @@ Confirm? [y/n/edit]
 
 - Showing the detected layout lets the user catch mis-detection (e.g., a legacy `schema.md` left over from an in-progress migration).
 - For ambiguous diffs (multiple plausible targets), list all and let the user pick.
-- If no convention is detected for a concern, propose a sensible default (e.g., `docs/schema.md`) and **flag it** so the user can decide whether to adopt a structure.
+- When proposing a **new** doc file, consult [reference.md](./reference.md) for naming/placement defaults. Existing project structure always wins; the reference only seeds names when there's no precedent in the repo.
 
 ## 5. Edit on confirmation
 
@@ -96,13 +96,13 @@ Or for larger structural changes, an inline HTML comment also works:
 
 The marker says **when** + **what** in one line. The body around it stays the source-of-truth description of current behavior.
 
-**Only create a new heading if the concept didn't exist in the doc at all** (e.g. a new sub-feature, a new component). Place it at the right spot in the existing section order — not at the end.
+When adding a new heading or a new file, place it at the right spot in the existing section/folder order — not at the end.
 
 **Anti-pattern to avoid:** appending a single trailing section titled `## YYYY-MM-DD updates` that mirrors upstream content. Two problems: (1) readers have to cross-reference top + bottom to know current state; (2) stale appended sections accumulate over time and bury the real source-of-truth. Edit upstream in place; the inline marker carries the date.
 
 ## Guardrails
 
-- **Never edit before user confirmation.**
+- **Never edit before user confirmation.** No size exemption — a single-line or "obviously correct" doc fix still goes through Propose → Confirm. Don't inline-`Edit` a doc just because the change looks trivial; surface it in the proposal and wait.
 - Never delete doc files; only add or modify.
 - If `--all` audit mode finds drift but the diff is empty, still go through Propose → Confirm before editing.
 - If multiple repos are detected (e.g., `backend-repo/` and `frontend-repo/` as siblings), make it clear in the proposal which repo each file lives in.

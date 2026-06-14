@@ -21,7 +21,8 @@ Surface a "Refinement suggestion:" each finding must point out a failing step an
 
 `AskUserQuestion` (header: `Scope`) with suggested scope:
 - **Skill** (applies anywhere the skill runs) → edit the skill file itself (typically under `~/agent-skills/` or `~/.claude/skills/`).
-- **Org / project scope** (only matters in this repo or org) → append to the project's `AGENTS.md`, or update the project documentation.
+- **Org / project scope** (only matters in this repo or org) → write it where it will actually be read. A topically-relevant doc (e.g. `docs/frontend.md`, `docs/services/auth.md`) is often the most natural home, but a rule in a doc agents don't routinely load is effectively dead. So: for an agent-writing-code rule that must be enforced, prefer the **auto-loaded** `AGENTS.md` / `CLAUDE.md`; or place it in the topical doc **and** add a one-line pointer from `AGENTS.md`. Drop it solely into a topical doc only when a skill/workflow reliably reads that doc for the relevant task.
+- **Code comment (function-local)** → when a finding only matters for one specific function / call-site (a gotcha or debug hint scoped to that code, not a general rule), add a short reminder comment right at that function instead of a doc — the next reader sees it exactly where it applies.
 - **Local / personal preference** (just my workflow) → save as a memory entry, or goes to `~/.claude/CLAUDE.md` to apply across all projects.
 - **Skip** — drop this finding.
 
