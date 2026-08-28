@@ -1,0 +1,741 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap">
+  <style>
+    body { margin: 0; }
+    a { color: #4f46e5; } a:hover { color: #4338ca; }
+  </style>
+</helmet>
+<div style="width: 1440px; min-height: 2000px; display: flex; background: #f8fafc; color: #0f172a; font-family: 'Noto Sans TC', system-ui, -apple-system, 'Helvetica Neue', sans-serif; -webkit-font-smoothing: antialiased">
+
+  <aside style="width: 240px; flex-shrink: 0; display: flex; flex-direction: column; border-right: 1px solid #e2e8f0; background: #ffffff">
+    <div style="padding: 20px 16px 16px 16px; display: flex; align-items: center; gap: 10px">
+      <div style="width: 32px; height: 32px; border-radius: 8px; background: {{accent}}; display: flex; align-items: center; justify-content: center; flex-shrink: 0">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4.5 13.5H11l-1 8.5 8.5-11.5H12z"></path></svg>
+      </div>
+      <div>
+        <div style="font-size: 14px; line-height: 20px; font-weight: 700; letter-spacing: -0.01em; color: #0f172a">SparkToy ERP</div>
+        <div style="font-size: 12px; line-height: 16px; color: #94a3b8">龍杰國際</div>
+      </div>
+    </div>
+
+    <div style="padding: 8px 20px 6px 20px; font-size: 11px; line-height: 16px; font-weight: 500; letter-spacing: 0.06em; color: #94a3b8">主要作業</div>
+    <nav style="flex: 1; padding: 0 8px; display: flex; flex-direction: column; gap: 2px">
+      <div style="position: relative; display: flex; align-items: center; gap: 10px; border-radius: 8px; padding: 8px 12px; font-size: 14px; line-height: 20px; font-weight: 500; color: {{accentText}}; background: {{accentSoft}}">
+        <span style="position: absolute; left: 0; top: 8px; bottom: 8px; width: 2px; border-radius: 2px; background: {{accent}}"></span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5z"></path><path d="M3 8l9 5 9-5"></path><path d="M12 13v8"></path></svg>
+        產品資料
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; border-radius: 8px; padding: 8px 12px; font-size: 14px; line-height: 20px; color: #475569">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V8l6-4 6 4v13"></path><path d="M15 21V11h6v10"></path><path d="M3 21h18"></path></svg>
+        供應商列表
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; border-radius: 8px; padding: 8px 12px; font-size: 14px; line-height: 20px; color: #475569">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 7 19.4a1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0-1.2-2.9H1a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 2.6 7"></path></svg>
+        系統管理
+      </div>
+    </nav>
+
+    <div style="border-top: 1px solid #e2e8f0; padding: 12px; display: flex; align-items: center; gap: 10px">
+      <div style="width: 32px; height: 32px; border-radius: 999px; background: #e2e8f0; color: #475569; font-size: 12px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex-shrink: 0">王</div>
+      <div style="min-width: 0; flex: 1">
+        <div style="font-size: 13px; line-height: 18px; font-weight: 500; color: #0f172a">王大明</div>
+        <div style="font-size: 11px; line-height: 16px; color: #94a3b8">採購／行政</div>
+      </div>
+      <div style="width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #94a3b8">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="m16 17 5-5-5-5"></path><path d="M21 12H9"></path></svg>
+      </div>
+    </div>
+  </aside>
+
+  <main style="flex: 1; min-width: 0; padding: 14px 28px; display: flex; flex-direction: column; gap: 10px">
+
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 16px">
+      <div style="min-width: 0">
+        <div style="font-size: 12px; line-height: 16px; color: #94a3b8">產品管理 ／ 產品資料</div>
+        <div style="display: flex; align-items: center; gap: 10px">
+          <h1 style="margin: 0; font-size: 24px; line-height: 32px; font-weight: 700; letter-spacing: -0.015em; color: #0f172a">恐龍蛋孵化扭蛋 第二彈</h1>
+          <span style="display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; padding: 2px 10px; font-size: 12px; line-height: 18px; font-weight: 500; background: #ecfdf5; color: #047857">
+            <span style="width: 6px; height: 6px; border-radius: 999px; background: #10b981"></span>使用中
+          </span>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0">
+        <div style="display: flex; align-items: center; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; padding: 8px 14px; font-size: 14px; line-height: 20px; font-weight: 500; color: #334155; box-shadow: 0 1px 2px rgba(15,23,42,0.04)">取消</div>
+        <div style="display: flex; align-items: center; gap: 6px; border-radius: 8px; background: {{accent}}; padding: 8px 14px; font-size: 14px; line-height: 20px; font-weight: 500; color: #ffffff; box-shadow: 0 1px 2px rgba(15,23,42,0.10)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><path d="M17 21v-8H7v8"></path><path d="M7 3v5h8"></path></svg>
+          儲存變更
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ 1. 基本欄位 ══════════ -->
+    <section style="border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff; padding: 12px 14px; box-shadow: 0 1px 3px rgba(15,23,42,0.05); display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+        <h2 style="margin: 0; font-size: 15px; line-height: 22px; font-weight: 700; color: #0f172a">1. 基本欄位</h2>
+        <div style="display: inline-flex; align-items: center; gap: 6px; border: 1px solid #e2e8f0; border-radius: 999px; padding: 3px 10px; font-size: 11px; line-height: 16px; color: #64748b">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg>
+          灰底欄位＝依權限投影為唯讀
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+        <div style="grid-column: span 2; display: flex; flex-direction: column; gap: 3px; min-width: 0">
+          <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">商品品名<span style="color: #dc2626"> *</span></div>
+          <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a">恐龍蛋孵化扭蛋 第二彈</div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+          <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">品牌／廠牌</div>
+          <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a">龍杰嚴選</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+          <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">材質</div>
+          <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a">ABS＋PVC＋水溶紙</div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+          <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">影片連結</div>
+          <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: {{accentText}}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">https://youtu.be/dino-egg-s2</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+          <div style="display: flex; align-items: center; gap: 4px; font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">
+            圖片編號
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg>
+          </div>
+          <div style="padding: 8px 12px; border: 1px solid #d4d4d4; border-radius: 8px; background: #e5e5e5; font-size: 14px; line-height: 20px; color: #404040; font-variant-numeric: tabular-nums">IMG-2610-DINO</div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+          <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">產地</div>
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a">
+            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">中國大陸</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+          <div style="display: flex; align-items: baseline; gap: 8px; min-width: 0">
+            <span style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b; flex-shrink: 0">預定上市日</span>
+            <span style="font-size: 11px; line-height: 16px; color: #94a3b8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">先選精度，再填期間（例：季 → 2027 Q1；系統存起始日 2027-01-01）</span>
+          </div>
+          <div style="display: flex; gap: 8px; min-width: 0">
+            <div style="width: 84px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a">
+              <span>月</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+            </div>
+            <div style="flex: 1; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a; font-variant-numeric: tabular-nums">
+              <span>2026-10</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M8 3v4"></path><path d="M16 3v4"></path><path d="M3 11h18"></path></svg>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+          <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">對外批發結單日</div>
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a; font-variant-numeric: tabular-nums">
+            <span>2026-09-05</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M8 3v4"></path><path d="M16 3v4"></path><path d="M3 11h18"></path></svg>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+          <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">零售結單日</div>
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a; font-variant-numeric: tabular-nums">
+            <span>2026-09-20</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M8 3v4"></path><path d="M16 3v4"></path><path d="M3 11h18"></path></svg>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+          <div style="display: flex; align-items: center; gap: 4px; font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">
+            出貨日
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; border: 1px solid #d4d4d4; border-radius: 8px; background: #e5e5e5; font-size: 14px; line-height: 20px; color: #404040; font-variant-numeric: tabular-nums">
+            <span>2026-10-15</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#404040" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M8 3v4"></path><path d="M16 3v4"></path><path d="M3 11h18"></path></svg>
+          </div>
+        </div>
+        <div></div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px">
+        <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+          <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">商品長(mm)</div>
+          <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a; font-variant-numeric: tabular-nums">68</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+          <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">商品寬(mm)</div>
+          <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a; font-variant-numeric: tabular-nums">68</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+          <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">商品高(mm)</div>
+          <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a; font-variant-numeric: tabular-nums">92</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+          <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">商品重量(g)</div>
+          <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a; font-variant-numeric: tabular-nums">55</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+          <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">外箱長(mm)</div>
+          <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a; font-variant-numeric: tabular-nums">520</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+          <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">外箱寬(mm)</div>
+          <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a; font-variant-numeric: tabular-nums">380</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+          <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">外箱高(mm)</div>
+          <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a; font-variant-numeric: tabular-nums">300</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+          <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">外箱重量(g)</div>
+          <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a; font-variant-numeric: tabular-nums">9800</div>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+        <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+          <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">商品描述</div>
+          <div style="min-height: 36px; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a">蛋殼泡水後孵出恐龍公仔，全套 8 款＋隱藏款。</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+          <div style="display: flex; align-items: center; gap: 4px; font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">
+            內部備註
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg>
+          </div>
+          <div style="min-height: 36px; padding: 8px 12px; border: 1px solid #d4d4d4; border-radius: 8px; background: #e5e5e5; font-size: 14px; line-height: 20px; color: #404040">第一彈隱藏款缺貨，本批先確認模具。</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+          <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">客戶可見備註</div>
+          <div style="min-height: 36px; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a">內附中文說明卡，建議 3 歲以上。</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ 2. 規格 ══════════ -->
+    <section style="border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff; padding: 12px 14px; box-shadow: 0 1px 3px rgba(15,23,42,0.05); display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+        <h2 style="margin: 0; font-size: 15px; line-height: 22px; font-weight: 700; color: #0f172a">2. 規格</h2>
+        <div style="display: inline-flex; align-items: center; gap: 6px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; padding: 6px 12px; font-size: 13px; line-height: 20px; font-weight: 500; color: #334155; box-shadow: 0 1px 2px rgba(15,23,42,0.04)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+          新增規格
+        </div>
+      </div>
+      <div style="font-size: 11px; line-height: 16px; color: #94a3b8">可繼承欄位<span style="font-weight: 500; color: #64748b">留白＝繼承商品層</span>；欄位灰字為目前的商品層值。</div>
+
+      <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 8px">
+        <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px">
+          <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+            <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">規格／變體名<span style="color: #dc2626"> *</span></div>
+            <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a">迅猛龍（綠）</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+            <div style="display: flex; align-items: center; gap: 4px; font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">
+              條碼
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg>
+            </div>
+            <div style="padding: 8px 12px; border: 1px solid #d4d4d4; border-radius: 8px; background: #e5e5e5; font-size: 14px; line-height: 20px; color: #404040; font-variant-numeric: tabular-nums">4712345678901</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+            <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">材質</div>
+            <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #94a3b8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">ABS＋PVC＋水溶紙</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+            <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">預定上市日</div>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #94a3b8">
+              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">2026 年 10 月</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M8 3v4"></path><path d="M16 3v4"></path><path d="M3 11h18"></path></svg>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+            <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">對外批發結單日</div>
+            <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #94a3b8; font-variant-numeric: tabular-nums">2026-09-05</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+            <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">零售結單日</div>
+            <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #94a3b8; font-variant-numeric: tabular-nums">2026-09-20</div>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px">
+          <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+            <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">出貨日</div>
+            <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #94a3b8; font-variant-numeric: tabular-nums">2026-10-15</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+            <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">商品長(mm)</div>
+            <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #94a3b8; font-variant-numeric: tabular-nums">68</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+            <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">商品寬(mm)</div>
+            <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #94a3b8; font-variant-numeric: tabular-nums">68</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+            <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">商品高(mm)</div>
+            <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #94a3b8; font-variant-numeric: tabular-nums">92</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+            <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">商品重量(g)</div>
+            <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a; font-variant-numeric: tabular-nums">58</div>
+          </div>
+          <div style="display: flex; align-items: flex-end; justify-content: flex-start; min-width: 0">
+            <div style="padding-bottom: 11px; font-size: 11px; line-height: 16px; color: #dc2626; text-decoration: underline">移除此規格</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 8px">
+        <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px">
+          <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+            <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">規格／變體名<span style="color: #dc2626"> *</span></div>
+            <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a">三角龍（橘）</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+            <div style="display: flex; align-items: center; gap: 4px; font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">
+              條碼
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg>
+            </div>
+            <div style="padding: 8px 12px; border: 1px solid #d4d4d4; border-radius: 8px; background: #e5e5e5; font-size: 14px; line-height: 20px; color: #404040; font-variant-numeric: tabular-nums">4712345678918</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+            <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">材質</div>
+            <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">ABS＋PVC＋植絨</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+            <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">預定上市日</div>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #94a3b8">
+              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">2026 年 10 月</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M8 3v4"></path><path d="M16 3v4"></path><path d="M3 11h18"></path></svg>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+            <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">對外批發結單日</div>
+            <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #94a3b8; font-variant-numeric: tabular-nums">2026-09-05</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+            <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">零售結單日</div>
+            <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a; font-variant-numeric: tabular-nums">2026-09-28</div>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px">
+          <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+            <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">出貨日</div>
+            <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #94a3b8; font-variant-numeric: tabular-nums">2026-10-15</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+            <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">商品長(mm)</div>
+            <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #94a3b8; font-variant-numeric: tabular-nums">68</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+            <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">商品寬(mm)</div>
+            <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #94a3b8; font-variant-numeric: tabular-nums">68</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+            <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">商品高(mm)</div>
+            <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a; font-variant-numeric: tabular-nums">96</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+            <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">商品重量(g)</div>
+            <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #94a3b8; font-variant-numeric: tabular-nums">55</div>
+          </div>
+          <div style="display: flex; align-items: flex-end; justify-content: flex-start; min-width: 0">
+            <div style="padding-bottom: 11px; font-size: 11px; line-height: 16px; color: #dc2626; text-decoration: underline">移除此規格</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ 3. 供應商與報價 ══════════ -->
+    <section style="border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff; padding: 12px 14px; box-shadow: 0 1px 3px rgba(15,23,42,0.05); display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+        <h2 style="margin: 0; font-size: 15px; line-height: 22px; font-weight: 700; color: #0f172a">3. 供應商／發單</h2>
+        <div style="display: inline-flex; align-items: center; gap: 6px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; padding: 6px 12px; font-size: 13px; line-height: 20px; font-weight: 500; color: #334155; box-shadow: 0 1px 2px rgba(15,23,42,0.04)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+          新增發單
+        </div>
+      </div>
+      <div style="font-size: 11px; line-height: 16px; color: #94a3b8">一張卡片＝廠商一次發單（報價日／結單日／出貨地跨規格一致）；同一供應商再版請「再發單」，歷史不覆寫。至少一個供應商，需先於「供應商列表」建檔。</div>
+
+      <div style="border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; padding: 10px; display: flex; flex-direction: column; gap: 8px">
+        <div style="display: grid; grid-template-columns: 2.2fr 1.6fr 1.5fr 1.5fr 1.5fr 1.5fr 1.2fr; gap: 8px">
+          <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+            <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">供應商<span style="color: #dc2626"> *</span></div>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a">
+              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">蜜蜂（OOO）</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+            <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">供應商貨號</div>
+            <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a; font-variant-numeric: tabular-nums">BEE-DN2-08</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+            <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">報價日</div>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a; font-variant-numeric: tabular-nums">
+              <span>2026-08-12</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M8 3v4"></path><path d="M16 3v4"></path><path d="M3 11h18"></path></svg>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+            <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">報價來源</div>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a">
+              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">微信文字</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+            <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">供應商結單日</div>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a; font-variant-numeric: tabular-nums">
+              <span>2026-08-30</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M8 3v4"></path><path d="M16 3v4"></path><path d="M3 11h18"></path></svg>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+            <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">供應商出貨地</div>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a">
+              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">深圳</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+            <div style="height: 16px"></div>
+            <div style="display: flex; align-items: center; gap: 6px; height: 38px; font-size: 14px; line-height: 20px; color: #334155">
+              <span style="width: 16px; height: 16px; flex-shrink: 0; border-radius: 999px; border: 1px solid {{accent}}; background: #ffffff; display: flex; align-items: center; justify-content: center">
+                <span style="width: 8px; height: 8px; border-radius: 999px; background: {{accent}}"></span>
+              </span>
+              採用此發單
+            </div>
+          </div>
+        </div>
+
+        <div style="border-top: 1px solid #f1f5f9; padding-top: 8px; display: flex; flex-direction: column; gap: 6px">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+            <div style="font-size: 11px; line-height: 16px; font-weight: 500; color: #64748b">規格報價明細（金額留白＝不建立；所有金額請注意計價單位）</div>
+            <div style="display: flex; align-items: center; gap: 12px; font-size: 11px; line-height: 16px; flex-shrink: 0">
+              <span style="color: #475569; text-decoration: underline">再發單（同供應商新一輪）</span>
+              <span style="color: #dc2626; text-decoration: underline">移除此發單</span>
+            </div>
+          </div>
+
+          <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 6px">
+            <div style="display: grid; grid-template-columns: 1.5fr 1fr 1.4fr 1.2fr 1.2fr 28px; gap: 8px">
+              <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+                <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">適用規格</div>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a">
+                  <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">全部規格</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+                </div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+                <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">報價幣別</div>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 4px; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a">
+                  <span>CNY</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+                </div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+                <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">供應商報價（裸價）</div>
+                <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a; font-variant-numeric: tabular-nums">12.8</div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+                <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">報價計價單位</div>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a">
+                  <span>中盒</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+                </div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+                <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">最低訂購量 MOQ</div>
+                <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a; font-variant-numeric: tabular-nums">240</div>
+              </div>
+              <div style="display: flex; align-items: flex-end; justify-content: center; min-width: 0">
+                <div style="width: 28px; height: 38px; display: flex; align-items: center; justify-content: center; color: #dc2626">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+                </div>
+              </div>
+            </div>
+
+            <div style="border-radius: 8px; background: #f8fafc; padding: 10px; display: flex; flex-direction: column; gap: 4px">
+              <div style="font-size: 11px; line-height: 16px; font-weight: 500; color: #64748b">台幣完整進貨成本 ＝（裸價＋運費）× 匯率 × 稅費係數</div>
+              <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px">
+                <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+                  <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">預估運費（CNY）</div>
+                  <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a; font-variant-numeric: tabular-nums">8</div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+                  <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">匯率快照</div>
+                  <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a; font-variant-numeric: tabular-nums">4.52</div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+                  <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">稅費係數</div>
+                  <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a; font-variant-numeric: tabular-nums">1.08</div>
+                </div>
+                <div style="grid-column: span 2; display: flex; flex-direction: column; gap: 3px; min-width: 0">
+                  <div style="display: flex; align-items: baseline; gap: 8px; min-width: 0">
+                    <span style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b; flex-shrink: 0">台幣完整進貨成本</span>
+                    <span style="font-size: 11px; line-height: 16px; color: #94a3b8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">建議值 101.5373；直接修改即為人工覆寫</span>
+                  </div>
+                  <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; border: 1px dashed #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a; font-variant-numeric: tabular-nums">
+                    <span>101.5373</span>
+                    <span style="display: inline-flex; align-items: center; gap: 4px; border-radius: 999px; padding: 1px 8px; font-size: 11px; line-height: 16px; font-weight: 500; background: {{accentSoft}}; color: {{accentText}}">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"></path><path d="M3 12h18"></path></svg>
+                      試算
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px">
+            <div style="display: grid; grid-template-columns: 1.5fr 1fr 1.4fr 1.2fr 1.2fr 3fr 28px; gap: 8px">
+              <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+                <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">適用規格</div>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a">
+                  <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">三角龍（橘）</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+                </div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+                <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">報價幣別</div>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 4px; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a">
+                  <span>TWD</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+                </div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+                <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">供應商報價（裸價）</div>
+                <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a; font-variant-numeric: tabular-nums">96</div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+                <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">報價計價單位</div>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a">
+                  <span>中盒</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+                </div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+                <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">最低訂購量 MOQ</div>
+                <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a; font-variant-numeric: tabular-nums">120</div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+                <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: #64748b">台幣完整進貨成本</div>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; border: 1px solid #d4d4d4; border-radius: 8px; background: #e5e5e5; font-size: 14px; line-height: 20px; color: #404040">
+                  <span style="font-variant-numeric: tabular-nums">96</span>
+                  <span style="font-size: 11px; line-height: 16px; color: #404040; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">原生台幣報價，直接視為進貨成本（不換算）</span>
+                </div>
+              </div>
+              <div style="display: flex; align-items: flex-end; justify-content: center; min-width: 0">
+                <div style="width: 28px; height: 38px; display: flex; align-items: center; justify-content: center; color: #dc2626">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex">
+            <div style="display: inline-flex; align-items: center; gap: 6px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; padding: 6px 12px; font-size: 13px; line-height: 20px; font-weight: 500; color: #334155; box-shadow: 0 1px 2px rgba(15,23,42,0.04)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+              新增明細列
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ 4. 售價 ／ 5. 包裝層級 ══════════ -->
+    <div style="display: flex; align-items: flex-start; gap: 10px">
+
+      <section style="flex: 1; min-width: 0; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff; padding: 12px 14px; box-shadow: 0 1px 3px rgba(15,23,42,0.05); display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+          <h2 style="margin: 0; font-size: 15px; line-height: 22px; font-weight: 700; color: #0f172a">4. 售價</h2>
+          <div style="display: inline-flex; align-items: center; gap: 6px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; padding: 6px 12px; font-size: 13px; line-height: 20px; font-weight: 500; color: #334155; box-shadow: 0 1px 2px rgba(15,23,42,0.04)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+            新增售價
+          </div>
+        </div>
+        <div style="font-size: 11px; line-height: 16px; color: #94a3b8">含稅／未稅必須明示；百貨價建議為台幣建議零售價 × 0.75（可覆寫）。同一價格類型不同幣別各存一列。</div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <div style="display: grid; grid-template-columns: 3fr 2fr 1.2fr 2.6fr 1.1fr 2fr 28px; gap: 6px; font-size: 11px; line-height: 16px; font-weight: 500; letter-spacing: 0.04em; color: #64748b">
+            <div>價格類型</div>
+            <div>通路</div>
+            <div>幣別</div>
+            <div>金額</div>
+            <div>稅</div>
+            <div>適用規格</div>
+            <div></div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 3fr 2fr 1.2fr 2.6fr 1.1fr 2fr 28px; gap: 6px; align-items: center">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a">
+              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">台幣建議零售價</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #64748b">
+              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">（非通路專屬）</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 2px; padding: 8px 8px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a">
+              <span>TWD</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+            </div>
+            <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a; font-variant-numeric: tabular-nums">320</div>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 2px; padding: 8px 8px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a">
+              <span>含稅</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a">
+              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">全部規格</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+            </div>
+            <div style="height: 38px; display: flex; align-items: center; justify-content: center; color: #dc2626">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 3fr 2fr 1.2fr 2.6fr 1.1fr 2fr 28px; gap: 6px; align-items: center">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a">
+              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">百貨價</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #64748b">
+              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">（非通路專屬）</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 2px; padding: 8px 8px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a">
+              <span>TWD</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px; min-width: 0">
+              <div style="flex: 1; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 8px 12px; border: 1px dashed #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #94a3b8; font-variant-numeric: tabular-nums">
+                <span>240</span>
+                <span style="display: inline-flex; align-items: center; border-radius: 999px; padding: 1px 8px; font-size: 11px; line-height: 16px; font-weight: 500; background: {{accentSoft}}; color: {{accentText}}">建議</span>
+              </div>
+              <div style="flex-shrink: 0; display: inline-flex; align-items: center; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; padding: 8px 10px; font-size: 13px; line-height: 20px; font-weight: 500; color: #334155">套用</div>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 2px; padding: 8px 8px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a">
+              <span>含稅</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a">
+              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">全部規格</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+            </div>
+            <div style="height: 38px; display: flex; align-items: center; justify-content: center; color: #dc2626">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 3fr 2fr 1.2fr 2.6fr 1.1fr 2fr 28px; gap: 6px; align-items: center">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a">
+              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">國內批發含稅價</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a">
+              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">蝦皮</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 2px; padding: 8px 8px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a">
+              <span>TWD</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+            </div>
+            <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a; font-variant-numeric: tabular-nums">198</div>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 2px; padding: 8px 8px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a">
+              <span>含稅</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a">
+              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">迅猛龍（綠）</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+            </div>
+            <div style="height: 38px; display: flex; align-items: center; justify-content: center; color: #dc2626">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section style="width: 340px; flex-shrink: 0; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff; padding: 12px 14px; box-shadow: 0 1px 3px rgba(15,23,42,0.05); display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+          <h2 style="margin: 0; font-size: 15px; line-height: 22px; font-weight: 700; color: #0f172a">5. 包裝層級</h2>
+          <div style="display: inline-flex; align-items: center; gap: 6px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; padding: 6px 12px; font-size: 13px; line-height: 20px; font-weight: 500; color: #334155; box-shadow: 0 1px 2px rgba(15,23,42,0.04)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+            新增層級
+          </div>
+        </div>
+        <div style="font-size: 11px; line-height: 16px; color: #94a3b8">小盒 → 中盒 → 外箱；「入數」為本層包含幾個下一層單位（小盒固定 1）。恰有一個販售單位（多為中盒）。</div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <div style="display: grid; grid-template-columns: 52px 1fr 96px 24px; gap: 8px; font-size: 11px; line-height: 16px; font-weight: 500; letter-spacing: 0.04em; color: #64748b">
+            <div>層級</div>
+            <div>入數（層級換算）</div>
+            <div>販售單位</div>
+            <div></div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 52px 1fr 96px 24px; gap: 8px; align-items: center">
+            <div style="font-size: 14px; line-height: 20px; font-weight: 500; color: #0f172a">小盒</div>
+            <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a; font-variant-numeric: tabular-nums">1</div>
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; line-height: 20px; color: #475569">
+              <span style="width: 16px; height: 16px; flex-shrink: 0; border-radius: 999px; border: 1px solid #cbd5e1; background: #ffffff"></span>
+              販售單位
+            </div>
+            <div style="height: 38px; display: flex; align-items: center; justify-content: center; color: #dc2626">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 52px 1fr 96px 24px; gap: 8px; align-items: center">
+            <div style="font-size: 14px; line-height: 20px; font-weight: 500; color: #0f172a">中盒</div>
+            <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a; font-variant-numeric: tabular-nums">8</div>
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; line-height: 20px; color: #0f172a">
+              <span style="width: 16px; height: 16px; flex-shrink: 0; border-radius: 999px; border: 1px solid {{accent}}; background: #ffffff; display: flex; align-items: center; justify-content: center">
+                <span style="width: 8px; height: 8px; border-radius: 999px; background: {{accent}}"></span>
+              </span>
+              販售單位
+            </div>
+            <div style="height: 38px; display: flex; align-items: center; justify-content: center; color: #dc2626">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 52px 1fr 96px 24px; gap: 8px; align-items: center">
+            <div style="font-size: 14px; line-height: 20px; font-weight: 500; color: #0f172a">外箱</div>
+            <div style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; font-size: 14px; line-height: 20px; color: #0f172a; font-variant-numeric: tabular-nums">6</div>
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; line-height: 20px; color: #475569">
+              <span style="width: 16px; height: 16px; flex-shrink: 0; border-radius: 999px; border: 1px solid #cbd5e1; background: #ffffff"></span>
+              販售單位
+            </div>
+            <div style="height: 38px; display: flex; align-items: center; justify-content: center; color: #dc2626">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"accent":{"editor":"color","default":"#4f46e5","options":["#4f46e5","#0f766e","#b45309","#be123c"],"section":"主題"},"$preview":{"width":1440,"height":2000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const accent = this.props.accent ?? '#4f46e5';
+    const soft = { '#4f46e5': '#eef2ff', '#0f766e': '#f0fdfa', '#b45309': '#fffbeb', '#be123c': '#fff1f2' };
+    const text = { '#4f46e5': '#4338ca', '#0f766e': '#0f766e', '#b45309': '#b45309', '#be123c': '#be123c' };
+    return {
+      accent,
+      accentSoft: soft[accent] ?? '#eef2ff',
+      accentText: text[accent] ?? '#4338ca',
+    };
+  }
+}
+</script>
+</body>
+</html>

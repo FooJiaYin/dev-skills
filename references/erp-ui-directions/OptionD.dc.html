@@ -1,0 +1,197 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+  <style>
+    body { margin: 0; }
+    a { color: #0f766e; } a:hover { color: #115e59; }
+    .d-tbl { width: 100%; border-collapse: collapse; }
+    .d-tbl th { font-weight: 500; letter-spacing: 0.04em; color: #71717a; text-align: left; white-space: nowrap; font-size: 11px; line-height: 16px; padding: 7px 10px; border-bottom: 1px solid #e4e4e7; }
+    .d-tbl td { white-space: nowrap; vertical-align: middle; }
+    .d-mono { font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace; font-variant-numeric: tabular-nums; }
+  </style>
+</helmet>
+<div style="width: 1440px; height: 900px; display: flex; background: #f4f4f5; color: #18181b; font-family: 'Noto Sans TC', system-ui, -apple-system, sans-serif; -webkit-font-smoothing: antialiased; overflow: hidden">
+
+  <aside style="width: 60px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 0; border-right: 1px solid #e4e4e7; background: #ffffff">
+    <div style="width: 32px; height: 32px; border-radius: 8px; background: {{accent}}; display: flex; align-items: center; justify-content: center; margin-bottom: 6px">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4.5 13.5H11l-1 8.5 8.5-11.5H12z"></path></svg>
+    </div>
+    <div title="產品資料" style="width: 38px; height: 38px; border-radius: 9px; background: {{accentSoft}}; color: {{accent}}; display: flex; align-items: center; justify-content: center">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5z"></path><path d="M3 8l9 5 9-5"></path><path d="M12 13v8"></path></svg>
+    </div>
+    <div title="供應商列表" style="width: 38px; height: 38px; border-radius: 9px; color: #a1a1aa; display: flex; align-items: center; justify-content: center">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V8l6-4 6 4v13"></path><path d="M15 21V11h6v10"></path><path d="M3 21h18"></path></svg>
+    </div>
+    <div title="系統管理" style="width: 38px; height: 38px; border-radius: 9px; color: #a1a1aa; display: flex; align-items: center; justify-content: center">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 7 19.4a1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0-1.2-2.9H1a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 2.6 7"></path></svg>
+    </div>
+    <div style="flex: 1"></div>
+    <div style="width: 30px; height: 30px; border-radius: 999px; background: #e4e4e7; color: #52525b; font-size: 12px; font-weight: 500; display: flex; align-items: center; justify-content: center">王</div>
+  </aside>
+
+  <main style="flex: 1; min-width: 0; display: flex; flex-direction: column; overflow: hidden">
+
+    <div style="display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-bottom: 1px solid #e4e4e7; background: #ffffff">
+      <h1 style="margin: 0; font-size: 15px; line-height: 22px; font-weight: 700; letter-spacing: -0.01em; color: #18181b">產品資料</h1>
+      <span class="d-mono" style="font-size: 12px; color: #71717a">14 / 1,208</span>
+      <div style="width: 1px; height: 20px; background: #e4e4e7; margin: 0 2px"></div>
+      <div style="position: relative; width: 260px">
+        <span style="position: absolute; left: 9px; top: 6px; color: #a1a1aa">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+        </span>
+        <div style="border-radius: 6px; border: 1px solid #d4d4d8; background: #ffffff; padding: 4px 10px 4px 30px; font-size: 13px; line-height: 20px; color: #a1a1aa">搜尋品名／品牌／條碼</div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 5px; border-radius: 6px; border: 1px solid #d4d4d8; background: #ffffff; padding: 4px 10px; font-size: 12px; line-height: 20px; color: #3f3f46">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18l-7 8v6l-4 2v-8z"></path></svg>
+        產地：全部
+      </div>
+      <div style="display: flex; align-items: center; gap: 5px; border-radius: 6px; border: 1px solid {{accent}}; background: {{accentSoft}}; padding: 4px 10px; font-size: 12px; line-height: 20px; color: {{accent}}; font-weight: 500">
+        供應商：ICE 兵人
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+      </div>
+      <div style="flex: 1"></div>
+      <div style="display: flex; align-items: center; gap: 5px; border-radius: 6px; border: 1px solid #d4d4d8; background: #ffffff; padding: 4px 10px; font-size: 12px; line-height: 20px; color: #3f3f46">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16"></path><path d="M4 12h16"></path><path d="M4 18h16"></path></svg>
+        欄位
+      </div>
+      <div style="display: flex; align-items: center; gap: 5px; border-radius: 6px; border: 1px solid #d4d4d8; background: #ffffff; padding: 4px 10px; font-size: 12px; line-height: 20px; color: #3f3f46">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10 5 5 5-5"></path><path d="M12 15V3"></path></svg>
+        匯入
+      </div>
+      <div style="display: flex; align-items: center; gap: 5px; border-radius: 6px; background: {{accent}}; padding: 5px 11px; font-size: 12px; line-height: 20px; font-weight: 500; color: #ffffff">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+        新增商品
+      </div>
+    </div>
+
+    <div style="flex: 1; min-height: 0; overflow: hidden; background: #ffffff">
+      <table class="d-tbl">
+        <thead>
+          <tr style="background: #fafafa">
+            <th style="width: 34px; padding-left: 14px"><span style="display: inline-block; width: 13px; height: 13px; border: 1px solid #a1a1aa; border-radius: 3px; background: #ffffff"></span></th>
+            <th style="border-right: 1px solid #e4e4e7">商品品名</th>
+            <th>品牌</th>
+            <th>條碼</th>
+            <th>產地</th>
+            <th>預定上市日</th>
+            <th>主要供應商</th>
+            <th style="text-align: right">台幣成本</th>
+            <th style="text-align: right">建議售價</th>
+            <th style="text-align: right">毛利率</th>
+            <th>規格</th>
+            <th>狀態</th>
+            <th style="width: 70px"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <sc-for list="{{rows}}" as="r" hint-placeholder-count="14">
+            <tr style="background: {{r.rowBg}}; border-bottom: 1px solid #f4f4f5">
+              <td style="padding: {{r.padY}} 10px; padding-left: 14px"><span style="display: inline-block; width: 13px; height: 13px; border: 1px solid {{r.checkBorder}}; border-radius: 3px; background: {{r.checkBg}}"></span></td>
+              <td style="padding: {{r.padY}} 10px; border-right: 1px solid #e4e4e7; box-shadow: 2px 0 4px -2px rgba(24,24,27,0.06)">
+                <div style="display: flex; align-items: center; gap: 8px">
+                  <div style="width: 22px; height: 22px; border-radius: 4px; background: {{r.tint}}; flex-shrink: 0"></div>
+                  <span style="font-size: {{r.fs}}; line-height: 18px; font-weight: 500; color: {{r.nameColor}}">{{r.name}}</span>
+                </div>
+              </td>
+              <td style="padding: {{r.padY}} 10px; font-size: {{r.fs}}; color: #52525b">{{r.brand}}</td>
+              <td class="d-mono" style="padding: {{r.padY}} 10px; font-size: 12px; color: #71717a">{{r.barcode}}</td>
+              <td style="padding: {{r.padY}} 10px; font-size: {{r.fs}}; color: #52525b">{{r.origin}}</td>
+              <td class="d-mono" style="padding: {{r.padY}} 10px; font-size: 12px; color: #52525b">{{r.date}}</td>
+              <td style="padding: {{r.padY}} 10px; font-size: {{r.fs}}; color: #52525b">
+                <span class="d-mono" style="border-radius: 4px; background: #f4f4f5; padding: 1px 5px; font-size: 11px; color: #3f3f46">{{r.supCode}}</span>
+                {{r.supplier}}
+              </td>
+              <td class="d-mono" style="padding: {{r.padY}} 10px; font-size: 12px; color: #18181b; text-align: right">{{r.cost}}</td>
+              <td class="d-mono" style="padding: {{r.padY}} 10px; font-size: 12px; color: #18181b; text-align: right">{{r.price}}</td>
+              <td class="d-mono" style="padding: {{r.padY}} 10px; font-size: 12px; text-align: right; color: {{r.marginColor}}">{{r.margin}}</td>
+              <td style="padding: {{r.padY}} 10px; font-size: 12px; color: #71717a">{{r.spec}}</td>
+              <td style="padding: {{r.padY}} 10px">
+                <span style="display: inline-flex; align-items: center; gap: 4px; border-radius: 4px; padding: 1px 7px; font-size: 11px; line-height: 17px; font-weight: 500; background: {{r.badgeBg}}; color: {{r.badgeFg}}">
+                  <span style="width: 5px; height: 5px; border-radius: 999px; background: {{r.badgeDot}}"></span>{{r.status}}
+                </span>
+              </td>
+              <td style="padding: {{r.padY}} 10px">
+                <div style="display: flex; gap: 3px; justify-content: flex-end; color: {{r.iconColor}}">
+                  <div style="width: 22px; height: 22px; border-radius: 5px; display: flex; align-items: center; justify-content: center">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"></path></svg>
+                  </div>
+                  <div style="width: 22px; height: 22px; border-radius: 5px; display: flex; align-items: center; justify-content: center">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="4" rx="1"></rect><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8"></path><path d="M10 12h4"></path></svg>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 12px; padding: 8px 16px; border-top: 1px solid #e4e4e7; background: #fafafa">
+      <span style="font-size: 12px; line-height: 18px; color: {{accent}}; font-weight: 500">已選 2 筆</span>
+      <span style="font-size: 12px; line-height: 18px; color: #52525b; border-right: 1px solid #e4e4e7; padding-right: 12px">批次封存</span>
+      <span style="font-size: 12px; line-height: 18px; color: #52525b">匯出 Excel</span>
+      <div style="flex: 1"></div>
+      <span class="d-mono" style="font-size: 12px; line-height: 18px; color: #71717a">第 1–14 筆，共 1,208 筆</span>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"accent":{"editor":"color","default":"#0f766e","options":["#0f766e","#4f46e5","#b45309","#334155"],"section":"主題"},"compact":{"editor":"boolean","default":true,"section":"密度"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const accent = this.props.accent ?? '#0f766e';
+    const soft = { '#0f766e': '#f0fdfa', '#4f46e5': '#eef2ff', '#b45309': '#fffbeb', '#334155': '#f1f5f9' };
+    const compact = this.props.compact ?? true;
+    const padY = compact ? '5px' : '10px';
+    const fs = compact ? '13px' : '14px';
+    const data = [
+      ['迴力合金小汽車 六入盒組', 'SparkToy', '4712345678901', '中國', '2026-09', 'OOO', '蜜蜂', 38.4, 149, 1, '單規格', 1, '#e0e7ff'],
+      ['恐龍蛋孵化扭蛋 第二彈', '龍杰嚴選', '4712345678918', '中國', '2026-10-15', 'ICE', '兵人', 22.1, 99, 1, '4 規格', 1, '#dcfce7'],
+      ['電動泡泡槍 附補充液', 'BubbleFun', '4712345678925', '中國', '2026-09-05', 'ICE', '兵人', 64.8, 249, 1, '2 規格', 1, '#cffafe'],
+      ['軟膠公仔 12cm 站姿', '史派克工廠', '4712345678932', '日本', '2026-11', 'W', '萬榮', 118.0, 399, 1, '3 規格', 1, '#fce7f3'],
+      ['城市系列拼裝積木 320pcs', 'BrickLab', '4712345678949', '中國', '2026-08-20', 'B', '北大', 156.2, 499, 0, '單規格', 0, '#f4f4f5'],
+      ['迷你廚房家家酒組', 'SparkToy', '4712345678956', '台灣', '2026-12', 'O', '偉曜', 210.5, 599, 0, '2 規格', 1, '#fef3c7'],
+      ['磁力片建構組 60pcs', 'BrickLab', '4712345678963', '中國', '2026-10-01', 'OOO', '蜜蜂', 288.0, 890, 0, '單規格', 1, '#ede9fe'],
+      ['發條爬行小恐龍', '龍杰嚴選', '4712345678970', '中國', '2026-09-18', 'ICE', '兵人', 12.6, 59, 0, '6 規格', 1, '#dcfce7'],
+      ['夜光星空投影燈', 'SparkToy', '4712345678987', '中國', '2026-11-10', '3RD', '大陸廠', 92.3, 349, 0, '2 規格', 1, '#e0f2fe'],
+      ['絨毛玩偶 熊 25cm', '史派克工廠', '4712345678994', '越南', '2026-12-05', 'W', '萬榮', 145.0, 450, 0, '3 規格', 1, '#fee2e2'],
+      ['桌上足球對戰組', 'BubbleFun', '4712345679007', '台灣', '2027-01', 'O', '偉曜', 330.0, 990, 0, '單規格', 1, '#ffedd5'],
+      ['水槍 大容量 1.2L', 'SparkToy', '4712345679014', '中國', '2026-06-01', 'B', '北大', 48.9, 179, 0, '3 規格', 0, '#f4f4f5'],
+      ['沙灘玩具十件組', '龍杰嚴選', '4712345679021', '中國', '2026-05-20', 'OOO', '蜜蜂', 76.4, 279, 0, '單規格', 1, '#fef9c3'],
+      ['遙控翻斗特技車', 'BrickLab', '4712345679038', '中國', '2026-10-25', 'ICE', '兵人', 254.0, 780, 0, '2 規格', 1, '#e0e7ff'],
+    ];
+    return {
+      accent,
+      accentSoft: soft[accent] ?? '#f0fdfa',
+      rows: data.map(([name, brand, barcode, origin, date, supCode, supplier, cost, price, checked, spec, active, tint], i) => {
+        const m = Math.round((1 - cost / price) * 1000) / 10;
+        return {
+          name, brand, barcode, origin, date, supCode, supplier, spec, tint, padY, fs,
+          cost: cost.toFixed(1),
+          price: price.toLocaleString('en-US'),
+          margin: m.toFixed(1) + '%',
+          marginColor: m >= 70 ? '#15803d' : m >= 60 ? '#a16207' : '#b91c1c',
+          status: active ? '使用中' : '已封存',
+          badgeBg: active ? '#ecfdf5' : '#f4f4f5',
+          badgeFg: active ? '#047857' : '#71717a',
+          badgeDot: active ? '#10b981' : '#d4d4d8',
+          nameColor: active ? '#18181b' : '#a1a1aa',
+          rowBg: checked ? (soft[accent] ?? '#f0fdfa') : (i % 2 === 1 ? '#fafafa' : '#ffffff'),
+          checkBorder: checked ? accent : '#a1a1aa',
+          checkBg: checked ? accent : '#ffffff',
+          iconColor: '#a1a1aa',
+        };
+      }),
+    };
+  }
+}
+</script>
+</body>
+</html>

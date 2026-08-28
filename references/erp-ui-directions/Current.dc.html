@@ -1,0 +1,120 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; }
+    a { color: #404040; } a:hover { color: #171717; }
+    .cur-table { width: 100%; border-collapse: collapse; font-size: 14px; line-height: 20px; }
+    .cur-table th { padding: 8px 12px; font-size: 12px; line-height: 16px; font-weight: 500; color: #737373; text-align: left; }
+    .cur-table td { padding: 8px 12px; vertical-align: middle; }
+  </style>
+</helmet>
+<div style="width: 1440px; height: 900px; display: flex; background: #fafafa; color: #171717; font-family: Arial, Helvetica, sans-serif; -webkit-font-smoothing: antialiased; overflow: hidden">
+
+  <aside style="width: 208px; flex-shrink: 0; display: flex; flex-direction: column; border-right: 1px solid #e5e5e5; background: #ffffff">
+    <div style="padding: 16px; border-bottom: 1px solid #e5e5e5">
+      <div style="font-size: 16px; line-height: 24px; font-weight: 700; color: #171717">SparkToy ERP</div>
+      <div style="font-size: 12px; line-height: 16px; color: #737373">龍杰國際</div>
+    </div>
+    <nav style="flex: 1; padding: 8px; display: flex; flex-direction: column; gap: 4px">
+      <div style="border-radius: 6px; padding: 8px 12px; font-size: 14px; line-height: 20px; color: #404040">產品資料</div>
+      <div style="border-radius: 6px; padding: 8px 12px; font-size: 14px; line-height: 20px; color: #404040">供應商列表</div>
+      <div style="border-radius: 6px; padding: 8px 12px; font-size: 14px; line-height: 20px; color: #404040">系統管理</div>
+    </nav>
+    <div style="padding: 16px; border-top: 1px solid #e5e5e5; font-size: 12px; line-height: 16px; color: #737373">
+      <div style="font-weight: 500; color: #262626">王大明</div>
+      <div style="margin-top: 2px">採購／行政</div>
+      <div style="margin-top: 8px; text-decoration: underline; color: #737373">登出</div>
+    </div>
+  </aside>
+
+  <main style="flex: 1; min-width: 0; padding: 24px; display: flex; flex-direction: column; gap: 16px">
+
+    <div style="display: flex; align-items: center; justify-content: space-between">
+      <h1 style="margin: 0; font-size: 20px; line-height: 28px; font-weight: 700; color: #171717">產品資料</h1>
+      <div style="display: flex; align-items: center; gap: 8px">
+        <div style="border-radius: 6px; border: 1px solid #d4d4d4; background: #ffffff; padding: 8px 16px; font-size: 14px; line-height: 20px; font-weight: 500; color: #262626">Excel 匯入</div>
+        <div style="border-radius: 6px; background: #171717; padding: 8px 16px; font-size: 14px; line-height: 20px; font-weight: 500; color: #ffffff">新增商品</div>
+      </div>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 12px">
+      <div style="width: 288px; border-radius: 6px; border: 1px solid #d4d4d4; background: #ffffff; padding: 8px 12px; font-size: 14px; line-height: 20px; color: #a3a3a3">搜尋品名／品牌／條碼</div>
+      <label style="display: flex; align-items: center; gap: 4px; font-size: 14px; line-height: 20px; color: #525252">
+        <span style="display: inline-block; width: 13px; height: 13px; border: 1px solid #767676; border-radius: 2px; background: #ffffff"></span>
+        含封存
+      </label>
+      <div style="border-radius: 6px; border: 1px solid #d4d4d4; padding: 8px 12px; font-size: 14px; line-height: 20px; color: #171717">搜尋</div>
+    </div>
+
+    <div style="border-radius: 12px; border: 1px solid #e5e5e5; background: #ffffff; overflow: hidden">
+      <table class="cur-table">
+        <thead>
+          <tr style="background: #fafafa">
+            <th>圖</th>
+            <th>商品品名</th>
+            <th>品牌／廠牌</th>
+            <th>產地</th>
+            <th>預定上市日</th>
+            <th>規格</th>
+            <th>狀態</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <sc-for list="{{rows}}" as="r" hint-placeholder-count="6">
+            <tr style="border-top: 1px solid #f5f5f5; color: {{r.textColor}}">
+              <td><div style="width: 40px; height: 40px; border-radius: 4px; background: #f5f5f5"></div></td>
+              <td><span style="font-weight: 500; color: {{r.nameColor}}; text-decoration: underline; text-underline-offset: 2px">{{r.name}}</span></td>
+              <td>{{r.brand}}</td>
+              <td>{{r.origin}}</td>
+              <td>{{r.date}}</td>
+              <td>{{r.spec}}</td>
+              <td><span style="border-radius: 4px; padding: 2px 8px; font-size: 12px; line-height: 16px; background: {{r.badgeBg}}; color: {{r.badgeFg}}">{{r.status}}</span></td>
+              <td style="white-space: nowrap; text-align: right">
+                <span style="color: #404040; text-decoration: underline; margin-right: 12px">編輯</span>
+                <span style="color: #737373; text-decoration: underline">{{r.archiveLabel}}</span>
+              </td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="margin: 0; font-size: 12px; line-height: 16px; color: #a3a3a3">最多顯示 200 筆，請用搜尋縮小範圍。</p>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const data = [
+      ['迴力合金小汽車 六入盒組', 'SparkToy', '中國', '2026-09', '單規格', 1],
+      ['恐龍蛋孵化扭蛋 第二彈', '龍杰嚴選', '中國', '2026-10-15', '4 個：暴龍、三角龍、翼龍、劍龍', 1],
+      ['電動泡泡槍 附補充液', 'BubbleFun', '中國', '2026-09-05', '2 個：粉、藍', 1],
+      ['軟膠公仔 12cm 站姿', '史派克工廠', '日本', '2026-11', '3 個：A款、B款、C款', 1],
+      ['城市系列拼裝積木 320pcs', 'BrickLab', '中國', '2026-08-20', '單規格', 0],
+      ['迷你廚房家家酒組', 'SparkToy', '台灣', '2026-12', '2 個：紅、白', 1],
+    ];
+    return {
+      rows: data.map(([name, brand, origin, date, spec, active]) => ({
+        name, brand, origin, date, spec,
+        status: active ? '使用中' : '已封存',
+        archiveLabel: active ? '封存' : '恢復',
+        badgeBg: active ? '#ecfdf5' : '#f5f5f5',
+        badgeFg: active ? '#047857' : '#737373',
+        textColor: active ? '#171717' : '#a3a3a3',
+        nameColor: active ? '#171717' : '#a3a3a3',
+      })),
+    };
+  }
+}
+</script>
+</body>
+</html>

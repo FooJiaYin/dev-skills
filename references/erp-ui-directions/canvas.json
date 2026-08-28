@@ -1,0 +1,23 @@
+{
+  "pages": [
+    { "id": "page-1", "name": "風格方向" },
+    { "id": "page-2", "name": "B 延伸：表單／登入" }
+  ],
+  "artboards": [
+    { "file": "Current.dc.html", "title": "現況 — baseline", "x": 0, "y": 0, "w": 1440, "h": 900, "page": "page-1" },
+    { "file": "Main.dc.html", "title": "B — Refined Neutral（已選）", "x": 1560, "y": 0, "w": 1440, "h": 900, "page": "page-1" },
+    { "file": "OptionC.dc.html", "title": "C — 品牌暖色", "x": 0, "y": 1080, "w": 1440, "h": 900, "page": "page-1" },
+    { "file": "OptionD.dc.html", "title": "D — 高密度工作台", "x": 1560, "y": 1080, "w": 1440, "h": 900, "page": "page-1" },
+    { "file": "ProductForm.dc.html", "title": "B — 商品編輯表單（現有五區塊結構）", "x": 0, "y": 0, "w": 1440, "h": 2200, "page": "page-2" },
+    { "file": "Login.dc.html", "title": "B — 登入頁（一般／錯誤）", "x": 1560, "y": 0, "w": 1440, "h": 900, "page": "page-2" }
+  ],
+  "annotations": [
+    { "id": "note-current", "page": "page-1", "x": 0, "y": -150, "w": 620, "text": "現況\n字體其實沒載入（globals.css 指向 --font-geist-sans，但沒有任何 next/font import）→ 實際 fallback 到 Arial + 系統中文。\n全站灰階、側欄看不出所在頁、操作是底線文字連結。" },
+    { "id": "note-b", "page": "page-1", "x": 1560, "y": -150, "w": 620, "text": "B — Refined Neutral（已選）\n同樣的資訊量，改的是質感：Noto Sans TC、冷灰 slate 底、一支 indigo 主色（側欄 active／主按鈕／focus）、24px 標題拉開層級、狀態改圓角 pill、操作改 icon 按鈕。\n不動任何 JSX 結構，改 globals.css + labels.ts 三個常數即可。" },
+    { "id": "note-c", "page": "page-1", "x": 0, "y": 950, "w": 620, "text": "C — 品牌暖色\n深色側欄 + 橘色 accent + 暖灰（stone）底；商品圖放大到 56px，品名／品牌兩行，列表像商品目錄。\n個性最強，但表單頁要克制，建議只套產品相關頁面。" },
+    { "id": "note-d", "page": "page-1", "x": 1560, "y": 950, "w": 620, "text": "D — 高密度工作台\n側欄縮成 60px icon rail，換來 180px 表格寬度；列高 32px，同一個畫面從 6 列變 14 列。\n多帶出成本／售價／毛利率／主要供應商，數字用等寬字；勾選列 + 底部批次列。密度可切換（右上 tweak）。" },
+    { "id": "note-form", "page": "page-2", "x": 0, "y": -170, "w": 700, "text": "B 套在最重的頁面：商品編輯表單\n這張是「現有五區塊結構」的密度壓力測試 —— 只驗證 B 的字級／間距／禁用灰底／試算值標示在密集表單上成不成立。\n欄位重排（三層）、售價改定價表、定價工作台 → 是另一題，討論定案後另畫一張。" },
+    { "id": "note-login", "page": "page-2", "x": 1560, "y": -170, "w": 620, "text": "登入頁：一般狀態 / 錯誤狀態並排\n左卡示範 focus ring（現況 focus:outline-none 完全沒有焦點框）；錯誤改成淡紅 banner + icon，位置不變。" }
+  ],
+  "launch": { "view": "canvas", "page": "page-2" }
+}
