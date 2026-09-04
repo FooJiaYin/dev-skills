@@ -47,6 +47,7 @@ For multiple reports: §0 (target file) and the template choice apply per report
 
 Before generating, decide whether this report is **appending to an existing `docs/tasks/<slug>.md`** (Notion-task lifecycle path) or **synthesizing fresh from conversation** (today's behavior).
 
+0. **Came from a task plan? Fetch first.** If the session implemented work off a `docs/tasks/_plan-*.md` (a `/create-tasks` plan) and no `docs/tasks/<slug>.md` matches yet, **dispatch `/fetch-task` for the tasks the plan created/linked before resolving the target** — then continue from step 1. `/create-tasks`' checkout picker only runs in the session that created the tasks, so a hand-off session arrives with the plan but no task files; without this, target resolution falls through to "fresh report" and the per-task path (§"Target = task file", and the multi-task split below) is silently unavailable — the symptom is one report covering N tasks that then can't be attached to any of them.
 1. **Scan the conversation** for explicit Notion task URLs or task-name mentions (e.g. "working on auto-notification").
 2. **Match against `docs/tasks/*.md`** via frontmatter `notion.page` URL or filename slug.
 3. **If matched** → use that file as the target. Skip to "Target = task file" below.

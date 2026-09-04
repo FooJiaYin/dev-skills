@@ -14,12 +14,22 @@ let id = 0; const pending = new Map();
 const target = await (await fetch(`http://127.0.0.1:${port}/json/new?about:blank`, { method: "PUT" })).json();
 const ws = new WebSocket(target.webSocketDebuggerUrl);
 await new Promise((r) => (ws.onopen = r));
-ws.onmessage = (e) => { const m = JSON.parse(e.data); if (m.id && pending.has(m.id)) { const p = pending.get(m.id); pending.delete(m.id); m.error ? p.rej(new Error(JSON.stringify(m.error))) : p.res(m.result); } };
+// 對話框會凍結整條 CDP（頁面停住、伺服器收不到請求、後續 evaluate 全部不回）→ 一律自動 accept
+ws.onmessage = (e) => { const m = JSON.parse(e.data);
+  if (m.method === "Page.javascriptDialogOpening") {
+    console.log("DIALOG:", m.params.type, JSON.stringify((m.params.message || "").slice(0, 120)));
+    ws.send(JSON.stringify({ id: ++id, method: "Page.handleJavaScriptDialog", params: { accept: true } }));
+    return;
+  }
+  if (m.id && pending.has(m.id)) { const p = pending.get(m.id); pending.delete(m.id); m.error ? p.rej(new Error(JSON.stringify(m.error))) : p.res(m.result); } };
+// 連線卡死時大聲失敗，不要讓工具呼叫整個吊住
+const hardKill = setTimeout(() => { console.log("HARD TIMEOUT"); try { chrome.kill(); } catch {} process.exit(3); }, 90_000);
 const call = (method, params = {}) => new Promise((res, rej) => { const n = ++id; pending.set(n, { res, rej }); ws.send(JSON.stringify({ id: n, method, params })); });
 const evalJs = async (expression) => { const r = await call("Runtime.evaluate", { expression, awaitPromise: true, returnByValue: true }); if (r.exceptionDetails) throw new Error(r.exceptionDetails.text + " " + JSON.stringify(r.exceptionDetails.exception?.description)); return r.result.value; };
 const shot = async (name) => { const s = await call("Page.captureScreenshot", { format: "png" }); writeFileSync(`${outDir}/${name}.png`, Buffer.from(s.data, "base64")); };
 const goto = async (p) => { await call("Page.navigate", { url: `http://localhost:3000${p}` }); await sleep(2500); };
 
+await call("Page.enable");
 await call("Network.enable");
 await call("Network.setCookie", { name: "sparktoy_session", value: token, domain: "localhost", path: "/", httpOnly: true });
 await call("Emulation.setDeviceMetricsOverride", { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
@@ -41,8 +51,9 @@ const applied = await evalJs(`(() => { const b = window.__btn('套用'); if (!b)
 await sleep(300);
 const deptVal = await evalJs(`(() => { const row = [...document.querySelectorAll('tr')].find(r => r.textContent.includes('百貨價')); return row ? row.querySelector('input')?.value : 'no-row'; })()`);
 console.log("A: apply =", applied, "| 百貨價 input =", deptVal);
-await evalJs(`(() => { window.__btn('儲存變更').click(); return true; })()`);
-await sleep(4000);
+// 送出會導航 → 射後不理（await 的話 evaluate 永遠不回）。dev 模式 server action 首次要編譯，等久一點。
+ws.send(JSON.stringify({ id: ++id, method: "Runtime.evaluate", params: { expression: "window.__btn('儲存變更').click()" } }));
+await sleep(20000);
 const urlA = await evalJs("location.pathname");
 const errA = await evalJs(`(document.querySelector('p.text-red-600')?.textContent || '').slice(0, 200)`);
 console.log("A: after save url =", urlA, "| error =", JSON.stringify(errA));
@@ -63,11 +74,11 @@ const setup = await evalJs(`(() => {
 })()`);
 console.log("B: setup =", setup);
 await sleep(300);
-await evalJs(`(() => { window.__btn('建立商品').click(); return true; })()`);
-await sleep(4000);
+ws.send(JSON.stringify({ id: ++id, method: "Runtime.evaluate", params: { expression: "window.__btn('建立商品').click()" } }));
+await sleep(20000);
 const urlB = await evalJs("location.pathname");
 const errB = await evalJs(`(document.querySelector('p.text-red-600')?.textContent || '').slice(0, 200)`);
 console.log("B: after create url =", urlB, "| error =", JSON.stringify(errB));
 await shot("B_after_create");
 
-ws.close(); chrome.kill();
+clearTimeout(hardKill); ws.close(); chrome.kill();
