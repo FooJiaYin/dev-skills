@@ -114,6 +114,7 @@ These skills bridge between local code/docs and a shared Notion workspace (Roadm
 | Skill | Purpose |
 |---|---|
 | [find-session](skills/find-session/SKILL.md) | Search Claude Code session transcripts (`~/.claude/projects/`) by topic keyword or by which files were touched. Returns session UUIDs for `claude --resume`. |
+| [headless-shots](skills/headless-shots/SKILL.md) | Screenshot or drive a locally running web app via headless Chrome + CDP with a minted login cookie — fallback when the Playwright MCP browser is locked; write-path checks verified against the DB. |
 
 ## Folder Structure
 
