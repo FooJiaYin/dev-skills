@@ -49,10 +49,12 @@ If config is missing → dispatch `/setup-notion`, then re-read and continue.
 
 `docs/tasks/<slug>.md` where:
 - `<slug>` = task Name, lowercased, path-unsafe chars replaced with `-`, collapsed runs of `-`, truncated to ~60 chars.
-- Appended with `-<hash6>` where `<hash6>` is the first 6 hex chars of the Notion page ID (UUID's hyphens stripped). This protects against name collisions and rename-after-fetch.
+- Appended with `-<hash6>` where `<hash6>` is the **last** 6 hex chars of the Notion page ID (UUID's hyphens stripped). This protects against name collisions and rename-after-fetch. Use the trailing chars, **not** the leading ones — pages created in the same batch share a long leading prefix, so leading-6 collides (e.g. two sibling tasks both → `-37fb0e`), defeating the tiebreak.
 - Create `docs/tasks/` directory if missing.
 
 #### 3c. Write or refresh
+
+When transcribing the fetched body, strip `notion-fetch`'s wrapper tags (`<page>`, `<content>`, `<properties>`, `<ancestor-path>`, closing `</…>`) — write only the inner `# Context` markdown. The closing `</content>` in particular leaks into the file if copied verbatim.
 
 **File doesn't exist (first fetch)** → write the full file:
 
