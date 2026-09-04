@@ -1,7 +1,7 @@
 ---
 name: report
-description: Analyze the current chat conversation, file changes, and actions taken to create a comprehensive report. Saves to docs/reports/YYYY-MM-DD-[title].md
-argument-hint: "[optional title]"
+description: Analyze the current chat conversation, file changes, and actions taken to create a comprehensive report. Saves to docs/reports/YYYY-MM-DD-[title].md. Also exports the raw conversation transcript to markdown via `/report transcript`.
+argument-hint: "[optional title] | transcript [--full]"
 ---
 
 Analyze the current chat conversation, file changes, and actions taken to create a comprehensive report using the specified template.
@@ -9,6 +9,27 @@ Analyze the current chat conversation, file changes, and actions taken to create
 Save the report as `docs/reports/YYYY-MM-DD-[title].md`
 
 The date should be the date when the task is mainly worked on, not the date when the report is generated.
+
+## Transcript Export (`/report transcript`)
+
+When the user asks for the **raw conversation** rather than a synthesized report
+("export this chat", "dump the transcript", `/report transcript`), skip every
+other step in this skill and run:
+
+```bash
+python3 <skill-base>/export-transcript.py [--full] [-o PATH] [--session UUID] [--since ISO]
+```
+
+- Default output: `docs/reports/YYYY-MM-DD-<title>-transcript.md`, relative to the cwd.
+- Default body: user prompts + assistant prose only (IDE wrappers, system-reminders
+  and tool traffic stripped; `AskUserQuestion` answers kept).
+- `--full` adds thinking blocks, tool calls, and truncated tool results.
+- Session resolution: `--session` > `$CLAUDE_CODE_SESSION_ID` > newest transcript
+  for the cwd. `--session` takes a uuid or a path (a `subagents/*.jsonl` path
+  exports that subagent).
+
+Do not read the jsonl or hand-assemble the transcript yourself — the script does it.
+This is an export, not a report: no template, no plan integration, no session rename.
 
 ## Pre-flight: split decision
 
