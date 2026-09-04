@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: Multi-agent review of the local git diff. Spawns parallel agents covering bugs+security, CLAUDE.md adherence, git history, performance, plan adherence, and quality+architecture; tiers findings by confidence (Critical/Warning/Suggestion/Nit) and drops only auto-zeroed false positives; writes REVIEW.md. Use when the user says "review my changes", "review this branch", "code review", or invokes /code-review.
+description: Multi-agent review of the local git diff. Spawns parallel agents covering bugs+security, CLAUDE.md adherence, git history, performance, plan adherence, and quality+architecture; tiers findings by confidence (Critical/Warning/Suggestion/Nit) and drops only auto-zeroed false positives; writes REVIEW.md. Also has a whole-tree mode (`/code-review tree [glob]`, or wording like 「審核架構／有沒有重複」) that audits the current source for duplication and missing abstractions instead of a diff. Use when the user says "review my changes", "review this branch", "code review", "審核架構", or invokes /code-review. Supersedes the built-in /code-review in repos using dev-skills — invoke only this one.
 ---
 
 # Code Review
@@ -10,6 +10,10 @@ You are the orchestrator of a multi-agent code review. You do not analyze code y
 ## Inputs
 
 The user may pass a base ref (e.g. `main`, `HEAD~3`) or a plan file path. If neither, infer them in Phase 0 / Phase 1.
+
+**Tree mode.** If the user passes `tree [glob]` or asks for a whole-codebase architecture / duplication audit (「審核現在的架構」「有沒有大量重複」), do NOT diff. Scope = the glob (default `src/**` minus generated files), working tree as-is. Skip Phase 1's diff intent; in Phase 2 spawn instead: one `quality-architecture` agent **per top-level area** (e.g. `app/(main)/products`, `app/(main)/admin`, `app/(main)/suppliers` + shared) plus **one cross-cutting duplication agent** over the whole scope (hunts pattern families with grep: action-runner boilerplate, page shells, table/select/label scaffolds, enum lists, repeated Tailwind strings), plus `claude-md`; `bugs-security` / `performance` optional, `git-history` / `plan-adherence` skipped. Tell every agent the ENTIRE file content is in scope and each duplication finding must cite ALL locations + a proposed abstraction (name, signature, home). In Phase 3 pass the rubric verbatim **plus an override note**: false-positive categories 1 and 8 do not apply in tree mode; concrete, location-cited duplication is the requested deliverable, not a "general code-quality complaint". Frontmatter `base`/`head` = current HEAD + "working tree"; add a `scope:` line.
+
+Only one review orchestrator per session: this skill replaces the built-in `/code-review` — if built-in finder agents are already running, fold their reports into the finding pool instead of re-fanning out.
 
 ## Orchestrator Flow
 
