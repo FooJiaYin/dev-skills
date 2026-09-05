@@ -21,12 +21,14 @@ ws.onmessage = (e) => { const m = JSON.parse(e.data);
     ws.send(JSON.stringify({ id: ++id, method: "Page.handleJavaScriptDialog", params: { accept: true } }));
     return;
   }
-  if (m.id && pending.has(m.id)) { const p = pending.get(m.id); pending.delete(m.id); m.error ? p.rej(new Error(JSON.stringify(m.error))) : p.res(m.result); } };
+  // 導航會讓進行中的 evaluate 回 "Inspected target navigated or closed"。那通常代表**動作已成功**，
+  // 不該讓整支腳本崩掉 —— resolve 成 { err } 讓呼叫端自行判讀，再去 DB 驗證。
+  if (m.id && pending.has(m.id)) { const p = pending.get(m.id); pending.delete(m.id); p.res(m.error ? { err: m.error } : m.result); } };
 // 連線卡死時大聲失敗，不要讓工具呼叫整個吊住
 const hardKill = setTimeout(() => { console.log("HARD TIMEOUT"); try { chrome.kill(); } catch {} process.exit(3); }, 90_000);
 const call = (method, params = {}) => new Promise((res, rej) => { const n = ++id; pending.set(n, { res, rej }); ws.send(JSON.stringify({ id: n, method, params })); });
-const evalJs = async (expression) => { const r = await call("Runtime.evaluate", { expression, awaitPromise: true, returnByValue: true }); if (r.exceptionDetails) throw new Error(r.exceptionDetails.text + " " + JSON.stringify(r.exceptionDetails.exception?.description)); return r.result.value; };
-const shot = async (name) => { const s = await call("Page.captureScreenshot", { format: "png" }); writeFileSync(`${outDir}/${name}.png`, Buffer.from(s.data, "base64")); };
+const evalJs = async (expression) => { const r = await call("Runtime.evaluate", { expression, awaitPromise: true, returnByValue: true }); if (r.err) return { __cdpError: r.err.message }; if (r.exceptionDetails) throw new Error(r.exceptionDetails.text + " " + JSON.stringify(r.exceptionDetails.exception?.description)); return r.result.value; };
+const shot = async (name) => { const s = await call("Page.captureScreenshot", { format: "png" }); if (s.err) { console.log("SHOT SKIPPED:", s.err.message); return; } writeFileSync(`${outDir}/${name}.png`, Buffer.from(s.data, "base64")); };
 const goto = async (p) => { await call("Page.navigate", { url: `http://localhost:3000${p}` }); await sleep(2500); };
 
 await call("Page.enable");
