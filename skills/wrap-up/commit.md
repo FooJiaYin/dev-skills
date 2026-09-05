@@ -19,6 +19,10 @@ Re-run `git status` / `git log -1` **fresh immediately before staging** — don'
 
 **Explicit pathspec does NOT protect a co-edited single file.** `git add <file>` stages the *whole* file, so if one file mixes your hunks + another session's **unstaged** hunks, `git commit -- <file>` still bundles theirs. Absence from `git diff --cached` only means no one **pre-staged** it — it does NOT mean the working tree is clean of another session's unstaged hunks. So **before `git add` on any file you didn't create this session, run `git diff <file>`** (unstaged, not just `--cached`) and confirm every hunk is yours. If you see hunks you didn't write → it's a co-edited file → use the technique below, not a plain `git add`.
 
+**Show the attribution table BEFORE asking any scope question.** When the tree holds work from more than one session, a "should I include X?" popup is unanswerable until the user knows whose each batch is — they will interrupt to ask 「到底是哪一個 session 未 commit」, and prose scattered across earlier turns does not count. Print one table first: batch → files → whose (evidence = the first `+`/`-` line of each file's diff), then ask. ⚠️ CJK / non-ASCII filenames come back octal-escaped (`"docs/\351\276\215…"`) and silently fail to match in a `git diff --name-only | while read f` loop — use `git -c core.quotepath=false` for every status/diff you parse.
+
+**Before committing, grep the docs for the paths you are about to commit.** A doc that says a file is 「尚未提交」/ untracked becomes wrong the instant you commit it (seen: `docs/schemas/index.md` warned that two migrations were uncommitted and that rebuilding from git would miss a column). Fix such statements in the SAME commit.
+
 Stage deliberately. AskUserQuestion multi-select to confirm scope, especially for:
 
 1. **Sensitive files** — `.env*`, `*.pem`, `*_rsa`, `*secret*`, `*credential*`, `*api*key*`, anything with API tokens. **Never stage even if user asks.**

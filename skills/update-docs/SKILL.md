@@ -18,6 +18,8 @@ Parse the argument (or default):
 - **`--pr <num>`** — fetch with `gh pr diff <num>`.
 - **`--all`** — audit-mode: walk the whole repo, looking for code/doc drift rather than per-diff updates.
 
+**Fallback when the default scope is empty of your work.** Run right after a commit (e.g. straight after `/wrap-up`), the uncommitted diff holds only other people's leftovers — the work that needs documenting is already in `HEAD`. If the uncommitted diff is empty, or contains nothing this session wrote, scope to `HEAD` instead and say so in the proposal. A commit is also the moment docs go stale: check whether any doc describes the files you just committed as pending/untracked.
+
 ## 2. Detect doc layout
 
 One fast scan; build a map of what doc files/folders exist:
