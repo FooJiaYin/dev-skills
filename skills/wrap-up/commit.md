@@ -4,6 +4,7 @@ Universal commit hygiene. Wrapped by `./full.md` Step 7 and `./quick.md` Step 7 
 
 ## Pre-commit safety (parallel; stop on blocker)
 
+- **Every repo this session wrote to, not just cwd.** Collect this session's Write/Edit/write-Bash paths from its transcript → `git rev-parse --show-toplevel` per path → run this whole file per repo. Closing message gets one line per repo: `<repo>: <hash>` or `<repo>: 未 commit N 檔`; never print「完成」while any repo still holds this session's uncommitted files. (Seen: sibling repo `Poolgress_demo_` never checked, work sat uncommitted 9 days and blocked other sessions.)
 - On `main` / `master` / `develop` → check if the project is main-direct first: count last 5 commits on the branch; if ≥3 landed directly on `main`/`master`/`develop` (no merge commits from feature branches), treat as main-direct and commit in place. Otherwise `git switch -c wip/<YYYYMMDD-HHMM>` and tell user 人話: 「你在 main 上，我先幫你開了一個暫存 branch」.
 - Detached HEAD / `MERGE_HEAD` / `REBASE_HEAD` → stop, refer to reviewer.
 - Files > 10MB → exclude from staging, warn user.
@@ -19,7 +20,7 @@ Re-run `git status` / `git log -1` **fresh immediately before staging** — don'
 
 **Explicit pathspec does NOT protect a co-edited single file.** `git add <file>` stages the *whole* file, so if one file mixes your hunks + another session's **unstaged** hunks, `git commit -- <file>` still bundles theirs. Absence from `git diff --cached` only means no one **pre-staged** it — it does NOT mean the working tree is clean of another session's unstaged hunks. So **before `git add` on any file you didn't create this session, run `git diff <file>`** (unstaged, not just `--cached`) and confirm every hunk is yours. If you see hunks you didn't write → it's a co-edited file → use the technique below, not a plain `git add`.
 
-**Show the attribution table BEFORE asking any scope question.** When the tree holds work from more than one session, a "should I include X?" popup is unanswerable until the user knows whose each batch is — they will interrupt to ask 「到底是哪一個 session 未 commit」, and prose scattered across earlier turns does not count. Print one table first: batch → files → whose (evidence = the first `+`/`-` line of each file's diff), then ask. ⚠️ CJK / non-ASCII filenames come back octal-escaped (`"docs/\351\276\215…"`) and silently fail to match in a `git diff --name-only | while read f` loop — use `git -c core.quotepath=false` for every status/diff you parse.
+**Show the attribution table BEFORE asking any scope question.** When the tree holds work from more than one session, a "should I include X?" popup is unanswerable until the user knows whose each batch is — they will interrupt to ask 「到底是哪一個 session 未 commit」, and prose scattered across earlier turns does not count. Print one table first: batch → files → whose (evidence = the first `+`/`-` line of each file's diff), then ask. Fill "whose" from `find-session --touched <path>` (session uuid), **never** from a compaction summary or mtime — a summary once relabelled this session's own pre-compaction work as "another session's". ⚠️ CJK / non-ASCII filenames come back octal-escaped (`"docs/\351\276\215…"`) and silently fail to match in a `git diff --name-only | while read f` loop — use `git -c core.quotepath=false` for every status/diff you parse.
 
 **Before committing, grep the docs for the paths you are about to commit.** A doc that says a file is 「尚未提交」/ untracked becomes wrong the instant you commit it (seen: `docs/schemas/index.md` warned that two migrations were uncommitted and that rebuilding from git would miss a column). Fix such statements in the SAME commit.
 
@@ -36,7 +37,7 @@ Stage deliberately. AskUserQuestion multi-select to confirm scope, especially fo
 4. `git add <file>` → commit. The staged diff = HEAD + your hunks only (scan it for the other session's markers to confirm clean).
 5. `cp /tmp/<file>.full <file>` — restore the mixed version; their hunks return as uncommitted, ready for their author.
 
-**Working-tree-free variant (another session editing the same file, or HEAD moving mid-commit):** stage the temp blob directly — `H=$(git hash-object -w /tmp/t); git update-index --cacheinfo 100644,$H,<file>` — never resets the working file. ⚠️ A concurrent commit wipes your `update-index` staging, so in a churning tree re-stage + commit in ONE chained `&&` call.
+**Working-tree-free variant (another session editing the same file, or HEAD moving mid-commit):** stage the temp blob directly — `H=$(git hash-object -w /tmp/t); git update-index --cacheinfo 100644,$H,<file>` — never resets the working file. ⚠️ A concurrent commit wipes your `update-index` staging, so in a churning tree re-stage + commit in ONE chained `&&` call. ⚠️ Commit this variant with **no pathspec** — `git commit -- <file>` re-reads the working tree and bundles the other session's hunks you just excluded. If your edits predate HEAD, rebuild them on their original base commit and `git merge-file` onto HEAD before `hash-object`.
 
 Give suggestions for what to commit.
 

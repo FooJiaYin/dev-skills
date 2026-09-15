@@ -22,9 +22,8 @@ Apply shared commit hygiene from `./commit.md` (pre-commit safety + smart stagin
 
 ```
 ✓ Quick wrap-up 完成
-- branch: <name>
-- commit: <hash short> — <message first line>
-- 已 push 到 origin/<branch>
+- <repo>（<branch>）: <hash short> — <message first line>，已 push／未 push（原因）
+- <other repo this session wrote to>: <hash> 或 未 commit N 檔（原因）
 - report: docs/reports/<file>（含 # Suggested Doc Updates）
 - 跳過: 測試 / code review / 自動 deploy / improve
 - 建議 reviewer 之後跑 `/wrap-up` Full 補上品質檢查
