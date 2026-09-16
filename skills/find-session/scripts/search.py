@@ -109,12 +109,69 @@ def is_skill_listing(d: dict) -> bool:
     return att.get("type") == "skill_listing"
 
 
+RX_LOG_RECORD = re.compile(r"^\[(\d\d-\d\d \d\d:\d\d) (user|assistant|ask|skill|write|error|note|compact)\] ?(.*)$")
+
+
+def scan_log(log: Path, sid: str, topic: str | None, touched: str | None,
+             since: str | None, until: str | None) -> dict | None:
+    """Scan a session's `<sid>.log.md` (written by dev-skills/bin/session-log.py)
+    instead of its jsonl: ~100× smaller, human-readable, and [write] lines are
+    exact (git diff at write time), not regex guesses."""
+    topic_re = re.compile(re.escape(topic), re.I) if topic else None
+    touched_norm = os.path.realpath(os.path.expanduser(touched)) if touched else None
+    text = log.read_text(encoding="utf-8", errors="replace")
+    head, _, body = text.partition("\n")
+    year = str(__import__("datetime").datetime.fromtimestamp(log.stat().st_mtime).year)
+    recs: list[dict] = []
+    for line in body.splitlines():
+        m = RX_LOG_RECORD.match(line)
+        if m:
+            recs.append({"ts": f"{year}-{m.group(1).replace(' ', 'T')}", "tag": m.group(2), "body": m.group(3)})
+        elif recs:
+            recs[-1]["body"] += "\n" + line
+    if not recs:
+        return None
+    first_ts, last_ts = recs[0]["ts"], recs[-1]["ts"]
+    if since and last_ts < since:
+        return None
+    if until and first_ts > until:
+        return None
+    user_msgs = [(r["ts"], r["body"]) for r in recs if r["tag"] in ("user", "ask")]
+    topic_hits, touch_hits = [], []
+    for r in recs:
+        if topic_re and r["tag"] in ("user", "assistant", "ask", "note", "skill", "error") and topic_re.search(r["body"]):
+            m_ = topic_re.search(r["body"])
+            s, e = max(0, m_.start() - 40), min(len(r["body"]), m_.end() + 80)
+            topic_hits.append((r["ts"], r["tag"], r["body"][s:e]))
+        if touched_norm and r["tag"] == "write":
+            fp = r["body"].split(" ", 1)[0]
+            if os.path.realpath(fp) == touched_norm or fp.endswith(touched) or touched.endswith(fp):
+                tool = re.search(r"tool=(\S+)", r["body"])
+                touch_hits.append((r["ts"], tool.group(1) if tool else "?", fp))
+    if topic and not topic_hits:
+        return None
+    if touched and not touch_hits:
+        return None
+    parts = head.lstrip("# ").split(" · ")
+    return {
+        "session_id": sid, "path": str(log), "cwd": parts[2] if len(parts) > 2 else "",
+        "title": parts[0] if parts and parts[0] != "(untitled)" else None,
+        "first_ts": first_ts, "last_ts": last_ts,
+        "first_user": user_msgs[0][1] if user_msgs else None,
+        "user_msgs": user_msgs, "topic_hits": topic_hits, "touch_hits": touch_hits, "uuids": [],
+    }
+
+
 def scan_session(path: Path, topic: str | None, touched: str | None,
                  since: str | None, until: str | None) -> dict | None:
-    """Scan one jsonl. Return a hit record or None.
+    """Scan one session. Prefers `<sid>.log.md` next to the jsonl when it exists
+    (sessions started after 2026-09-17); falls back to the jsonl.
 
     A hit means: at least one matching event AND timestamp is within [since,until].
     """
+    log = path.with_name(path.stem + ".log.md")
+    if log.is_file() and "subagents" not in path.parts:
+        return scan_log(log, path.stem, topic, touched, since, until)
     if topic:
         topic_re = re.compile(re.escape(topic), re.I)
     else:

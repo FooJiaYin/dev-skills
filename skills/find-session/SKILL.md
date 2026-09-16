@@ -27,6 +27,8 @@ Don't invoke for: editor history / git history / external chat tools. This skill
 
 Run [scripts/search.py](scripts/search.py). It walks `~/.claude/projects/<flattened-cwd>/*.jsonl` and (when escalated) other project folders, applies filters, and prints a ranked list.
 
+Sessions started on/after 2026-09-17 also have a `<sid>.log.md` next to the jsonl (the session log written by `dev-skills/bin/session-log.py`). The script scans that instead when present: ~100× smaller, and its `[write]` lines are exact (recorded at write time), so `--touched` answers are definitive for those sessions. Older sessions still go through the jsonl.
+
 ### Default escalation
 
 Always start with `--scope cwd` (current project only). If 0 results, retry with `--scope all` (every project except `.bak`). If still 0, retry with `--scope all-bak`. The `--escalate` flag does all three automatically.

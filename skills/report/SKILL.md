@@ -31,6 +31,14 @@ python3 <skill-base>/export-transcript.py [--full] [-o PATH] [--session UUID] [-
 Do not read the jsonl or hand-assemble the transcript yourself — the script does it.
 This is an export, not a report: no template, no plan integration, no session rename.
 
+**Sessions started on/after 2026-09-17 have a session log** (`~/.claude/projects/<proj>/<session-id>.log.md`, written by hooks via `~/agent-skills/dev-skills/bin/session-log.py`). For those, export from the log instead — it is the same user/assistant/answer dialogue, already filtered, and secrets are redacted:
+
+```bash
+python3 ~/agent-skills/dev-skills/bin/session-log.py export -o docs/reports/YYYY-MM-DD-<title>-transcript.md
+```
+
+Use `export-transcript.py` only when `session-log.py` reports there is no log (older session, or a `--full` export with tool traffic is wanted). Don't commit transcript exports by default — the log is the durable copy; the export is a view for sharing.
+
 ## Pre-flight: split decision
 
 Before resolving the target file or choosing a template, decide whether to write multiple reports:
@@ -76,7 +84,7 @@ No task file detected → **first scan `docs/reports/` for a very recent report 
 
 ## Report Generation Process
 
-1. **Analyze Chat History**: Review the conversation to capture only the core issue, discussion points and decisions made, solutions attempted and their outcomes
+1. **Analyze Chat History**: Review the conversation to capture only the core issue, discussion points and decisions made, solutions attempted and their outcomes. If the session has a log (`python3 ~/agent-skills/dev-skills/bin/session-log.py show`), read it first: `[user]`/`[ask]` are the user's exact words (quote decisions verbatim from there, don't paraphrase from memory), `[note]` are decisions recorded as they happened, `[write]` is the authoritative file list, `[error]` the friction. This works after a compaction too, when the conversation itself is only a summary.
 2. **Examine File Changes**: Mention only relevant changes and the main purpose of the changes
 3. **Summarize Actions Taken**: commands executed, deployments, or test runs
 
@@ -137,3 +145,4 @@ After saving the report (and any plan integration), invoke the `rename-session` 
 6. **Optional**: Add TODOs if follow-up work is needed
 7. **Complete**: Make sure everything you've done is included in the report, not the recent one, but the full conversation
 8. **Track issue resolution**: solved issues from `/code-review` or the conversation go in `# Updates`; deferred issues go in `# Unsolved Issues`. Do not let either disappear from the project's record.
+9. **Link the session**: every report and task file gets a `session:` frontmatter key — `session: <title> (<id>)`, id from `$CLAUDE_CODE_SESSION_ID`, title from the session log's line 1 — so a reader can open `~/.claude/projects/<proj>/<id>.log.md` or `git log --grep=<id>`. Multiple sessions → comma-separated. Add the key to existing frontmatter, or create a minimal `---` block if the file has none.
