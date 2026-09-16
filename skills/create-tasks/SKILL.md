@@ -99,7 +99,7 @@ Time: date
 
 The plan header rendered in §7 MUST disclaim each adjustment so the user sees the deviation before approving.
 
-Then **mirror the meeting body to `docs/meetings/<YYYY-MM-DD>-<slug>.md`** — the byte-exact source for step 4 extraction.
+Then **mirror the meeting body to `docs/meetings/<YYYY-MM-DD>-<slug>.md`** — the byte-exact source for step 4 extraction. **Only when the input was a Notion URL with no local file.** Local-file input (the file `/upload-meeting` just annotated with `notion.page`) → do NOT write a second file; keep the `notion-fetch` body in memory as the anchor source (pipe tables become `<td>`, `*` bullets become `-`). Two files for one meeting get folded by the user within minutes.
 
 **Variants.** Standalone: skip the source `notion-fetch` and the local mirror; step 4 reads from the raw input text directly. Custom parent: `notion-fetch` the parent for body markdown + (if present) `Tasks` relation list; skip the `docs/meetings/` mirror.
 
@@ -299,7 +299,7 @@ Order matters:
    - `date:Time:start` = the date resolved in step 4 "Time extraction"; add `date:Time:end` only if step 4 captured a range. **ALWAYS also send `date:Time:is_datetime: 0`** (integer literal `0`, not the `__NO__` checkbox sentinel — that errors with "must be a number (0/1)"). Without it, Notion silently defaults the date to today, even though `create-pages` echoes the input back unchanged. **Omitting `Time` entirely does NOT leave it blank** — `create-pages` still stamps today; a row that should have no date must be cleared afterwards with an explicit `"date:Time:start": null`. Verify per the batch read-back rule below — the create response is not authoritative for date properties.
    - Leave `Priority`, `Tags`, `Github Link` blank.
 
-1b. **Fan out guest assignees.** For each created task whose resolved assignee is tagged `(guest)`, call `notion-update-page` `update_properties` to set `Assignee`. One call per affected task — `update_properties` accepts guest IDs reliably. Skip entirely when no `(guest)` assignees exist.
+1b. **Fan out guest assignees.** For each created task whose resolved assignee is tagged `(guest)`, call `notion-update-page` `update_properties` to set `Assignee`. One call per affected task — `update_properties` accepts guest IDs reliably. Skip entirely when no `(guest)` assignees exist. **Rows with NO assignee also need a call: send `Assignee: []`** — `create-pages` stamps the creator (OAuth user) whenever Assignee is omitted, and only the SQL read-back catches it. Fold it into the same per-row call that nulls `Time`.
 
    **LINK appends** in step 9.2 below: the appended `## <mention-page url="<source-url>"/>` line uses the source URL (meeting / custom parent). Standalone has no LINK rows by construction (idempotency anchors are inactive → all commitments are CREATE/SKIP).
 
@@ -318,14 +318,14 @@ Order matters:
 
    The MCP enforces byte-exact matching. If any op fails (LLM paraphrased the text, body changed since fetch), the whole call fails — surface the failure, don't retry blind.
 
-5. **Refresh the local mirror.** Meeting / treat-as-meeting only. `notion-fetch` the meeting page again and overwrite `docs/meetings/<YYYY-MM-DD>-<slug>.md` with the post-execution body + refresh `last_synced` to reflect the task links added in the body. **Skip** for Standalone and custom-parent variants (no mirror exists).
+5. **Refresh the local file.** Meeting / treat-as-meeting only. **Local-file input → additive edits to the user's file**: append ` <mention-page url="<task-url>"/>` inside each annotated commitment (pipe-table cell: `| <text> <mention-page …/> |`), bump `last_synced`; never overwrite it with the Notion body. **Notion-URL input (mirror written in §3)** → `notion-fetch` the meeting page again and overwrite the mirror with the post-execution body + refresh `last_synced`. **Skip** for Standalone and custom-parent variants.
 
 ### 10. Post-create checkout picker
 
 After successful execution, prompt via `AskUserQuestion` (multi-select):
 
 - Question: "Check out which of these tasks locally?"
-- Options: one per created + linked task (Name as label). Plus an explicit "None — done."
+- Options: `AskUserQuestion` caps at 4. ≤3 tasks → one per task (Name as label) + "None — done". More → grouped buckets: "All N assigned to me" / "All N" / "None — done"; individual picks go through the auto-provided Other (paste URLs).
 
 For each selected URL, dispatch `/fetch-task <url>`. Skipped silently if 0 tasks were affected this run (no checkout prompt at all).
 
