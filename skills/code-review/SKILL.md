@@ -64,7 +64,7 @@ Read the prompt file, substitute `{BASE}`, `{HEAD}`, `{FILES}`, `{CLAUDE_MD_PATH
 
 ### Phase 3 — Confidence Scoring (parallel Haiku agents, one per finding)
 
-For each finding from Phase 2, spawn a Haiku scorer in parallel (single tool-call block). The scorer receives:
+For each finding from Phase 2, spawn a Haiku scorer in parallel (single tool-call block). If a scorer is interrupted or its result never arrives, re-spawn that scorer — the orchestrator never scores findings itself. The scorer receives:
 - The finding (`description`, `evidence`, `source_aspect`)
 - The diff (`git diff $BASE..HEAD` for the affected file)
 - The CLAUDE.md path list
