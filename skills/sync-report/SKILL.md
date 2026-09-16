@@ -29,7 +29,7 @@ Notion is master. One of two skills that write to Notion (the other is `/create-
 **3. Resolve target.**
 - **Linked** (`notion.page` set) → use it, skip 4–5. To re-target, user edits frontmatter manually.
 - **Multi-feature report** (ships several distinct features — multiple `# Changes Made` blocks / a session of several fixes): one report → **multiple tasks**, not one. If a `/create-tasks` backlog exists (`docs/tasks/*-feature-list-backlog.md`, mapping every feature → `〔notion:<id>〕`), grep it per feature name → `〔notion:<id>〕` to resolve targets directly (exact, skip the time query + picker). Then **run steps 6–8 per matched task**, scoped to that feature (its commit for Github Link, its section for the append). Fall through to step 4 only for features with no backlog match.
-- **Unlinked, single-feature** → step 4.
+- **Unlinked, single-feature** → **first check `docs/tasks/*.md` for files with `notion.page` frontmatter** (tasks someone already `/fetch-task`'d). If any exist, offer them as the top candidates (Name · Time) before the time-window picker — a fetched task that matches the report's topic is almost always the intended target, and the time-window query alone misses it (seen: picker offered a sibling task while the real target sat in `docs/tasks/`, user had to `@` it by hand). None → step 4.
 
 **4. Query candidates** (unlinked, single-feature). Compute `reportDate` from filename `YYYY-MM-DD-<slug>.md` (fall back to mtime). Query Roadmap for tasks where `Time` overlaps `[reportDate − 3d, reportDate + 7d]`. No-`Time` tasks excluded here.
  **`notion-query-database-view` has no filter param — it dumps the full view (often >token cap; the result is saved to a file). Don't read it inline: parse the saved file by Time window with python/jq on `date:Time:start` / `date:Time:end` (+ `Name` / `Status` / `url`).**
@@ -60,6 +60,7 @@ Scan the report body for signals; propose a status from the live status options:
 | `# Result` says "no errors" / "all tests passed" / "shipped"; no `# Unsolved Issues` | `Completed 🙌` |
 | "manual testing required" / "needs QA" / `# Unsolved Issues` present | `Testing` |
 | "ready for review" / "PR opened" | `In Review` |
+| Report covers only part of the task's scope (enabling piece; the task's main work not done) | `In Progress` |
 | Ambiguous | no change |
 
 `AskUserQuestion`: `Apply <suggestion>` / `Override` (sub-prompt with all options) / `Skip`.
@@ -79,6 +80,8 @@ Build the URL **even if the commit is local/unpushed** — resolve the GitHub ba
 If detected, `AskUserQuestion`: `Apply <url>` / `Skip`.
 
 **8. Append body.** Skip if step 5 took `[n]`. Otherwise `notion-fetch` target, then `notion-update-page` `update_content` with one op: `old_str` = last non-empty line of current body (stable anchor), `new_str` = same anchor + `\n\n` + the full report body (frontmatter stripped, nothing else removed). Verbatim copy-paste. Never rewrite, summarize, rephrase, reformat, skip, or omit any section of the body — even minor cleanup is forbidden. No divider. Fold Status + Github Link from steps 6–7 + `Time` (= report/work date) into the same `update_page` call as `update_properties`. For `Time`, write **both `date:Time:start` AND `date:Time:end`** (`is_datetime:0`) — omitting `end` leaves a stale/empty end on a range.
+
+**Cloudflare WAF in front of Notion rejects HTML-tag literals.** A body containing a literal `<script>` (likely also `<iframe>`, `<img …>`, `<object>`) gets a 403 "Sorry, you have been blocked" page with no hint of the offending string — the whole insert fails. Before sending: grep the body for `<script`, `<iframe`, `<img`, `<object` and replace those tokens with full-width brackets (`＜script＞`); say so in the final message as the one non-verbatim change. For bodies over ~8 KB, `insert_content` in section-sized chunks, sequentially (each `position: end`), so a rejected chunk isolates the culprit and already-inserted chunks are not re-sent (re-sending duplicates; Notion has no clean undo).
 
 **Re-sync (linked target already has body) → append only the DELTA, never the whole body.** When the target already contains the report (e.g. `notion.page` was set on a prior sync and you're re-running after adding a new section), `notion-fetch` the body and diff against the local report: identify the section(s) present locally but **not yet in Notion** (typically a freshly-appended `# Updates` / trailing section). Insert only that delta via `notion-update-page` `insert_content` with `position:{type:"end"}`. If the body has no new content, skip the append entirely. Re-pasting the full body duplicates everything (Notion has no clean edit/replace path) — so the verbatim-full-body rule above applies to the FIRST sync only; subsequent syncs are delta-only.
 
