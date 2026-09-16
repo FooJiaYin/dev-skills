@@ -92,6 +92,7 @@ Remember:
 - Never run a deploy command without explicit user confirmation in the same turn.
 - Never re-deploy if Branch B detected an earlier deploy in this session — confirm only.
 - Skip cleanly when CI/CD is detected — don't manufacture a manual deploy.
+- **Schema ships before code.** If the repo has a migrations dir, diff it against the target DB's applied-migrations table *before* deploying and apply what's pending. A stale schema fails at runtime, not at deploy time — the deploy "succeeds" and pages 500 days later.
 
 ### Branch A — CI/CD handles deploy → skip
 
@@ -124,7 +125,7 @@ Use `AskUserQuestion` (header: "Deployed?") with question _"Have you deployed th
   2. Show the user the doc excerpt, the exact command(s) to run, and any preconditions the docs mention (env vars, login state, branch).
   3. **Use `AskUserQuestion` (header: "Run deploy?") to confirm execution** — options "Yes, run it" / "No, stop". Never run a deploy command without an explicit popup confirmation in the same turn.
   4. On confirm, execute. On failure, surface output and stop — do not retry or fall back to a different command.
-  5. After successful deploy, if a URL was emitted or detected from docs, print `Reminder: verify deploy at <url>`.
+  5. After a successful deploy, **fetch a real page before calling it deployed** — an authenticated GET that actually renders, not just the root URL. `200` alone proves nothing: RSC prefetches (`?_rsc=`), `HEAD`, and unauthenticated `307`s to a login page all return success without running the page's queries. Pair it with the platform's error log. Until that fetch is green, say "deployed, not yet verified".
 
 - If no deploy docs are found in the "no" branch: tell the user `No deploy docs found. Add deploy instructions to AGENTS.md or docs/deploy.md and re-run wrap-up.` and end.
 - Never invent deploy commands. If docs are silent, stop and tell the user — don't guess `yarn deploy`, `npm run deploy`, `make deploy`, etc.
