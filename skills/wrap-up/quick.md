@@ -16,7 +16,7 @@ Steps in order:
 
 ## Step 7 — Safe commit + push
 
-Apply shared commit hygiene from `./commit.md` (pre-commit safety + smart staging + push fallback). 
+**Read `./commit.md` now (`cat` it) — do not commit from memory of it.** It holds the pre-commit safety checks, smart staging rules, the mandatory `Session: <name> (<id>)` footer, and the push fallback.
 
 ## Closing message (人話)
 

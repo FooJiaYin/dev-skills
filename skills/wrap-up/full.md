@@ -64,7 +64,7 @@ Sweep session-created files before commit. Scan untracked files (`git status --s
 
 ## 7. Commit (PR optional)
 
-Apply shared commit hygiene from `./commit.md` (pre-commit safety + smart staging + push fallback). Then Full mode adds:
+**Read `./commit.md` now (`cat` it) — do not commit from memory of it.** It holds the pre-commit safety checks, smart staging rules, the mandatory `Session: <name> (<id>)` footer, and the push fallback; a wrap-up that skipped this read shipped 5 commits without the footer. Then Full mode adds:
 
 - **If a report was generated in step 4**, before staging, use `AskUserQuestion` (header: "Include report?") with question _"Include the report file in this commit?"_ and options:
   - `Defer to /sync-report` (default — keeps the code commit focused; `/sync-report` owns the report commit and can resolve Github Link from HEAD reliably).
