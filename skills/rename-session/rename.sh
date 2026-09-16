@@ -9,8 +9,10 @@ TITLE="$1"
 PROJECT_DIR="$HOME/.claude/projects/$(pwd | sed 's|/|-|g')"
 
 SID="${CLAUDE_CODE_SESSION_ID:-$CLAUDE_SESSION_ID}"
-if [ -n "$SID" ] && [ -f "$PROJECT_DIR/$SID.jsonl" ]; then
-  SESSION_FILE="$PROJECT_DIR/$SID.jsonl"
+SESSION_FILE=""
+# Look up by id across all projects — the shell's pwd may have drifted into a subdirectory.
+[ -n "$SID" ] && SESSION_FILE=$(ls "$HOME"/.claude/projects/*/"$SID".jsonl 2>/dev/null | head -1)
+if [ -n "$SESSION_FILE" ]; then
   SESSION_ID="$SID"
 else
   SESSION_FILE=$(ls -t "$PROJECT_DIR"/*.jsonl 2>/dev/null | head -1)
