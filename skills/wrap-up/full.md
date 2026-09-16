@@ -6,7 +6,7 @@ Run steps in order. Stop and surface failures rather than pushing through.
 
 ## 0. Scope check (large diffs only)
 
-Run `git diff --stat HEAD~1..HEAD | tail -1`. If **>25 files or >2000 lines**, ask the user via `AskUserQuestion` which steps to defer — common skips: `/code-review`, `/update-docs`, or E2E in `/verify`. Capture deferred scope in the report's `# Unsolved Issues` or the plan's Verification section. Skip this step for small diffs — **unless this session already committed or already ran the tests**: then ask (multiSelect) which steps to skip, e.g. `/verify`, `/code-review`, deploy.
+Run `git diff --stat <this session's commits> | tail -1` — find them by message / `Session:` footer (`git log --grep`), not `HEAD~1..HEAD`: in a multi-session repo HEAD is often someone else's commit. If **>25 files or >2000 lines**, ask the user via `AskUserQuestion` which steps to defer — common skips: `/code-review`, `/update-docs`, or E2E in `/verify`. Capture deferred scope in the report's `# Unsolved Issues` or the plan's Verification section. Skip this step for small diffs — **unless this session already committed or already ran the tests**: then ask (multiSelect) which steps to skip, e.g. `/verify`, `/code-review`, deploy.
 
 ## 1. Verify correctness
 
