@@ -34,9 +34,9 @@ If config is missing → dispatch `/setup-notion`, then re-read and continue.
   - Options: top ~5 candidates from `notion-search` on workspace users by name/email if available, plus a "Paste user ID" escape hatch.
   - On selection, write the resolved Notion user ID to `~/.claude/memory/notion-me.md`. **Do not** write the per-dev ID into `AGENTS.md`.
 - Query the Roadmap data source's `Current` view (by name; fall back to first non-Completed view) filtered by `Assignee == me`.
-- Present results via `AskUserQuestion` (multi-select):
+- Present results via `AskUserQuestion` (multi-select). **The tool caps at 4 options**, so scope first: filter to this repo's Project (AGENTS.md `Project (<repo>)` line if present, else the Project shared by the repo's existing `docs/tasks/` files / meeting notes); if still >4, show the 4 most recent by Time and say the rest are reachable via Other (paste URL).
   - Columns: Name · Status · Project · Time
-  - Plus a "Paste URL" escape hatch and "Cancel".
+  - The auto-provided Other doubles as the "Paste URL" escape hatch; no separate "Cancel" option needed.
 - Selected URLs flow into the per-URL loop below.
 
 ### 3. For each URL
