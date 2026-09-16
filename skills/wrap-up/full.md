@@ -134,6 +134,7 @@ Use `AskUserQuestion` (header: "Deployed?") with question _"Have you deployed th
 
 - Always invoke `/improve` (the `improve` skill) to surface refinement suggestions from session friction — skill instructions, workflow sequencing, user-instructions analysis, and `REVIEW.md` findings.
 - If suggestions are surfaced, `/improve` owns its own scope prompts (Global / Org / Local) and applies edits inline.
+- `/improve` also **commits the skill repo it edited** (its own Wrap up step). Step 7 ran before this, so don't expect it to have covered those files — and don't re-commit them here.
 
 ## Guardrails
 
