@@ -54,7 +54,7 @@ Four phases — **start-of-day sync**, **planning**, **wrap-up**, and **session 
 | [verify](skills/verify/SKILL.md) | wrap-up | Executes the implementation plan's Test plan / Verification section. **Runner, not author** — does not write new tests. |
 | [update-docs](skills/update-docs/SKILL.md) | wrap-up | Detection-driven docs updater. Scans the project's doc layout, classifies the diff, and proposes per-file edits. |
 | [code-review](skills/code-review/SKILL.md) | wrap-up | Multi-agent review of the local git diff. Writes a single `REVIEW.md` with findings tiered Critical/Warning/Suggestion/Nit (drops only auto-zeroed false positives). |
-| [report](skills/report/SKILL.md) | wrap-up | Distills the conversation, file changes, and decisions into `docs/reports/YYYY-MM-DD-[title].md`. |
+| [report](skills/report/SKILL.md) | wrap-up | Distills the conversation, file changes, and decisions into `docs/reports/YYYY-MM-DD-[title].md`. `/report transcript` exports the raw conversation instead, listing the files read/modified. |
 | [rename-session](skills/rename-session/SKILL.md) | housekeeping | Renames the current Claude Code session JSONL with a short title. Auto-invoked after `report` runs. |
 | [wrap-up](skills/wrap-up/SKILL.md) | orchestrator | Two modes. **Full** runs `verify → update-docs → code-review → report → rename-session → cleanup → commit → deploy → improve` for the primary developer. **Quick** skips quality/deploy gates and ships report + safe commit + push only — for time-constrained or git-illiterate collaborators, or when auto-invoked from `/sync`. |
 

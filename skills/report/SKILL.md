@@ -14,22 +14,32 @@ The date should be the date when the task is mainly worked on, not the date when
 
 When the user asks for the **raw conversation** rather than a synthesized report
 ("export this chat", "dump the transcript", `/report transcript`), skip every
-other step in this skill and run:
+other step in this skill and do this instead:
 
-```bash
-python3 <skill-base>/export-transcript.py [--full] [-o PATH] [--session UUID] [--since ISO]
-```
+1. **Rename first** (current session only — skip when `--session` targets another one).
+   Run `python3 <skill-base>/export-transcript.py --show-title`. Unless it prints
+   `custom-title: …` (a name the user chose — keep it), invoke `rename-session`
+   with no argument. Renaming before exporting makes the file name match the new
+   session name, since the script takes the title from the session.
+2. **Export:**
+   ```bash
+   python3 <skill-base>/export-transcript.py [--full] [-o PATH] [--session UUID] [--since ISO]
+   ```
 
 - Default output: `docs/reports/YYYY-MM-DD-<title>-transcript.md`, relative to the cwd.
-- Default body: user prompts + assistant prose only (IDE wrappers, system-reminders
-  and tool traffic stripped; `AskUserQuestion` answers kept).
-- `--full` adds thinking blocks, tool calls, and truncated tool results.
+- Default body: user prompts (incl. ones sent mid-turn, `AskUserQuestion` answers)
+  + assistant prose; IDE wrappers, system-reminders and tool traffic stripped.
+- Both modes list the files read/modified — a summary on top plus one line per
+  assistant turn, linked relative to the output file. `~` marks paths parsed from
+  Bash commands (best effort).
+- `--full` adds thinking, tool calls and truncated tool results — but never file
+  contents: Read/Write/Edit show only the path.
 - Session resolution: `--session` > `$CLAUDE_CODE_SESSION_ID` > newest transcript
   for the cwd. `--session` takes a uuid or a path (a `subagents/*.jsonl` path
   exports that subagent).
 
 Do not read the jsonl or hand-assemble the transcript yourself — the script does it.
-This is an export, not a report: no template, no plan integration, no session rename.
+This is an export, not a report: no template, no plan integration.
 
 **Sessions started on/after 2026-09-17 have a session log** (`~/.claude/projects/<proj>/<session-id>.log.md`, written by hooks via `~/agent-skills/dev-skills/bin/session-log.py`). For those, export from the log instead — it is the same user/assistant/answer dialogue, already filtered, and secrets are redacted:
 
