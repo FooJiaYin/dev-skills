@@ -397,21 +397,49 @@ def main() -> int:
         order = ["cwd", "all", "all-bak"]
         scopes = order[order.index(args.scope):]
 
-    hits: list[dict] = []
-    used_scope = args.scope
-    for sc in scopes:
-        hits = []
-        for sid, path in iter_session_files(sc, args.cwd):
-            try:
-                rec = scan_session(path, args.topic, args.touched, args.since, args.until)
-            except Exception as e:
-                print(f"# error scanning {path}: {e}", file=sys.stderr)
-                continue
-            if rec:
-                hits.append(rec)
-        used_scope = sc
+    # the session running this search always matches its own query — never a useful hit
+    self_sid = os.environ.get("CLAUDE_CODE_SESSION_ID", "")
+
+    def scan(path: Path, topics: list[str | None]) -> dict | None:
+        """AND over topics: every topic must match; topic_hits are merged."""
+        rec = None
+        for t in topics:
+            r = scan_session(path, t, args.touched, args.since, args.until)
+            if not r:
+                return None
+            if rec is None:
+                rec = r
+            else:
+                rec["topic_hits"] = rec["topic_hits"] + r["topic_hits"]
+        return rec
+
+    def search(topics: list[str | None]) -> tuple[list[dict], str]:
+        found: list[dict] = []
+        sc_used = args.scope
+        for sc in scopes:
+            found = []
+            for sid, path in iter_session_files(sc, args.cwd):
+                if self_sid and sid == self_sid:
+                    continue
+                try:
+                    rec = scan(path, topics)
+                except Exception as e:
+                    print(f"# error scanning {path}: {e}", file=sys.stderr)
+                    continue
+                if rec:
+                    found.append(rec)
+            sc_used = sc
+            if found:
+                break
+        return found, sc_used
+
+    hits, used_scope = search([args.topic])
+    words = (args.topic or "").split()
+    if not hits and len(words) > 1:
+        # the literal phrase matched nothing → retry with every word required (AND)
+        hits, used_scope = search(words)
         if hits:
-            break
+            print(f"# no literal match for {args.topic!r}; matched all of: {' + '.join(words)}")
 
     hits.sort(key=lambda h: h["first_ts"] or "")
     if args.limit:

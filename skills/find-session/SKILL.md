@@ -45,6 +45,8 @@ Matches the literal string (case-insensitive) against:
 - User text and assistant text (with `<ide_opened_file>`, `<system-reminder>`, `<command-name|message|args>`, `<local-command-*>` wrappers stripped)
 - `tool_use` input JSON (so a Bash command containing the term still matches)
 
+A multi-word topic is tried as a literal phrase first; if nothing matches, the script retries requiring **every word** (AND) and prints a `# no literal match …` line. The session running the search is always excluded (it matches its own query).
+
 **Critical filter** — sessions ship a system attachment of `type: skill_listing` containing every registered skill's description. A literal keyword from any skill description would otherwise match hundreds of unrelated sessions. The script skips these attachments.
 
 ### Touched-file mode (`--touched`)
