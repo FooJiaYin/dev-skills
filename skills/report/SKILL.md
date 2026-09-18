@@ -94,7 +94,7 @@ No task file detected → **first scan `docs/reports/` for a very recent report 
 
 ## Report Generation Process
 
-1. **Analyze Chat History**: Review the conversation to capture only the core issue, discussion points and decisions made, solutions attempted and their outcomes. If the session has a log (`python3 ~/agent-skills/dev-skills/bin/session-log.py show`), read it first: `[user]`/`[ask]` are the user's exact words (quote decisions verbatim from there, don't paraphrase from memory), `[note]` are decisions recorded as they happened, `[write]` is the authoritative file list, `[error]` the friction. This works after a compaction too, when the conversation itself is only a summary.
+1. **Analyze Chat History**: Review the conversation to capture only the core issue, discussion points and decisions made, solutions attempted and their outcomes. If the session has a log (`python3 ~/agent-skills/dev-skills/bin/session-log.py show`), read it first: `[user]`/`[ask]` are the user's exact words (quote decisions verbatim from there, don't paraphrase from memory), `[note]` are decisions recorded as they happened, `[write]` is the authoritative file list, `[error]` the friction, `[web]` every URL fetched or searched (including by subagents) — the `# References` section comes from there, not from memory. This works after a compaction too, when the conversation itself is only a summary.
 2. **Examine File Changes**: Mention only relevant changes and the main purpose of the changes
 3. **Summarize Actions Taken**: commands executed, deployments, or test runs
 

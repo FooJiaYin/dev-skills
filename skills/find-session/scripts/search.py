@@ -6,6 +6,9 @@ Usage:
   search.py --touched ~/.claude/skills/spec/SKILL.md
   search.py --topic foo --escalate         # cwd → all → all-bak until results found
   search.py --topic foo --since 2026-04-19 --until 2026-04-30 --limit 20
+  search.py --topic foo --open        # open the 1st hit's <sid>.log.md in the editor
+  search.py --topic foo --open 2      # ... the 2nd hit
+  search.py --open-id <uuid>          # open a known session's log directly, no search
 
 Notes:
   - --topic matches against user/assistant text and tool_use inputs, after stripping
@@ -109,7 +112,7 @@ def is_skill_listing(d: dict) -> bool:
     return att.get("type") == "skill_listing"
 
 
-RX_LOG_RECORD = re.compile(r"^\[(\d\d-\d\d \d\d:\d\d) (user|assistant|ask|skill|write|error|note|compact)\] ?(.*)$")
+RX_LOG_RECORD = re.compile(r"^\[(\d\d-\d\d \d\d:\d\d) (user|assistant|ask|skill|write|web|error|note|compact)\] ?(.*)$")
 
 
 def scan_log(log: Path, sid: str, topic: str | None, touched: str | None,
@@ -284,8 +287,31 @@ def format_compact(hits: list[dict]) -> str:
     out = []
     for h in hits:
         first = (h["first_user"] or "").replace("\n", " ")[:120]
-        out.append(f"{h['first_ts'] or '?':19s}  {h['session_id']}  {first}")
+        mark = "log" if log_path_for(h) else "-  "
+        out.append(f"{h['first_ts'] or '?':19s}  {h['session_id']}  {mark}  {first}")
     return "\n".join(out)
+
+
+def log_path_for(h: dict) -> Path | None:
+    """`<sid>.log.md` for a hit, or None for pre-2026-09-17 sessions that only have a jsonl."""
+    p = Path(h["path"])
+    log = p if p.suffix == ".md" else p.with_name(p.stem + ".log.md")
+    return log if log.is_file() else None
+
+
+def find_log_by_id(sid: str) -> Path | None:
+    hits = glob.glob(str(PROJECTS_ROOT / "*" / f"{sid}*.log.md"))
+    return Path(hits[0]) if hits else None
+
+
+def open_in_editor(path: Path) -> int:
+    """Open with `code` when available (VS Code CLI), else the OS opener. Prints the path either way."""
+    import shutil, subprocess
+    print(f"# open {path}")
+    if shutil.which("code"):
+        return subprocess.call(["code", str(path)])
+    opener = "open" if sys.platform == "darwin" else "xdg-open"
+    return subprocess.call([opener, str(path)])
 
 
 def format_full(hits: list[dict], tail: int = 10) -> str:
@@ -351,7 +377,17 @@ def main() -> int:
     ap.add_argument("--until", help="ISO date (YYYY-MM-DD)")
     ap.add_argument("--limit", type=int, default=0, help="0 = no limit")
     ap.add_argument("--cwd", help="override working directory for cwd-scope")
+    ap.add_argument("--open", nargs="?", const=1, type=int, metavar="N",
+                    help="after searching, open the N-th hit's session log in the editor (default 1)")
+    ap.add_argument("--open-id", metavar="UUID", help="open this session's log directly (prefix ok); no search")
     args = ap.parse_args()
+
+    if args.open_id:
+        log = find_log_by_id(args.open_id)
+        if not log:
+            print(f"# no session log for {args.open_id} (session predates 2026-09-17, or wrong id)")
+            return 1
+        return open_in_editor(log)
 
     if not args.topic and not args.touched:
         ap.error("provide --topic or --touched (or both)")
@@ -390,6 +426,16 @@ def main() -> int:
         print(format_graph(hits))
     else:
         print(format_full(hits))
+    if args.open:
+        if args.open < 1 or args.open > len(hits):
+            print(f"# --open {args.open}: only {len(hits)} hit(s)")
+            return 1
+        h = hits[args.open - 1]
+        log = log_path_for(h)
+        if not log:
+            print(f"# {h['session_id']} has no session log (predates 2026-09-17); jsonl: {h['path']}")
+            return 1
+        return open_in_editor(log)
     return 0
 
 

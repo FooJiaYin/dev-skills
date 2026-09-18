@@ -63,7 +63,7 @@ If `--touched` returns 0 across all scopes, the file was likely written by hand 
 
 ### Output formats
 
-- **compact** (default) — one line per session: `timestamp  uuid  first-user-msg`. Best for piping into `claude --resume`.
+- **compact** (default) — one line per session: `timestamp  uuid  log|-  first-user-msg` (`log` = has a session log you can `--open`). Best for piping into `claude --resume`.
 - **graph** — sorted by start time with fork detection via shared message-UUID overlap. Use when the user asks for relationships between sessions.
 - **full** — per-session block with topic-match snippets, touch events, last 10 real user messages. Use for forensic "what did we actually discuss" questions.
 
@@ -77,6 +77,7 @@ python3 scripts/search.py --touched migrations/0042.sql --output full
 - `--since YYYY-MM-DD` `--until YYYY-MM-DD` — date filter on session span
 - `--limit N` — cap result count (0 = no limit)
 - `--cwd PATH` — override the working directory used to compute the project folder (useful when running the skill from a different cwd than the project being searched)
+- `--open [N]` — after the search, open the N-th hit's `<sid>.log.md` in the editor (default 1). `--open-id <uuid>` opens a known session's log without searching (id prefix is enough). Use these whenever the user wants to *read* a session's log (「開 log」「我要看那個 session 的紀錄」「打開第二個」) — the file lives under the hidden `~/.claude/projects/` tree and is awkward to reach by hand. Sessions before 2026-09-17 have no log; the script says so and prints the jsonl path instead.
 
 ## Result format & next step
 
@@ -84,13 +85,13 @@ The compact output looks like:
 
 ```
 # scope=cwd  matches=4
-2026-04-19T23:34:12  ed64209c-9eec-4e75-9034-ae237fc05102  I want to build a spec skill based on this. do you think it should…
-2026-04-19T23:37:33  046818e9-856a-4ddd-af80-99a412b7dfc6  I want to build a spec skill based on this. do you think the spec…
-2026-04-19T23:37:33  45af61c9-5bd1-48c8-aeeb-569295eb6f99  I want to build a spec skill based on this. do you think the spec…
-2026-04-21T11:56:02  1a8058f5-beb5-4852-8dfd-6fba7989de42  review this plan
+2026-04-19T23:34:12  ed64209c-9eec-4e75-9034-ae237fc05102  -    I want to build a spec skill based on this. do you think it should…
+2026-04-19T23:37:33  046818e9-856a-4ddd-af80-99a412b7dfc6  -    I want to build a spec skill based on this. do you think the spec…
+2026-04-19T23:37:33  45af61c9-5bd1-48c8-aeeb-569295eb6f99  -    I want to build a spec skill based on this. do you think the spec…
+2026-09-17T00:19:04  9f0295b0-6a7f-461a-8d7a-ed85f717c124  log  我覺得他不懂我要什麼
 ```
 
-Tell the user they can resume any of those with `claude --resume <uuid>`. If the list is long, propose narrowing with `--touched`, a date range, or `--output graph` to see relationships.
+Tell the user they can resume any of those with `claude --resume <uuid>`, and open a `log` row with `--open N`. If the list is long, propose narrowing with `--touched`, a date range, or `--output graph` to see relationships.
 
 ## Pitfalls to surface to the user
 

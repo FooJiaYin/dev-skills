@@ -33,13 +33,12 @@ Stage deliberately. AskUserQuestion multi-select to confirm scope, especially fo
 3. **Other session's work** — files dirty but not touched by this conversation's Edit / Write / Bash. Include with explicit user confirmation.
 
 **Co-edited file (your hunks + another session's, no interactive `add -p`):** to commit ONLY your hunks from a file that also has another session's uncommitted changes, don't bundle theirs and don't lose them:
-1. `cp <file> /tmp/<file>.full` — back up the mixed working tree.
-2. `git show HEAD:<file> > <file>` — reset the working file to HEAD (read-only git + redirect; **not** `checkout`/`restore`).
-3. Re-apply only *your* edits (same Edit old/new strings; verify each anchor still exists in HEAD first).
-4. `git add <file>` → commit. The staged diff = HEAD + your hunks only (scan it for the other session's markers to confirm clean).
-5. `cp /tmp/<file>.full <file>` — restore the mixed version; their hunks return as uncommitted, ready for their author.
 
-**Working-tree-free variant (another session editing the same file, or HEAD moving mid-commit):** stage the temp blob directly — `H=$(git hash-object -w /tmp/t); git update-index --cacheinfo 100644,$H,<file>` — never resets the working file. ⚠️ A concurrent commit wipes your `update-index` staging, so in a churning tree re-stage + commit in ONE chained `&&` call. ⚠️ Commit this variant with **no pathspec** — `git commit -- <file>` re-reads the working tree and bundles the other session's hunks you just excluded. If your edits predate HEAD, rebuild them on their original base commit and `git merge-file` onto HEAD before `hash-object`.
+```bash
+python3 ~/agent-skills/dev-skills/bin/session-log.py writes --mine <file> --stage
+```
+
+Every `[write]` line in the session log stores the file's blob before and after that one tool call (`pre=`/`sha=`, kept in the repo's `.git/objects`), so diff(pre, sha) is exactly your change and the other session's hunks — before, between or after yours — are never in it. The command rebuilds HEAD + your spans with `git merge-file`, prints the blob and stages it; the working file keeps the mixed content for the other author. Then commit with **no pathspec** — `git commit -- <file>` would re-read the working tree and bundle their hunks back in. ⚠️ A concurrent commit wipes `update-index` staging, so in a churning tree run `--mine --stage` and `git commit` in ONE chained `&&` call. If it reports conflicts, another session changed the same lines: resolve by hand, don't stage the blob. It refuses (with a reason) for writes recorded before 2026-09-18 or blobs pruned by `git gc` (~2 weeks) — only then fall back to the manual route: `cp <file> /tmp/<file>.full` → `git show HEAD:<file> > <file>` → re-apply only your edits → `git add` → commit → `cp /tmp/<file>.full <file>`.
 
 Give suggestions for what to commit.
 

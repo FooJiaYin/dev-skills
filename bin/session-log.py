@@ -20,6 +20,9 @@ CLI:
   note "text"                          append [note] for the current session
   show [session-id]                    print the log
   writes [session-id]                  [write] paths grouped by repo, with dirty state (for wrap-up)
+  writes --mine <file> [--stage] [sid] co-edited file → blob of HEAD + only this session's hunks
+                                       (from the pre/post blobs each [write] stores); --stage puts
+                                       it in the index so a pathspec-less commit takes just ours
   export [session-id] [-o PATH]        readable transcript (user/assistant/ask only, secrets redacted)
   backfill --all | <session-id>        build/refresh logs from existing jsonl (one-off; Bash writes excluded)
 
@@ -39,10 +42,14 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 PROJECTS_ROOT = Path.home() / ".claude" / "projects"
-TAGS = ("user", "assistant", "ask", "skill", "write", "error", "note", "compact")
+TAGS = ("user", "assistant", "ask", "skill", "write", "web", "error", "note", "compact")
 RX_RECORD = re.compile(r"^\[(\d\d-\d\d \d\d:\d\d) (" + "|".join(TAGS) + r")\] ?(.*)$")
 ABS = re.compile(r"(/(?:Users|home|private/tmp|tmp)/[^\s'\"`;|&<>(){}]+)")
-REPRINT_MAX_TOKENS = 30_000
+# Claude Code caps EACH hook's stdout at 10,000 chars (official hooks doc; not configurable):
+# above that it saves to a file and injects only a 2KB preview. So the hook prints a short
+# briefing (pointer + derived state + an instruction) and writes the full, re-sorted log to
+# `<sid>.reprint.md` for the agent to Read in chunks.
+HOOK_STDOUT_MAX = 10_000
 MAX_WATCH_REPOS = 6
 MAX_HASH_FILES = 400
 
@@ -192,15 +199,27 @@ def dirty_files(repo: str) -> dict[str, str]:
     return out
 
 
+def has_head(repo: str) -> bool:
+    return bool(git(repo, "rev-parse", "--verify", "-q", "HEAD").strip())
+
+
 def hash_files(repo: str, rels: list[str]) -> dict[str, str]:
-    """relpath -> blob sha for existing files (batch)."""
+    """relpath -> blob sha for existing files (batch).
+
+    Uses `hash-object -w`, so every content this session saw before/after a write is kept in
+    the repo's object store and can be read back with `git cat-file -p <sha>` (that is what
+    `writes --mine` uses to split this session's hunks from another session's). Unreferenced
+    blobs are pruned by `git gc` after ~2 weeks, which covers a session's commit horizon.
+    Unborn repos (e.g. ~/.claude) get plain hashing: nothing there is ever committed.
+    """
     files = [r for r in rels if os.path.isfile(os.path.join(repo, r))]
     if not files:
         return {}
     if len(files) > MAX_HASH_FILES:  # degrade: mtime+size instead of content hash
         return {r: "stat:%d:%d" % (int(os.path.getmtime(os.path.join(repo, r))),
                                     os.path.getsize(os.path.join(repo, r))) for r in files}
-    shas = git(repo, "hash-object", "--stdin-paths", inp="\n".join(files) + "\n").split()
+    flags = ["-w"] if has_head(repo) else []
+    shas = git(repo, "hash-object", *flags, "--stdin-paths", inp="\n".join(files) + "\n").split()
     return dict(zip(files, shas))
 
 
@@ -209,6 +228,12 @@ def snapshot_repo(repo: str) -> dict[str, str]:
     st = dirty_files(repo)
     shas = hash_files(repo, list(st))
     return {r: shas.get(r, "D") for r in st}
+
+
+def head_sha(repo: str, rel: str) -> str:
+    """Blob sha of HEAD:<rel>, or 'new' when HEAD has no such file."""
+    sha = git(repo, "rev-parse", "--verify", "-q", f"HEAD:{rel}").strip()
+    return sha if sha else "new"
 
 
 def blob_sha(path: str) -> str:
@@ -280,16 +305,38 @@ def agent_suffix(hook: dict) -> str:
 
 
 # -------------------------------------------------------------- subcommands
+WRITE_TOOLS = ("Write", "Edit", "MultiEdit", "NotebookEdit")
+
+
 def cmd_snapshot(hook: dict) -> None:
+    """PreToolUse. Bash: snapshot every watched repo's dirty files. Write/Edit tools: store the
+    target file's pre-write blob. Both go to <tool_use_id>.json for `record` to diff against."""
     lp = log_path(hook)
     if not lp:
         return
-    snap = {r: snapshot_repo(r) for r in watch_repos(hook, lp)}
     key = hook.get("tool_use_id") or "latest"
+    inp = hook.get("tool_input") or {}
+    if hook.get("tool_name") in WRITE_TOOLS:
+        p = inp.get("file_path") or inp.get("notebook_path")
+        if not p:
+            return
+        repo = repo_of(p)
+        if repo and os.path.isfile(p):
+            rel = os.path.relpath(os.path.realpath(p), repo)
+            pre = hash_files(repo, [rel]).get(rel, blob_sha(p))
+        else:
+            pre = blob_sha(p) if os.path.isfile(p) else "new"
+        (snap_dir(hook) / f"{key}.json").write_text(json.dumps({"pre": {p: pre}}))
+        return
+    snap = {r: snapshot_repo(r) for r in watch_repos(hook, lp)}
     (snap_dir(hook) / f"{key}.json").write_text(json.dumps(snap))
 
 
-def record_write(lp: Path, hook: dict, path: str, tool: str, sha: str | None = None) -> None:
+def record_write(lp: Path, hook: dict, path: str, tool: str, sha: str | None = None,
+                 pre: str | None = None) -> None:
+    """One [write] line: path tool= pre= sha= repo=. `pre` is the blob before this write
+    ('new' if the file did not exist, '?' if unknown), `sha` the blob after; both are readable
+    with `git cat-file -p` in `repo`, so diff(pre, sha) is exactly this write's hunks."""
     repo = repo_of(path) or "-"
     if sha is None:
         if repo != "-" and os.path.isfile(path):
@@ -297,7 +344,8 @@ def record_write(lp: Path, hook: dict, path: str, tool: str, sha: str | None = N
             sha = hash_files(repo, [rel]).get(rel, blob_sha(path))
         else:
             sha = blob_sha(path) if os.path.isfile(path) else "D"
-    append(lp, "write", f"{path} tool={tool} sha={short(sha)} repo={repo}{agent_suffix(hook)}")
+    pre = pre or "?"
+    append(lp, "write", f"{path} tool={tool} pre={short(pre)} sha={short(sha)} repo={repo}{agent_suffix(hook)}")
 
 
 def cmd_record(hook: dict) -> None:
@@ -315,14 +363,31 @@ def cmd_record(hook: dict) -> None:
         append(lp, "error", f"tool={tool} {what}\n  {head}{agent_suffix(hook)}")
         return
 
-    if tool in ("Write", "Edit", "MultiEdit", "NotebookEdit"):
+    if tool in WRITE_TOOLS:
         p = inp.get("file_path") or inp.get("notebook_path")
         if p:
-            record_write(lp, hook, p, tool)
+            key = hook.get("tool_use_id") or "latest"
+            sp = snap_dir(hook) / f"{key}.json"
+            pre = None
+            try:
+                pre = (json.loads(sp.read_text()).get("pre") or {}).get(p)
+                sp.unlink()
+            except (OSError, ValueError):
+                pass
+            record_write(lp, hook, p, tool, pre=pre)
         return
 
     if tool == "Skill":
         append(lp, "skill", f"{inp.get('skill', '?')} {inp.get('args') or ''}".rstrip())
+        return
+
+    if tool in ("WebFetch", "WebSearch"):  # reference sources for reports; subagents' fetches included
+        if tool == "WebFetch":
+            what = re.sub(r"\s+", " ", str(inp.get("prompt") or ""))[:100]
+            body = f"fetch {inp.get('url', '?')}" + (f" — {what}" if what else "")
+        else:
+            body = f"search \"{inp.get('query', '?')}\""
+        append(lp, "web", body + agent_suffix(hook))
         return
 
     if tool == "Bash":
@@ -341,7 +406,9 @@ def cmd_record(hook: dict) -> None:
             prev = before.get(repo, {})
             for rel, sha in after.items():
                 if prev.get(rel) != sha:
-                    record_write(lp, hook, os.path.join(repo, rel), "Bash", sha)
+                    # not dirty before the command → its content was HEAD's (or it did not exist)
+                    pre = prev.get(rel) or (head_sha(repo, rel) if has_head(repo) else "?")
+                    record_write(lp, hook, os.path.join(repo, rel), "Bash", sha, pre=pre)
             for rel in prev:
                 if rel not in after and os.path.isfile(os.path.join(repo, rel)):
                     # was dirty, now clean: committed or reverted by this command
@@ -495,26 +562,42 @@ def cmd_said(hook: dict) -> None:
     save_state(lp, st)
 
 
-def render_reprint(lp: Path, hook: dict) -> str:
+def render_reprint(lp: Path, hook: dict) -> tuple[str, str]:
+    """(full chronological view, derived-state tail). Nothing is truncated here."""
     recs = parse_log(lp)
     if not recs:
         return ""
-    total = sum(est_tokens(r["body"]) for r in recs)
-    if total > REPRINT_MAX_TOKENS:
-        for r in recs:  # oldest assistant bodies first
-            if r["tag"] == "assistant" and total > REPRINT_MAX_TOKENS:
-                first = r["body"].splitlines()[0] if r["body"] else ""
-                total -= est_tokens(r["body"]) - est_tokens(first)
-                r["body"] = first + f"  …(截斷，全文見 {lp.name})"
-    head = lp.read_text(encoding="utf-8", errors="replace").partition("\n")[0]
-    lines = [f"[session-log] 本 session 的工作紀錄（來自 transcript／git，不是摘要）：{lp}", head]
+    # The file is append-order (writes land live, user/assistant land at Stop), so re-sort by
+    # timestamp for reading. Runs of [write] collapse to one line: the actionable subset
+    # (still uncommitted) is tabulated at the end, the rest is ledger detail for `writes`/find-session.
+    recs.sort(key=lambda r: r["ts"])
+    merged: list[dict] = []
     for r in recs:
-        lines.append(f"[{r['ts']} {r['tag']}] {r['body']}")
+        if r["tag"] == "write":
+            m = re.search(r"repo=(\S+)", r["body"])
+            repo = m.group(1) if m else "-"
+            if merged and merged[-1]["tag"] == "write":
+                merged[-1]["_repos"][repo] = merged[-1]["_repos"].get(repo, 0) + 1
+                continue
+            merged.append({"ts": r["ts"], "tag": "write", "body": "", "_repos": {repo: 1}})
+        else:
+            merged.append(r)
+    for r in merged:
+        if r["tag"] == "write":
+            n = sum(r["_repos"].values())
+            parts = "、".join(f"{k} {v}" for k, v in sorted(r["_repos"].items(), key=lambda kv: -kv[1]))
+            r["body"] = f"{n} 次寫入：{parts}（未 commit 的列在文末；逐檔見 log）"
+    recs = merged
+    head = lp.read_text(encoding="utf-8", errors="replace").partition("\n")[0]
+    body = [head]
+    for r in recs:
+        body.append(f"[{r['ts']} {r['tag']}] {r['body']}")
+    lines: list[str] = []
 
     # derived state: uncommitted files this session wrote, session commits
     sid = lp.stem.replace(".log", "")
     table = uncommitted_writes(lp)
-    repos = sorted({re.search(r"repo=(\S+)", r["body"]).group(1) for r in recs
+    repos = sorted({re.search(r"repo=(\S+)", r["body"]).group(1) for r in parse_log(lp)
                     if r["tag"] == "write" and re.search(r"repo=(\S+)", r["body"])} - {"-"})
     if table:
         lines.append("")
@@ -530,17 +613,38 @@ def render_reprint(lp: Path, hook: dict) -> str:
             if log:
                 lines.append(repo)
                 lines.extend("  " + l for l in log.splitlines())
-    return "\n".join(lines)
+    return "\n".join(body), "\n".join(lines)
 
 
 def cmd_reprint(hook: dict) -> None:
+    """SessionStart(compact|resume): refresh the log, write the readable view to `<sid>.reprint.md`,
+    print a ≤10k briefing that tells the agent to Read that file before doing anything else."""
     lp = log_path(hook)
     if not lp:
         return
     cmd_said(hook)
-    out = render_reprint(lp, hook)
-    if out:
-        print(out)
+    body, tail = render_reprint(lp, hook)
+    if not body:
+        return
+    view = lp.parent / (lp.name[: -len(".log.md")] + ".reprint.md")
+    view.write_text(body + "\n", encoding="utf-8")
+    n_lines = body.count("\n") + 1
+    head = body.partition("\n")[0]
+    out = [
+        f"[session-log] 本 session 的工作紀錄（來自 transcript／git，不是摘要）已整理到：{view}",
+        head,
+        f"共 {n_lines} 行、{len(body)} 字元。hook 輸出上限 10k 字元，所以全文不在這裡。",
+        "**先做這件事再回話**：用 Read 工具（不是 cat：Bash 輸出超過 30k 字元會被存檔、只剩 2KB 預覽）"
+        "把上面那個檔從頭讀到最後一行；Read 每頁約 25k token，照它結尾提示的 offset 接著讀，直到沒有下一頁。"
+        "裡面是使用者與你的原話（[user]/[assistant]/[ask]）、決定（[note]）、錯誤（[error]），"
+        "compact 摘要有損，原話以那個檔為準。讀完再處理使用者的下一句。",
+    ]
+    if tail:
+        out.append(tail)
+    text = "\n".join(out)
+    if len(text) > HOOK_STDOUT_MAX - 300:
+        text = text[: HOOK_STDOUT_MAX - 300] + "\n…(未 commit 表過長，其餘用 `session-log.py writes` 看)"
+    print(text)
 
 
 WARN_WINDOW_S = 48 * 3600
@@ -639,9 +743,29 @@ def cmd_note(text: str) -> None:
 def _cli_log(sid: str | None) -> Path:
     sid = sid or os.environ.get("CLAUDE_CODE_SESSION_ID")
     lp = log_path({"session_id": sid}) if sid else None
+    if sid and (not lp or not lp.exists()):  # id prefix is enough
+        hits = sorted(PROJECTS_ROOT.glob(f"*/{sid}*.log.md"))
+        lp = hits[0] if len(hits) == 1 else None
+        if len(hits) > 1:
+            sys.exit(f"{sid} matches {len(hits)} sessions: " + ", ".join(h.name[:8] for h in hits))
     if not lp or not lp.exists():
         sys.exit(f"no session log for {sid or '(no session id)'}; older sessions only have the jsonl")
     return lp
+
+
+RX_WRITE = re.compile(r"(\S+) tool=(\S+) (?:pre=(\S+) )?sha=(\S+) repo=(\S+)")
+
+
+def write_records(lp: Path) -> list[dict]:
+    out = []
+    for r in parse_log(lp):
+        if r["tag"] != "write":
+            continue
+        m = RX_WRITE.match(r["body"])
+        if m:
+            out.append({"ts": r["ts"], "path": m.group(1), "tool": m.group(2),
+                        "pre": m.group(3) or "?", "sha": m.group(4), "repo": m.group(5)})
+    return out
 
 
 def cmd_show(sid: str | None) -> None:
@@ -651,18 +775,16 @@ def cmd_show(sid: str | None) -> None:
 def uncommitted_writes(lp: Path) -> dict[str, list[str]]:
     """repo -> lines describing this session's still-dirty files."""
     writes: dict[str, dict] = {}
-    for r in parse_log(lp):
-        if r["tag"] != "write":
-            continue
-        m = re.match(r"(\S+) tool=(\S+) sha=(\S+) repo=(\S+)", r["body"])
-        if m:
-            writes[m.group(1)] = {"sha": m.group(3), "repo": m.group(4)}
+    for w in write_records(lp):  # key by realpath: Write logs the given path, Bash the resolved one
+        writes[os.path.realpath(w["path"])] = {"sha": w["sha"], "repo": w["repo"]}
     out: dict[str, list[str]] = {}
     by_repo: dict[str, list[str]] = {}
     for p, w in writes.items():
         if w["repo"] != "-":
             by_repo.setdefault(w["repo"], []).append(p)
     for repo, paths in sorted(by_repo.items()):
+        if not has_head(repo):
+            continue  # unborn repo (e.g. ~/.claude): everything is "untracked", nothing is committable state
         dirty = dirty_files(repo)
         rows = []
         for p in sorted(paths):
@@ -680,8 +802,106 @@ def uncommitted_writes(lp: Path) -> dict[str, list[str]]:
     return out
 
 
-def cmd_writes(sid: str | None) -> None:
-    lp = _cli_log(sid)
+def cat_blob(repo: str, sha: str) -> str | None:
+    r = subprocess.run(["git", "-C", repo, "cat-file", "-p", sha], capture_output=True, text=True)
+    return r.stdout if r.returncode == 0 else None
+
+
+def cmd_mine(lp: Path, path: str, stage: bool) -> int:
+    """Rebuild `path` as HEAD + only this session's hunks, from the pre/post blobs in [write].
+
+    Each [write] line is one atomic tool call, so diff(pre, sha) is exactly this session's
+    change; another session's hunks (before, between or after ours) never appear in any span.
+    Consecutive writes with nobody in between coalesce into one span. Spans are applied onto
+    HEAD with `git merge-file` (three-way: base=pre, ours=HEAD+earlier spans, theirs=post).
+    Prints the resulting blob sha; with --stage it also puts it in the index so
+    `git commit` (NO pathspec) commits only our hunks while the mixed working file stays put.
+    """
+    path = os.path.realpath(path)
+    repo = repo_of(path)
+    if not repo or not has_head(repo):
+        sys.exit(f"{path}: not inside a git repo with a HEAD")
+    rel = os.path.relpath(path, repo)
+    recs = [w for w in write_records(lp) if os.path.realpath(w["path"]) == path]
+    if not recs:
+        sys.exit(f"{rel}: no [write] record in this session's log")
+    spans: list[list[str]] = []
+    blind: str | None = None         # ts of a still-pending write that has no pre/post blob
+    for w in recs:
+        if w["sha"] == "clean":      # committed/reverted by our own command: HEAD has it now
+            spans, blind = [], None
+            continue
+        if w["sha"] == "D":
+            sys.exit(f"{rel}: this session deleted the file; use `git rm`")
+        if w["pre"] == "?" or w["pre"].startswith("stat:") or w["sha"].startswith("stat:"):
+            blind = blind or w["ts"]
+            continue
+        if spans and spans[-1][1] == w["pre"]:
+            spans[-1][1] = w["sha"]
+        else:
+            spans.append([w["pre"], w["sha"]])
+    if blind:
+        sys.exit(f"{rel}: [write] at {blind} has no pre/post blob (recorded before 2026-09-18, "
+                 "or repo too large to hash) — fall back to the manual co-edit steps in commit.md")
+    if not spans:
+        sys.exit(f"{rel}: every write of this session is already in HEAD")
+
+    head_blob = head_sha(repo, rel)
+    cur = "" if head_blob == "new" else (cat_blob(repo, head_blob) or "")
+    conflicts = 0
+    import tempfile
+    tmp = Path(tempfile.mkdtemp(prefix="session-log-mine-"))
+    for i, (pre, post) in enumerate(spans, 1):
+        pre_txt = "" if pre == "new" else cat_blob(repo, pre)
+        post_txt = cat_blob(repo, post)
+        if pre_txt is None or post_txt is None:
+            sys.exit(f"{rel}: blob {pre if pre_txt is None else post} is gone from {repo}/.git/objects "
+                     "(pruned by gc?) — fall back to the manual co-edit steps in commit.md")
+        if pre_txt == cur:            # nobody else touched it: just take our version
+            cur = post_txt
+            continue
+        f_cur, f_pre, f_post = (tmp / f"{i}.cur", tmp / f"{i}.pre", tmp / f"{i}.post")
+        f_cur.write_text(cur, encoding="utf-8"); f_pre.write_text(pre_txt, encoding="utf-8"); f_post.write_text(post_txt, encoding="utf-8")
+        r = subprocess.run(["git", "-C", repo, "merge-file", "-p", "-L", "HEAD+mine", "-L", "before-my-write",
+                            "-L", "after-my-write", str(f_cur), str(f_pre), str(f_post)],
+                           capture_output=True, text=True)
+        if r.returncode < 0 or r.returncode > 127:
+            sys.exit(f"{rel}: git merge-file failed on span {i}: {r.stderr.strip()}")
+        conflicts += r.returncode      # merge-file exits with the number of conflicts
+        cur = r.stdout
+    out = tmp / "result"
+    out.write_text(cur, encoding="utf-8")
+    sha = git(repo, "hash-object", "-w", str(out)).strip()
+    print(f"{rel}: HEAD + {len(spans)} span(s) of this session → blob {sha[:12]}")
+    if head_blob == "new":
+        print(f"  new file, {cur.count(chr(10))} lines")
+    else:
+        stat = git(repo, "diff", "--stat", head_blob, sha).strip()
+        if stat:
+            print("  " + stat.splitlines()[-1].strip())
+    if conflicts:
+        print(f"  ⚠ {conflicts} conflict(s): another session changed the same lines; markers are in the blob. "
+              "Resolve by hand, not by staging this.")
+        return 1
+    mode = (git(repo, "ls-files", "-s", "--", rel).split() or ["100644"])[0]
+    if stage:
+        git(repo, "update-index", "--add", "--cacheinfo", f"{mode},{sha},{rel}")
+        print(f"  staged. Commit with NO pathspec (`git commit -m …`, not `git commit -- {rel}`); "
+              "the working file keeps the other session's hunks.")
+    else:
+        print(f"  review: git diff HEAD {sha[:12]}   stage: git update-index --add --cacheinfo {mode},{sha},{rel}")
+    return 0
+
+
+def cmd_writes(argv: list[str]) -> None:
+    """writes [sid]                      → per-repo table of this session's still-dirty files
+    writes --mine <file> [--stage] [sid] → HEAD + only this session's hunks for a co-edited file"""
+    if "--mine" in argv:
+        i = argv.index("--mine")
+        path = argv[i + 1]
+        rest = [a for j, a in enumerate(argv) if j not in (i, i + 1) and a != "--stage"]
+        sys.exit(cmd_mine(_cli_log(rest[0] if rest else None), path, "--stage" in argv))
+    lp = _cli_log(argv[0] if argv else None)
     table = uncommitted_writes(lp)
     if not table:
         print("(no uncommitted files written by this session)")
@@ -773,7 +993,7 @@ def main(argv: list[str]) -> None:
         cmd_show(argv[2] if len(argv) > 2 else None)
         return
     if sub == "writes":
-        cmd_writes(argv[2] if len(argv) > 2 else None)
+        cmd_writes(argv[2:])
         return
     if sub == "export":
         cmd_export(argv[2:])
