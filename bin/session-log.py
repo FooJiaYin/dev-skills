@@ -616,6 +616,65 @@ def render_reprint(lp: Path, hook: dict) -> tuple[str, str]:
     return "\n".join(body), "\n".join(lines)
 
 
+NEIGHBOR_WINDOW_S = 24 * 3600
+NEIGHBOR_N = 5
+
+
+def pending_ask(jsonl: Path) -> str | None:
+    """First question of an AskUserQuestion that has no tool_result yet (the session is parked
+    on it). Only the jsonl knows: `said` runs at Stop, and a turn waiting on a popup never stops."""
+    try:
+        with jsonl.open("rb") as fh:
+            fh.seek(0, os.SEEK_END)
+            fh.seek(max(0, fh.tell() - 300_000))
+            tail = fh.read().decode("utf-8", errors="replace")
+    except OSError:
+        return None
+    asked: dict[str, str] = {}
+    for line in tail.splitlines():
+        if "AskUserQuestion" not in line and "tool_result" not in line:
+            continue
+        try:
+            e = json.loads(line)
+        except ValueError:
+            continue
+        content = (e.get("message") or {}).get("content")
+        if not isinstance(content, list):
+            continue
+        for b in content:
+            if b.get("type") == "tool_use" and b.get("name") == "AskUserQuestion":
+                qs = (b.get("input") or {}).get("questions") or [{}]
+                asked[b.get("id", "")] = str(qs[0].get("question", "")).strip()
+            elif b.get("type") == "tool_result":
+                asked.pop(b.get("tool_use_id", ""), None)
+    return next(iter(asked.values()), None) if asked else None
+
+
+def neighbors(lp: Path) -> list[str]:
+    """Other sessions of this project active in the last 24h: what the user last said there and
+    whether one is parked on an unanswered question. Shown on compact/resume so this session
+    neither re-derives what a sibling already answered nor lets the user answer the wrong one."""
+    now = time.time()
+    logs = sorted((p for p in lp.parent.glob("*.log.md")
+                   if p != lp and now - p.stat().st_mtime < NEIGHBOR_WINDOW_S),
+                  key=lambda p: p.stat().st_mtime, reverse=True)[:NEIGHBOR_N]
+    rows = []
+    for p in logs:
+        sid = p.name[: -len(".log.md")]
+        title = p.read_text(encoding="utf-8", errors="replace").partition("\n")[0].lstrip("# ").split(" · ")[0]
+        recs = parse_log(p)
+        last_user = next((r for r in reversed(recs) if r["tag"] == "user"), None)
+        ask = pending_ask(p.with_name(sid + ".jsonl"))
+        when = time.strftime("%m-%d %H:%M", time.localtime(p.stat().st_mtime))
+        row = f"- {sid[:8]}「{title}」{when}"
+        if ask:
+            row += f"  ⏳ 停在未回答的問題：「{_one_line(ask, 70)}」"
+        elif last_user:
+            row += f"  最後一句：「{_one_line(last_user['body'], 70)}」"
+        rows.append(row)
+    return rows
+
+
 def cmd_reprint(hook: dict) -> None:
     """SessionStart(compact|resume): refresh the log, write the readable view to `<sid>.reprint.md`,
     print a ≤10k briefing that tells the agent to Read that file before doing anything else."""
@@ -641,6 +700,11 @@ def cmd_reprint(hook: dict) -> None:
     ]
     if tail:
         out.append(tail)
+    sibs = neighbors(lp)
+    if sibs:
+        out += ["", "== 同專案 24h 內其他 session（使用者問到它們談過的題目時先讀它的 log；"
+                    "有 ⏳ 的先提醒使用者那邊還在等）==", *sibs,
+                "  開 log：find-session 的 search.py --open-id <id>"]
     text = "\n".join(out)
     if len(text) > HOOK_STDOUT_MAX - 300:
         text = text[: HOOK_STDOUT_MAX - 300] + "\n…(未 commit 表過長，其餘用 `session-log.py writes` 看)"
