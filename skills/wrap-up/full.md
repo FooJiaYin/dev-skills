@@ -37,7 +37,7 @@ Run `git diff --stat <this session's commits> | tail -1` — find them by messag
 
 ## 5. Session hygiene
 
-- After saving the report (and any plan integration), invoke the `rename-session` skill with the report's `YYYY-MM-DD-[title]` as the argument so the session name matches the report. For multiple reports, use the first report's title.
+- After saving the report (and any plan integration), invoke the `rename-session` skill with the report's `YYYY-MM-DD-[title]` as the argument so the session name matches the report. It routes Codex through app-server and Claude Code through its JSONL helper. For multiple reports, use the first report's title.
 
 ## 6. Clean up temp files
 

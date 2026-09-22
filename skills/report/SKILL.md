@@ -1,8 +1,9 @@
 ---
 name: report
 description: Analyze the current chat conversation, file changes, and actions taken to create a comprehensive report. Saves to docs/reports/YYYY-MM-DD-[title].md. Also exports the raw conversation transcript to markdown via `/report transcript`.
-argument-hint: "[optional title] | transcript [--full]"
 ---
+
+**Arguments:** `[optional title] | transcript [--full]`
 
 Analyze the current chat conversation, file changes, and actions taken to create a comprehensive report using the specified template.
 
@@ -11,6 +12,16 @@ Save the report as `docs/reports/YYYY-MM-DD-[title].md`
 The date should be the date when the task is mainly worked on, not the date when the report is generated.
 
 ## Transcript Export (`/report transcript`)
+
+**Codex host gate:** When `CODEX_THREAD_ID` or `CODEX_SESSION_ID` is set, export through app-server and skip the remaining Claude-specific steps in this section:
+
+```bash
+python3 <dev-skills-root>/bin/codex-session.py export [--full] [-o PATH] [--thread UUID]
+```
+
+The helper pages through persisted turns, emits readable user/assistant Markdown by default, and requires an explicit environment ID or `--thread`. A sandboxed host may require approval because the short-lived app-server opens state under `~/.codex`. Do not parse Codex rollout JSONL or mutate its SQLite state directly.
+
+The remaining transcript instructions apply to Claude Code.
 
 When the user asks for the **raw conversation** rather than a synthesized report
 ("export this chat", "dump the transcript", `/report transcript`), skip every

@@ -1,10 +1,11 @@
 ---
 name: rename-session
-description: Rename the current Claude Code session with a short, descriptive title derived from conversation context. AUTO-INVOKE (no confirmation) after generating a report or when a session is newly forked/started. ASK THE USER FIRST before invoking when a major task completes or when the session name is generic/unreadable.
-argument-hint: "[optional title]"
+description: Rename the current Claude Code or Codex session with a short, descriptive title derived from conversation context. AUTO-INVOKE (no confirmation) after generating a report or when a session is newly forked/started. ASK THE USER FIRST before invoking when a major task completes or when the session name is generic/unreadable.
 ---
 
-Rename the current session by appending a `custom-title` entry to its JSONL file — the same mechanism the built-in `/rename` uses.
+**Arguments:** `[optional title]`
+
+Rename the current session through the host's supported session interface.
 
 ## Steps
 
@@ -12,7 +13,17 @@ Rename the current session by appending a `custom-title` entry to its JSONL file
    - If an argument was provided, use it directly.
    - Otherwise, derive a concise title (2–5 words, kebab-case) from the conversation's main topic or the most recent report filename (`YYYY-MM-DD-title`).
 
-2. Run the helper script, quoting the title:
+2. Detect the host from environment variables, then run the matching helper with the title quoted.
+
+   **Codex** (`CODEX_THREAD_ID` or `CODEX_SESSION_ID` is set):
+
+   ```bash
+   python3 <dev-skills-root>/bin/codex-session.py rename '<TITLE>'
+   ```
+
+   The helper uses `thread/name/set`, reads the thread back, and fails if the saved title differs. A sandboxed host may require approval because the short-lived app-server opens state under `~/.codex`.
+
+   **Claude Code**:
 
    ```bash
    bash rename.sh '<TITLE>'
@@ -29,5 +40,6 @@ Rename the current session by appending a `custom-title` entry to its JSONL file
 
 ## Notes
 
+- The Codex helper requires an explicit ID from `CODEX_THREAD_ID`, `CODEX_SESSION_ID`, or `--thread`; it never guesses the newest session or edits Codex SQLite/rollout files directly.
 - The script writes `{"type":"custom-title","customTitle":"...","sessionId":"..."}` to the current session's JSONL at `~/.claude/projects/<encoded-cwd>/<session-id>.jsonl`.
 - Claude Code reads the latest `custom-title` entry on session load.
