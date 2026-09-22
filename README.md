@@ -158,6 +158,11 @@ Session operations use one cross-host entry point: `bin/session-adapter.py`
 provides `show`, `rename`, and `export`, then delegates to the Claude Code or
 Codex backend. `bin/codex-session.py` remains as a compatibility shim.
 
+In shared skill instructions, Claude Code's `AskUserQuestion` maps to Codex's
+`request_user_input` whenever that tool is exposed by the current host. Use the
+host's approval mechanism for shell permissions; fall back to a concise chat
+question only when the structured input tool is unavailable.
+
 ### Gemini CLI
 
 Install all skills from this repo (user-level / global):

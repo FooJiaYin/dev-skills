@@ -65,7 +65,16 @@ session: unified-session-adapter (01a0cab7-4292-7282-84db-a36db332fcf8)
 - Codex 維持受支援的 app-server 邊界；Claude Code 繼續使用成熟的 session log、JSONL exporter 與 rename script。
 - 本次 Quick wrap-up 依使用者指示不 push；完整品質流程中的 `/verify`、多 agent `/code-review`、deploy 與 `/improve` 亦按 Quick 模式跳過。本次實作前已做上述針對性的整合驗證與簡單人工 review。
 
+# Updates
+
+## 2026-09-23：Codex 結構化提問工具映射
+
+- 修正 compatibility 說明的模糊處：shared skill 中的 Claude Code `AskUserQuestion` 在 Codex 應對應 `request_user_input`，前提是目前 host/client 有 expose 該工具；不應因工具名稱不同而直接退回純文字問題。
+- README 已明確記錄此映射。偏好或澄清問題使用結構化提問；shell sandbox permission 仍走 host escalation approval；只有工具未提供時才使用簡短 chat 問句。
+- `git show -- README.md` 確認本次 commit 只新增五行映射說明；`git diff --cached --name-only` 在提交後為空，沒有納入 Codex thread `01a0c89a-35ee-7611-9189-a25de549876c` 的 README migration 區段。
+- 此更新只有文件映射，未執行應用程式測試；Quick 模式跳過正式 `/verify` 與多 agent `/code-review`。
+
 # Suggested Doc Updates
 
 - `README.md` 已新增可獨立提交的共用入口說明，記錄 `bin/session-adapter.py` 的 `show / rename / export` 與 `bin/codex-session.py` 相容 shim。
-- README 的完整 Codex compatibility table 與 `references/agent-runtime.md` 目前屬於 Codex thread `01a0c89a-35ee-7611-9189-a25de549876c`（`Investigate Claude Code settings`）尚未提交的 migration。該 session 後續提交時，應把表格與 runtime guide 的 Codex-only helper 敘述更新為共用 facade；本次不夾帶它的其餘 hunks。
+- README 的完整 Codex compatibility table 與 `references/agent-runtime.md` 目前屬於 Codex thread `01a0c89a-35ee-7611-9189-a25de549876c`（`Investigate Claude Code settings`）尚未提交的 migration。該 session 後續提交時，應把表格與 runtime guide 的 Codex-only helper 敘述更新為共用 facade，並在 `AskUserQuestion` mapping 直接寫出 `request_user_input`；本次不夾帶它的其餘 hunks。
