@@ -96,7 +96,7 @@ No task file detected → **first scan `docs/reports/` for a very recent report 
 
 1. **Analyze Chat History**: Review the conversation to capture only the core issue, discussion points and decisions made, solutions attempted and their outcomes. If the session has a log (`python3 ~/agent-skills/dev-skills/bin/session-log.py show`), read it first: `[user]`/`[ask]` are the user's exact words (quote decisions verbatim from there, don't paraphrase from memory), `[note]` are decisions recorded as they happened, `[write]` is the authoritative file list, `[error]` the friction, `[web]` every URL fetched or searched (including by subagents) — the `# References` section comes from there, not from memory. This works after a compaction too, when the conversation itself is only a summary.
 2. **Examine File Changes**: Mention only relevant changes and the main purpose of the changes
-3. **Summarize Actions Taken**: commands executed, deployments, or test runs
+3. **Summarize Actions Taken**: commands executed, deployments, and test runs. Preserve the evidence needed to assess the result: command or scenario, representative input, expected behavior, actual outcome, and any limitation.
 
 ## Available Report Templates
 
@@ -147,8 +147,7 @@ After saving the report (and any plan integration), invoke the `rename-session` 
 ## Report Writing Guidelines
 
 1. **Prioritize final file changes**: User may make edits to the file out of the conversation history. Read relevant files to understand the final code.
-2. **Be short**: Each section should be 1–3 sentences max. Description should be brief.
-   instead of pasting the whole code, try to use high level descriptions in bullet point form. only include lines of code that is relevant and significant.
+2. **Scale detail to the work**: Keep simple changes brief. For feature work, describe each material behavior and implementation area in enough detail that a reader who did not see the session can tell what changed. Use focused bullets instead of pasting code; include only relevant snippets.
 3. **Be Specific**: Include exact error messages, file paths, and code snippets only if relevant
 4. **Step-by-Step**: Show what was tried and what finally worked
 5. **Include Context**: Explain why certain decisions were made if necessary.
@@ -156,3 +155,4 @@ After saving the report (and any plan integration), invoke the `rename-session` 
 7. **Complete**: Make sure everything you've done is included in the report, not the recent one, but the full conversation
 8. **Track issue resolution**: solved issues from `/code-review` or the conversation go in `# Updates`; deferred issues go in `# Unsolved Issues`. Do not let either disappear from the project's record.
 9. **Link the session**: every report and task file gets a `session:` frontmatter key — `session: <title> (<id>)`, id from `$CLAUDE_CODE_SESSION_ID`, title from the session log's line 1 — so a reader can open `~/.claude/projects/<proj>/<id>.log.md` or `git log --grep=<id>`. Multiple sessions → comma-separated. Add the key to existing frontmatter, or create a minimal `---` block if the file has none.
+10. **Make verification reviewable**: Do not collapse non-trivial verification into “tests passed.” List each command or manual scenario, what it exercised, and its observed result. For table-driven or browser checks, retain representative inputs and precedence/error cases. State what was deliberately not exercised, such as a destructive write or production deployment.

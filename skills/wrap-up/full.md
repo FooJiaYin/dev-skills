@@ -31,6 +31,7 @@ Run `git diff --stat <this session's commits> | tail -1` — find them by messag
 ## 4. Generate report
 
 - Invoke `/report` (the `report` skill) to capture what was done — conversation, file changes, actions — into `docs/reports/YYYY-MM-DD-[title].md`.
+- Carry `/verify` evidence into the report: name the checks and manual scenarios, include representative inputs and observed results, and record anything intentionally not exercised. A bare “tests passed” is insufficient for non-trivial feature work.
 - Skip if the change is trivial (typo, single-line fix) or the user opts out.
 - After `/report` completes successfully, delete `REVIEW.md` — its findings are now folded into the report's `# Updates` and `# Unsolved Issues` sections, and leaving it behind causes stale-state confusion on the next wrap-up. If `/report` was skipped, leave `REVIEW.md` in place — step 6 will offer to clean it up.
 

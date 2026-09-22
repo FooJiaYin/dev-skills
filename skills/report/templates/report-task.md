@@ -6,14 +6,19 @@
 
 # Changes Made
 
-- [High level description of what have you try, in bullet points]
+- [Describe each material behavior or implementation area and why it changed]
   `file-path.js`
 
 ```
 [Include any code snippets or commands, only include lines of code that is relevant]
 ```
 
-Result: [Success / any error messages or unexpected behavior]
+Result: [Observed behavior, errors, or limitations]
+
+# Verification
+
+- `[command or manual scenario]` — [what it exercised, representative input, expected behavior, and observed result]
+- [State any intentionally untested write, deployment, or other practical limit]
 
 # Updates
 
@@ -23,6 +28,6 @@ Result: [Success / any error messages or unexpected behavior]
 
 # Result
 
-- Mention any test run and its outcome (success / error message)
+- Summarize the user-visible outcome and any remaining limitation
 - If the output is saved as a file, give the path of the output file (.json or .csv)
 - Any impact on other code
