@@ -13,23 +13,13 @@ Rename the current session through the host's supported session interface.
    - If an argument was provided, use it directly.
    - Otherwise, derive a concise title (2–5 words, kebab-case) from the conversation's main topic or the most recent report filename (`YYYY-MM-DD-title`).
 
-2. Detect the host from environment variables, then run the matching helper with the title quoted.
-
-   **Codex** (`CODEX_THREAD_ID` or `CODEX_SESSION_ID` is set):
+2. Run the shared adapter with the title quoted:
 
    ```bash
-   python3 <dev-skills-root>/bin/codex-session.py rename '<TITLE>'
+   python3 <dev-skills-root>/bin/session-adapter.py rename '<TITLE>'
    ```
 
-   The helper uses `thread/name/set`, reads the thread back, and fails if the saved title differs. A sandboxed host may require approval because the short-lived app-server opens state under `~/.codex`.
-
-   **Claude Code**:
-
-   ```bash
-   bash rename.sh '<TITLE>'
-   ```
-
-   The script derives the project dir from `pwd`. Invoke it from the session's original cwd (the one announced at session start), not from a subdirectory you may have `cd`-ed into for earlier steps. If unsure, use a subshell: `(cd "$ORIGINAL_CWD" && bash rename.sh '<TITLE>')`.
+   It detects Claude Code or Codex from the session ID environment variables, delegates to that host's supported storage interface, reads the saved title back, and fails if verification differs. For a historical session, pass `--host claude|codex --session <ID>` explicitly. A sandboxed Codex host may require approval because its short-lived app-server opens state under `~/.codex`.
 
 3. Confirm to the user that the session was renamed. Note: the VS Code sidebar may show the old name until a window reload.
 
@@ -40,6 +30,7 @@ Rename the current session through the host's supported session interface.
 
 ## Notes
 
-- The Codex helper requires an explicit ID from `CODEX_THREAD_ID`, `CODEX_SESSION_ID`, or `--thread`; it never guesses the newest session or edits Codex SQLite/rollout files directly.
-- The script writes `{"type":"custom-title","customTitle":"...","sessionId":"..."}` to the current session's JSONL at `~/.claude/projects/<encoded-cwd>/<session-id>.jsonl`.
+- The shared adapter requires an explicit ID from the host environment or `--session`; it never guesses the newest session.
+- The Codex backend uses the app-server protocol and never edits Codex SQLite/rollout files directly.
+- The Claude backend delegates to `rename.sh`, which writes `{"type":"custom-title","customTitle":"...","sessionId":"..."}` to the matching JSONL at `~/.claude/projects/<encoded-cwd>/<session-id>.jsonl`.
 - Claude Code reads the latest `custom-title` entry on session load.

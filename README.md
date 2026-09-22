@@ -154,6 +154,10 @@ For local development against a clone:
 /plugin install dev-skills@dev-skills
 ```
 
+Session operations use one cross-host entry point: `bin/session-adapter.py`
+provides `show`, `rename`, and `export`, then delegates to the Claude Code or
+Codex backend. `bin/codex-session.py` remains as a compatibility shim.
+
 ### Gemini CLI
 
 Install all skills from this repo (user-level / global):

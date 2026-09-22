@@ -13,52 +13,26 @@ The date should be the date when the task is mainly worked on, not the date when
 
 ## Transcript Export (`/report transcript`)
 
-**Codex host gate:** When `CODEX_THREAD_ID` or `CODEX_SESSION_ID` is set, export through app-server and skip the remaining Claude-specific steps in this section:
-
-```bash
-python3 <dev-skills-root>/bin/codex-session.py export [--full] [-o PATH] [--thread UUID]
-```
-
-The helper pages through persisted turns, emits readable user/assistant Markdown by default, and requires an explicit environment ID or `--thread`. A sandboxed host may require approval because the short-lived app-server opens state under `~/.codex`. Do not parse Codex rollout JSONL or mutate its SQLite state directly.
-
-The remaining transcript instructions apply to Claude Code.
-
 When the user asks for the **raw conversation** rather than a synthesized report
 ("export this chat", "dump the transcript", `/report transcript`), skip every
 other step in this skill and do this instead:
 
-1. **Rename first** (current session only — skip when `--session` targets another one).
-   Run `python3 <skill-base>/export-transcript.py --show-title`. Unless it prints
-   `custom-title: …` (a name the user chose — keep it), invoke `rename-session`
-   with no argument. Renaming before exporting makes the file name match the new
-   session name, since the script takes the title from the session.
+1. **Rename first** (current session only — skip when `--session` targets another one). Run the adapter's `show`; if the session does not already have an intentional title, invoke `rename-session` with no argument. Renaming before exporting makes the default filename match the title.
 2. **Export:**
    ```bash
-   python3 <skill-base>/export-transcript.py [--full] [-o PATH] [--session UUID] [--since ISO]
+   python3 <dev-skills-root>/bin/session-adapter.py export [--full] [-o PATH] [--session ID] [--host claude|codex] [--since ISO]
    ```
 
 - Default output: `docs/reports/YYYY-MM-DD-<title>-transcript.md`, relative to the cwd.
 - Default body: user prompts (incl. ones sent mid-turn, `AskUserQuestion` answers)
   + assistant prose; IDE wrappers, system-reminders and tool traffic stripped.
-- Both modes list the files read/modified — a summary on top plus one line per
-  assistant turn, linked relative to the output file. `~` marks paths parsed from
-  Bash commands (best effort).
-- `--full` adds thinking, tool calls and truncated tool results — but never file
-  contents: Read/Write/Edit show only the path.
-- Session resolution: `--session` > `$CLAUDE_CODE_SESSION_ID` > newest transcript
-  for the cwd. `--session` takes a uuid or a path (a `subagents/*.jsonl` path
-  exports that subagent).
+- `--full` adds tool activity and truncated output according to the host's exporter.
+- `--since` is supported by the Claude backend.
+- Session resolution is `--session` then the detected host's session ID environment variable. The adapter refuses to guess the newest transcript.
 
-Do not read the jsonl or hand-assemble the transcript yourself — the script does it.
+Do not read host storage or hand-assemble the transcript yourself—the adapter delegates to the host implementation. Claude readable exports prefer the redacted session log when one exists and fall back to `export-transcript.py`; full exports use `export-transcript.py`. Codex exports page persisted turns through app-server and never parse rollout JSONL or mutate SQLite. A sandboxed Codex host may require approval because app-server opens state under `~/.codex`.
 This is an export, not a report: no template, no plan integration.
-
-**Sessions started on/after 2026-09-17 have a session log** (`~/.claude/projects/<proj>/<session-id>.log.md`, written by hooks via `~/agent-skills/dev-skills/bin/session-log.py`). For those, export from the log instead — it is the same user/assistant/answer dialogue, already filtered, and secrets are redacted:
-
-```bash
-python3 ~/agent-skills/dev-skills/bin/session-log.py export -o docs/reports/YYYY-MM-DD-<title>-transcript.md
-```
-
-Use `export-transcript.py` only when `session-log.py` reports there is no log (older session, or a `--full` export with tool traffic is wanted). Don't commit transcript exports by default — the log is the durable copy; the export is a view for sharing.
+Don't commit transcript exports by default; they are views for sharing.
 
 ## Pre-flight: split decision
 
