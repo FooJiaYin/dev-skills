@@ -79,7 +79,7 @@ Build the URL **even if the commit is local/unpushed** — resolve the GitHub ba
 
 If detected, `AskUserQuestion`: `Apply <url>` / `Skip`.
 
-**8. Append body.** Skip if step 5 took `[n]`. Otherwise `notion-fetch` target, then `notion-update-page` `update_content` with one op: `old_str` = last non-empty line of current body (stable anchor), `new_str` = same anchor + `\n\n` + the full report body (frontmatter stripped, nothing else removed). Verbatim copy-paste. Never rewrite, summarize, rephrase, reformat, skip, or omit any section of the body — even minor cleanup is forbidden. No divider. Fold Status + Github Link from steps 6–7 + `Time` (= report/work date) into the same `update_page` call as `update_properties`. For `Time`, write **both `date:Time:start` AND `date:Time:end`** (`is_datetime:0`) — omitting `end` leaves a stale/empty end on a range.
+**8. Append body.** Skip if step 5 took `[n]`. Otherwise `notion-fetch` target and compare its content with the report body after stripping frontmatter. A report produced from a fetched task normally starts with the same managed `# Context` already present on that task: treat each identical leading top-level section as existing content and exclude it from the append. Preserve the remaining suffix byte-for-byte. If the overlap is ambiguous rather than identical, stop and ask instead of duplicating or dropping content. Then call `notion-update-page` `update_content` with one op: `old_str` = last non-empty line of current body (stable anchor), `new_str` = same anchor + `\n\n` + the remaining report body. Verbatim copy-paste. Never rewrite, summarize, rephrase, or reformat content; omit only an identical leading section already present on the target. No divider. Fold Status + Github Link from steps 6–7 + `Time` (= report/work date) into the same `update_page` call as `update_properties`. For `Time`, write **both `date:Time:start` AND `date:Time:end`** (`is_datetime:0`) — omitting `end` leaves a stale/empty end on a range.
 
 **Cloudflare WAF in front of Notion rejects HTML-tag literals.** A body containing a literal `<script>` (likely also `<iframe>`, `<img …>`, `<object>`) gets a 403 "Sorry, you have been blocked" page with no hint of the offending string — the whole insert fails. Before sending: grep the body for `<script`, `<iframe`, `<img`, `<object` and replace those tokens with full-width brackets (`＜script＞`); say so in the final message as the one non-verbatim change. For bodies over ~8 KB, `insert_content` in section-sized chunks, sequentially (each `position: end`), so a rejected chunk isolates the culprit and already-inserted chunks are not re-sent (re-sending duplicates; Notion has no clean undo).
 
@@ -102,7 +102,7 @@ No uncommitted changes → skip silently.
 - **Linked fast path skips the picker.** Frontmatter `notion.page` is authoritative.
 - **Never overwrite a non-empty Github Link.**
 - **Never overwrite Status without explicit confirmation.**
-- **Body append is verbatim copy-paste.** Never rewrite, summarize, rephrase, reformat, skip, or omit any section.
+- **Body append is verbatim copy-paste.** Never rewrite, summarize, rephrase, or reformat any section. The only allowed omission is an identical leading top-level section already present on the target (normally a fetched task's managed `# Context`).
 - **Frontmatter stripped before sending to Notion.**
 - **`[n]` branch puts report body directly into task body** (no `# Context`) and skips step 8.
 
