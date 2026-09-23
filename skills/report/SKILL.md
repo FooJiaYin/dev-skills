@@ -80,6 +80,12 @@ No task file detected → **first scan `docs/reports/` for a very recent report 
 ## Report Generation Process
 
 1. **Analyze Chat History**: Review the conversation to capture only the core issue, discussion points and decisions made, solutions attempted and their outcomes. If the session has a log (`python3 ~/agent-skills/dev-skills/bin/session-log.py show`), read it first: `[user]`/`[ask]` are the user's exact words (quote decisions verbatim from there, don't paraphrase from memory), `[note]` are decisions recorded as they happened, `[write]` is the authoritative file list, `[error]` the friction, `[web]` every URL fetched or searched (including by subagents) — the `# References` section comes from there, not from memory. This works after a compaction too, when the conversation itself is only a summary.
+   In Codex, refresh/read `python3 <dev-skills-root>/bin/session-adapter.py log --stdout`.
+   Local notes survive refreshes. Tool output is abbreviated; `[write]` covers only
+   completed `fileChange` events. Supplement shell/MCP writes and missing details
+   with actual tool results and fresh scoped diffs; do not treat the log as complete
+   file attribution or as a snapshot/hunk ledger. Use `session-adapter.py export`
+   for the transcript branch above.
 2. **Examine File Changes**: Mention only relevant changes and the main purpose of the changes
 3. **Summarize Actions Taken**: commands executed, deployments, and test runs. Preserve the evidence needed to assess the result: command or scenario, representative input, expected behavior, actual outcome, and any limitation.
 

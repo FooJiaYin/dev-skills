@@ -1050,6 +1050,12 @@ def main(argv: list[str]) -> None:
     if len(argv) < 2:
         sys.exit(__doc__)
     sub = argv[1]
+    # Existing Claude hook commands retain their JSON-input contract. Only CLI
+    # operations dispatch by host; never interpret a Codex ID as a Claude ID.
+    if (os.environ.get("CODEX_THREAD_ID") or os.environ.get("CODEX_SESSION_ID")) and sub in ("show", "note", "writes", "export", "backfill"):
+        from codex_history import legacy_cli
+        legacy_cli(sub, argv[2:])
+        return
     if sub == "note":
         cmd_note(" ".join(argv[2:]))
         return

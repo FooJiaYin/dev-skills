@@ -421,6 +421,17 @@ def build_parser() -> argparse.ArgumentParser:
     export.add_argument("--full", action="store_true", help="include tool activity and truncated outputs")
     export.add_argument("--since", help="Claude only: include turns at or after an ISO timestamp")
     export.set_defaults(run=command_export)
+
+    log = subparsers.add_parser("log", help="refresh/open a Codex working log (optionally watch)")
+    add_identity_arguments(log)
+    log.add_argument("-o", "--output", help="override the generated Markdown view path")
+    log.add_argument("--open", action="store_true", help="open the refreshed log in the editor")
+    log.add_argument("--stdout", action="store_true", help="print the refreshed log")
+    log.add_argument("--note", help="append a local note, preserved across refreshes")
+    log.add_argument("--watch", action="store_true", help="refresh until interrupted; no daemon installed")
+    log.add_argument("--interval", type=float, default=15, help="watch interval in seconds (default 15)")
+    from codex_history import command_log
+    log.set_defaults(run=command_log)
     return parser
 
 

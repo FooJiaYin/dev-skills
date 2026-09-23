@@ -158,6 +158,17 @@ Session operations use one cross-host entry point: `bin/session-adapter.py`
 provides `show`, `rename`, and `export`, then delegates to the Claude Code or
 Codex backend. `bin/codex-session.py` remains as a compatibility shim.
 
+### Codex working logs
+
+`bin/session-adapter.py log --open` refreshes and opens a derived `.log.md` for
+the current Codex session. `--watch` refreshes while running; no background hook
+is installed. `skills/find-session/scripts/search.py --host codex` searches
+persisted App Server history and `--open-id current` opens the current log.
+`session-log.py` also routes show/note/writes/export to Codex when its thread ID
+is exposed. Write evidence covers completed `fileChange` events only, not shell
+or MCP writes; the compatibility export applies credential-pattern redaction.
+Claude history remains available through `--host claude`.
+
 In shared skill instructions, Claude Code's `AskUserQuestion` maps to Codex's
 `request_user_input` whenever that tool is exposed by the current host. Use the
 host's approval mechanism for shell permissions; fall back to a concise chat

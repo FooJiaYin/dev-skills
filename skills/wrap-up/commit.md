@@ -2,6 +2,17 @@
 
 Universal commit hygiene. Wrapped by `./full.md` Step 7 and `./quick.md` Step 7 — each mode adds its own decisions (Full: Include report / Open PR / hand-written message; Quick: wip auto-message / always push).
 
+## Codex session evidence
+
+In Codex, replace the Claude session-log operations below with this procedure:
+
+- Enumerate repos and files from this conversation's actual tool results, then inspect fresh working and staged diffs. `session-log.py show` and `writes` are available, but `writes` covers only completed `fileChange` events; shell/MCP writes may be absent. Do not use `--mine`/`--stage` or treat this list as a complete dirty-file inventory.
+- Use the runtime guide's host-specific session identity for the footer. Never guess a Claude session ID.
+- For mixed files, use verified pre/post edit evidence and an isolated index or worktree to stage only this task's changes. If that evidence is unavailable, leave the mixed file uncommitted and explain why; do not overwrite the working file to reconstruct guessed edits.
+- `find-session` defaults to the current host; use `--host` to select history. Codex `--touched` matches completed `fileChange` evidence, not shell writes. Do not treat an empty search as proof a dirty file is yours.
+
+All remaining Git scope, verification, and publication requirements still apply.
+
 ## Pre-commit safety (parallel; stop on blocker)
 
 - **Every repo this session wrote to, not just cwd.** Run `python3 ~/agent-skills/dev-skills/bin/session-log.py writes` — it lists this session's still-dirty files per repo from the session log's `[write]` lines (recorded at write time via git diff, so Bash/heredoc/`cp` writes are included and other sessions' files are not), and marks each as 「之後沒人動」 or 「之後被改」. Only if it says there is no session log (session predates 2026-09-17) fall back to collecting Write/Edit/write-Bash paths from the transcript. Then run this whole file per repo. Closing message gets one line per repo: `<repo>: <hash>` or `<repo>: 未 commit N 檔`; never print「完成」while any repo still holds this session's uncommitted files. (Seen: sibling repo `Poolgress_demo_` never checked, work sat uncommitted 9 days and blocked other sessions.)
@@ -48,7 +59,7 @@ Give suggestions for what to commit.
 
 ## Session footer
 
-Always end the commit message with a `Session: <name> (<id>)` footer line. Source: **id** = `$CLAUDE_CODE_SESSION_ID` (fallback: basename of the newest `~/.claude/projects/<encoded-cwd>/*.jsonl`); **name** = the title on line 1 of the session log (`session-log.py show | head -1`; it mirrors the latest `rename-session` title), falling back to the latest `customTitle` entry in the jsonl. If the name isn't set yet, fall back to the report/branch title. The PreToolUse footer hook denies a `git commit` that lacks this line and prints the exact footer to add.
+Always end the commit message with a `Session: <name> (<id>)` footer line. For Codex, resolve identity per the runtime guide above; the following lookup applies only to Claude Code. Source: **id** = `$CLAUDE_CODE_SESSION_ID` (fallback: basename of the newest `~/.claude/projects/<encoded-cwd>/*.jsonl`); **name** = the title on line 1 of the session log (`session-log.py show | head -1`; it mirrors the latest `rename-session` title), falling back to the latest `customTitle` entry in the jsonl. If the name isn't set yet, fall back to the report/branch title. The PreToolUse footer hook denies a `git commit` that lacks this line and prints the exact footer to add.
 
 When the work spans multiple sessions, list each pair comma-separated: `Session: feat-work (a1b2c3d4), bug-fix (e5f6g7h8)`.
 

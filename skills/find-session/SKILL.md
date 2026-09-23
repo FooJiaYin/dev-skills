@@ -1,19 +1,67 @@
 ---
 name: find-session
 description: |
-  Find Claude Code sessions (jsonl transcripts under ~/.claude/projects/) by topic
-  keyword or by file-touch. Use whenever the user asks "which session…",
-  "find the conversation where…", "who wrote this file", "when did we discuss X",
-  "search my sessions for…", "搜 session", "find chat about…", or anything that
-  requires looking up prior Claude Code conversations — even when the user doesn't
-  explicitly say the word "session" but is clearly trying to recover prior chat
-  context (e.g. "I remember we talked about Y, where was that?", "remind me where
-  we set up Z"). Returns session UUIDs the user can paste into `claude --resume`.
+  Find and open Claude Code or Codex session history by topic or edited file.
+  Use for "find the conversation where…", "who wrote this file", "搜 session",
+  "open this session log", or recovering earlier development decisions.
+  Uses the current host by default, with an explicit --host override.
 ---
+
+Read [agent runtime compatibility](../../references/agent-runtime.md) before executing this skill; its platform mappings also apply to the steps below.
 
 # find-session
 
-Search Claude Code session transcripts to recover prior conversations. Two query modes, three output formats, scope-escalation so you start narrow.
+Search the current host by default; use `--host claude` or `--host codex` to
+choose explicitly. Label results by host and use the matching resume command.
+Do not infer the current session from whichever log was modified most recently.
+
+## Codex logs and search
+
+Use the same `scripts/search.py` entrypoint:
+
+```bash
+python3 scripts/search.py --host codex --open-id current
+python3 scripts/search.py --host codex --open-id <ID-or-unique-prefix>
+python3 scripts/search.py --host codex --topic "workflow inventory" --escalate --open
+python3 scripts/search.py --host codex --touched docs/PRD.md --output full
+```
+
+Opening generates/refreshes the session's working log and opens it in the editor.
+Codex reads `thread/list`, `thread/read`, and `thread/turns/list` through app-server;
+it does not parse native rollouts or directly edit SQLite. If sandboxing blocks
+app-server state access or the editor, use the host's normal escalation mechanism.
+
+- Logs live at `$CODEX_HOME/dev-skills/session-logs/<project-hash>/<id>.log.md`
+  (`CODEX_HOME` defaults to `~/.codex`). They contain conversation text, abbreviated
+  tool activity, completed file changes, errors, and compaction markers.
+- `bin/session-adapter.py log --open` refreshes the current log. Add `--watch` to
+  refresh every 15 seconds while that command runs; stop with Ctrl-C. No background
+  service or Codex hook is installed implicitly. `--note "text"` saves local notes
+  separately so refreshing preserves them. These are derived views, not native logs.
+- `bin/session-log.py show|note|writes|export|backfill` dispatches to Codex when
+  its session ID is exposed. `writes` shows completed `fileChange` evidence only;
+  `backfill` accepts one ID or the current session. Claude `--mine`/`--stage`,
+  write snapshots, and hook injection are not supported for Codex.
+- Search starts at the current project, then all projects with `--escalate`.
+  Active and archived interactive threads are included; `all-bak` is equivalent
+  to `all` for Codex. It excludes the current session from search results.
+- Topics search titles, user/assistant text and tool inputs; multiword queries
+  fall back to requiring all words within each scope. `--since`/`--until` filter
+  the session span inclusively, and results are newest first.
+- `--touched` requires a completed `fileChange` event, including rename paths.
+  Shell/MCP writes without that event cannot be attributed; zero matches do not
+  establish that a file was edited by hand. Mentioning or reading a file is not a write.
+- `--output graph` reports the API's `forkedFromId` when available; it does not
+  infer forks from timestamps. Unreadable threads are reported as an incomplete
+  search (exit 2), not silently counted as no match.
+- Resume a result with `codex resume <ID>`. Log output applies the existing
+  credential-pattern redactor; this is best-effort, not a guarantee for sharing.
+
+## Claude history
+
+Claude history still uses `~/.claude/projects/` and the existing hook-generated
+`.log.md` files. Pass `--host claude` when investigating it from Codex. The
+remaining instructions describe this backend.
 
 ## When to invoke
 
@@ -21,7 +69,7 @@ Search Claude Code session transcripts to recover prior conversations. Two query
 - File-touch forensics — "which session wrote this file?", "who edited X?"
 - Branch/fork mapping — "draw the graph of related sessions"
 
-Don't invoke for: editor history / git history / external chat tools. This skill only sees Claude Code jsonl transcripts under `~/.claude/projects/`.
+Don't use session search as a substitute for git/editor history or external chat tools.
 
 ## How it works
 
@@ -34,7 +82,7 @@ Sessions started on/after 2026-09-17 also have a `<sid>.log.md` next to the json
 Always start with `--scope cwd` (current project only). If 0 results, retry with `--scope all` (every project except `.bak`). If still 0, retry with `--scope all-bak`. The `--escalate` flag does all three automatically.
 
 ```bash
-python3 scripts/search.py --topic "spec skill" --escalate
+python3 scripts/search.py --host claude --topic "spec skill" --escalate
 ```
 
 Prefer escalation over jumping to `all` immediately — most queries are about the current project, and the noise from other projects (especially the `skill_listing` attachments that match every keyword) is real.
@@ -54,10 +102,10 @@ A multi-word topic is tried as a literal phrase first; if nothing matches, the s
 Matches only sessions whose `tool_use` events (`Write` / `Edit` / `MultiEdit` / `NotebookEdit`) hit the given path. Use this to answer "who wrote X" definitively — text matches are unreliable because the file path appears in unrelated reads, listings, and grep output.
 
 ```bash
-python3 scripts/search.py --touched ~/.claude/skills/spec/SKILL.md --escalate
+python3 scripts/search.py --host claude --touched ~/.claude/skills/spec/SKILL.md --escalate
 ```
 
-If `--touched` returns 0 across all scopes, the file was likely written by hand outside Claude Code, not by a session.
+If `--touched` returns 0 across all scopes, report that no write evidence was found. Shell writes and missing history can also explain the absence.
 
 ### Combined
 
@@ -70,8 +118,8 @@ If `--touched` returns 0 across all scopes, the file was likely written by hand 
 - **full** — per-session block with topic-match snippets, touch events, last 10 real user messages. Use for forensic "what did we actually discuss" questions.
 
 ```bash
-python3 scripts/search.py --topic auth --output graph
-python3 scripts/search.py --touched migrations/0042.sql --output full
+python3 scripts/search.py --host claude --topic auth --output graph
+python3 scripts/search.py --host claude --touched migrations/0042.sql --output full
 ```
 
 ### Other flags
@@ -109,21 +157,21 @@ These are real false-positive sources — call them out when relevant:
 
 **"Find /spec skill design discussions"**
 ```bash
-python3 scripts/search.py --topic "spec skill" --escalate --output compact
+python3 scripts/search.py --host claude --topic "spec skill" --escalate --output compact
 ```
 
 **"Who actually wrote `~/.claude/skills/spec/SKILL.md`?"**
 ```bash
-python3 scripts/search.py --touched ~/.claude/skills/spec/SKILL.md --escalate
-# 0 results → tell the user the file was likely hand-edited outside Claude Code
+python3 scripts/search.py --host claude --touched ~/.claude/skills/spec/SKILL.md --escalate
+# 0 results → report no write evidence; do not infer authorship
 ```
 
 **"Draw the branch graph of the spec-skill sessions"**
 ```bash
-python3 scripts/search.py --topic "spec skill" --output graph --escalate
+python3 scripts/search.py --host claude --topic "spec skill" --output graph --escalate
 ```
 
 **"Find sessions from last week that touched the auth migration"**
 ```bash
-python3 scripts/search.py --touched db/migrations/auth.sql --since 2026-05-07 --until 2026-05-13
+python3 scripts/search.py --host claude --touched db/migrations/auth.sql --since 2026-05-07 --until 2026-05-13
 ```

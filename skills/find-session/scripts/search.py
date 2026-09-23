@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Find Claude Code sessions by topic keyword or by file-touch (Write/Edit path).
+"""Find Claude Code or Codex sessions by topic or file-change evidence.
 
 Usage:
   search.py --topic "spec skill" [--scope cwd|all|all-bak] [--output compact|graph|full]
@@ -367,6 +367,7 @@ def format_graph(hits: list[dict]) -> str:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0] if __doc__ else None)
+    ap.add_argument("--host", choices=["claude", "codex"], help="history host (default: current host; otherwise Claude)")
     ap.add_argument("--topic", help="keyword to search in user/assistant text and tool inputs")
     ap.add_argument("--touched", help="file path; match sessions that Wrote/Edited this file")
     ap.add_argument("--scope", choices=["cwd", "all", "all-bak"], default="cwd")
@@ -379,8 +380,14 @@ def main() -> int:
     ap.add_argument("--cwd", help="override working directory for cwd-scope")
     ap.add_argument("--open", nargs="?", const=1, type=int, metavar="N",
                     help="after searching, open the N-th hit's session log in the editor (default 1)")
-    ap.add_argument("--open-id", metavar="UUID", help="open this session's log directly (prefix ok); no search")
+    ap.add_argument("--open-id", metavar="UUID", help="open this session's log directly (Codex: current or unique prefix); no search")
     args = ap.parse_args()
+
+    host = args.host or ("codex" if os.environ.get("CODEX_THREAD_ID") or os.environ.get("CODEX_SESSION_ID") else "claude")
+    if host == "codex":
+        sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "bin"))
+        from codex_history import search_main
+        return search_main(args)
 
     if args.open_id:
         log = find_log_by_id(args.open_id)
