@@ -12,10 +12,17 @@ def main():
     if hook.get("tool_name") != "Bash":
         return
     cmd = (hook.get("tool_input") or {}).get("command") or ""
-    if not re.search(r"\bgit\b[^\n|;&]*\bcommit\b", cmd):
+    # `git` must be the command word of a segment and `commit` its subcommand — a grep/echo
+    # whose *text* mentions git…commit is not a commit (it used to be denied, and subagents
+    # read the deny message as a prompt injection).
+    hit = re.search(r"(?:^|[\n;&|(])\s*(?:[A-Za-z_][A-Za-z0-9_]*=\S*\s+)*git"
+                    r"(?:\s+(?:-C|-c|--git-dir|--work-tree)(?:=|\s+)\S+)*\s+commit\b", cmd)
+    if not hit:
         return
-    # Message reused from an existing commit → nothing to add here.
-    if re.search(r"--no-edit|--reuse-message|--reedit-message|\s-[cC]\s|--fixup|--squash", cmd):
+    # Message reused from an existing commit → nothing to add here. Look only AFTER `commit`:
+    # `git -C <repo> commit` carries a -C that is a path, not a reuse-message flag.
+    if re.search(r"--no-edit|--reuse-message|--reedit-message|\s-[cC]\s|--fixup|--squash",
+                 cmd[hit.end():]):
         return
     text = cmd
     m = re.search(r"(?:-F|--file)[=\s]+([^\s;&|]+)", cmd)
@@ -34,17 +41,9 @@ def main():
         enc = re.sub(r"[^A-Za-z0-9]", "-", cwd)
         cands = glob.glob(os.path.expanduser(f"~/.claude/projects/{enc}/{sid}.jsonl"))
         tp = cands[0] if cands else ""
-    # Session log (dev-skills/bin/session-log.py) line 1: "# <title> · session <id> · …"
-    lp = tp[:-6] + ".log.md" if tp.endswith(".jsonl") else ""
-    if lp and os.path.isfile(lp):
-        try:
-            head = open(lp, encoding="utf-8").readline().strip().lstrip("# ")
-            t = head.split(" · ")[0]
-            if t and t != "(untitled)":
-                name = t
-        except OSError:
-            pass
-    if name is None and os.path.isfile(tp):
+    # Latest customTitle wins: the log's line 1 keeps the title from when the log was created,
+    # so after a rename-session it is stale.
+    if os.path.isfile(tp):
         try:
             for line in open(tp, encoding="utf-8"):
                 if "customTitle" in line:
@@ -52,6 +51,16 @@ def main():
                         name = json.loads(line).get("customTitle") or name
                     except ValueError:
                         pass
+        except OSError:
+            pass
+    # Fallback — session log (dev-skills/bin/session-log.py) line 1: "# <title> · session <id> · …"
+    lp = tp[:-6] + ".log.md" if tp.endswith(".jsonl") else ""
+    if name is None and lp and os.path.isfile(lp):
+        try:
+            head = open(lp, encoding="utf-8").readline().strip().lstrip("# ")
+            t = head.split(" · ")[0]
+            if t and t != "(untitled)":
+                name = t
         except OSError:
             pass
     name = name or "<report/branch title>"
