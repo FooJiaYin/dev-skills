@@ -62,7 +62,8 @@ tool and permission rules before any skill defaults.
   Use `find-session --host claude` when explicitly investigating Claude history.
 - Codex working logs: `bin/session-adapter.py log --open` refreshes and opens a
   derived `.log.md` under `$CODEX_HOME/dev-skills/session-logs/`. `--watch` refreshes
-  while running; no hook/daemon is installed. `--note` preserves local notes.
+  while running; configured Codex lifecycle hooks refresh automatically after
+  they are trusted in `/hooks`. `--note` preserves local notes.
   `find-session --host codex --open-id current` opens the current log; topic/file
   searches use app-server history. Completed `fileChange` events are evidence,
   but shell writes and Claude pre/post snapshots/hunk attribution are not covered.

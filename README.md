@@ -161,8 +161,9 @@ Codex backend. `bin/codex-session.py` remains as a compatibility shim.
 ### Codex working logs
 
 `bin/session-adapter.py log --open` refreshes and opens a derived `.log.md` for
-the current Codex session. `--watch` refreshes while running; no background hook
-is installed. `skills/find-session/scripts/search.py --host codex` searches
+this Codex session. `--watch` refreshes while running; configured lifecycle
+hooks refresh automatically after `/hooks` trust review. See
+[Codex session log hooks](docs/hooks-codex-session-log.md). `skills/find-session/scripts/search.py --host codex` searches
 persisted App Server history and `--open-id current` opens the current log.
 `session-log.py` also routes show/note/writes/export to Codex when its thread ID
 is exposed. Write evidence covers completed `fileChange` events only, not shell

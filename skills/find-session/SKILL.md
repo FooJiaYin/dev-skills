@@ -35,8 +35,9 @@ app-server state access or the editor, use the host's normal escalation mechanis
   (`CODEX_HOME` defaults to `~/.codex`). They contain conversation text, abbreviated
   tool activity, completed file changes, errors, and compaction markers.
 - `bin/session-adapter.py log --open` refreshes the current log. Add `--watch` to
-  refresh every 15 seconds while that command runs; stop with Ctrl-C. No background
-  service or Codex hook is installed implicitly. `--note "text"` saves local notes
+  refresh every 15 seconds while that command runs; stop with Ctrl-C. Codex
+  lifecycle hooks may refresh automatically after `/hooks` trust review; see
+  [hook setup](../../docs/hooks-codex-session-log.md). `--note "text"` saves local notes
   separately so refreshing preserves them. These are derived views, not native logs.
 - `bin/session-log.py show|note|writes|export|backfill` dispatches to Codex when
   its session ID is exposed. `writes` shows completed `fileChange` evidence only;
