@@ -54,19 +54,20 @@ window.devSkillsMethod = (demo, preview) => {
   if (demo.id === "find-session") return `<div class="method-layout method-memory">
     <p class="memory-question">「接下來做什麼？」和「當時為什麼這樣做？」需要看的資料不一樣。</p>
     <div class="memory-architecture" aria-label="團隊、工作區與原始對話三層記憶">
-      <article><span class="memory-layer">團隊一起看</span><h3>Notion 任務與會議</h3><p>需求、決定、負責的工作和最新進度。先找到這件事，再往下看細節。</p><a href="document.html?skill=sync-report" data-demo-document="sync-report">查看文件</a></article>
-      <div class="memory-layer-link">任務背景帶進來 ↑↓ 工作結果帶回去</div>
-      <article><span class="memory-layer">在工作區接著做</span><h3>任務檔、計畫與報告</h3><p>任務檔留背景與筆記，計畫留選定的方向，報告留成果、證據和未完成事項。</p><div class="memory-file-links"><a href="document.html?skill=fetch-task" data-demo-document="fetch-task">task.md</a><a href="document.html?skill=discuss" data-demo-document="discuss">plan.md</a><a href="document.html?skill=report" data-demo-document="report">report.md</a></div></article>
-      <div class="memory-layer-link">結果是入口，需要原因時再往下找</div>
-      <article><span class="memory-layer">保留當時的來回</span><h3>Session log</h3><p>討論、選擇、工具活動與修正過程。它保留來龍去脈，不取代整理好的交接報告。</p><code class="skill-name">/rename-session → /find-session</code></article>
+      <article class="memory-tier memory-tier--team"><div class="memory-tier__copy"><span class="memory-layer">團隊共用</span><h3>Notion 任務與會議</h3><p>誰在做什麼、決定了什麼、現在走到哪裡，讓大家看同一份進度。</p><a href="document.html?skill=sync-report" data-demo-document="sync-report">查看文件 ↗</a></div><div class="memory-database" aria-hidden="true"><span>任務</span><b>需求與負責人</b><b>最新進度</b><span>會議</span><b>討論與決定</b><b>後續工作</b></div></article>
+      <div class="memory-transfer"><span>背景帶進工作區 ↓</span><span>↑ 結果回到團隊</span></div>
+      <article class="memory-tier memory-tier--work"><div class="memory-tier__copy"><span class="memory-layer">這輪工作</span><h3>收成一份交接報告</h3><p>任務的 Context 與選好的 Plan 一起帶進報告，再補上這輪實際修改、驗證結果和待接事項。</p></div><div class="memory-workflow"><div class="memory-workflow__input"><span>Context</span><span>Plan</span></div><span class="memory-workflow__arrow" aria-hidden="true">↓</span><div class="memory-report-sheet"><b>report.md</b><div><span># Context</span><span># Plan</span><span># Changes Made</span><span># Verification</span><span># Result</span><span># Updates <small>有後續時</small></span><span># Unsolved Issues <small>有未解問題時</small></span></div><a href="document.html?skill=report" data-demo-document="report">查看文件 ↗</a></div></div></article>
+      <div class="memory-transfer memory-transfer--deep"><span>回看對話，分析哪一步需要改進 ↓</span></div>
+      <article class="memory-tier memory-tier--session"><div class="memory-tier__copy"><span class="memory-layer">原始來回</span><h3>Session log</h3><p>保留對話、選擇與修正過程，方便回看互動、分析卡點。它是原始材料，不取代已整理好的交接報告。</p></div><div class="memory-transcript" aria-hidden="true"><span><i>你</i>提出需求與限制</span><span><i>AI</i>比較做法、執行檢查</span><span><i>你</i>確認取捨</span></div></article>
     </div>
     ${stage("find-session", `<div class="method-split memory-lookup"><div>${title(["find-session"], "知道某個決定聊過，卻忘了在哪個視窗？用主題或改過的檔案找回線索，不靠 AI 猜昨天發生什麼。")}<p>先讀摘要決定是否相關，再打開原紀錄核對。</p>${action("find-session", null)}<button class="method-crosslink" type="button" data-method-jump="report">回到 Handoff 流程 →</button></div>${preview("find-session")}</div>`)}
   </div>`;
   if (demo.id === "improve") return `<div class="method-layout method-improve">
     ${title(["improve"], "如果同一個提醒每輪都要再說一次，光靠人記住也不是辦法。回看這輪對話與 review，找出哪一步反覆卡住，再由你決定什麼改法值得留給下一輪。")}
-    <div class="learning-evidence" aria-label="從這輪對話和 review 找出改進線索"><span>這輪對話<small>你的提醒與中途修正</small></span><span class="learning-evidence-plus" aria-hidden="true">＋</span><span>REVIEW.md<small>檢查時發現的問題</small></span><span class="learning-evidence-arrow" aria-hidden="true">↘</span></div>
-    <div class="learning-cycle">${stage("friction", icon("question") + '<span>指出卡住的一步</span><p>不是只說「下次注意」，而是找出當時怎麼卡住。</p>' + action("friction", "improve"))}${stage("cause", icon("search") + '<span>提出具體改法</span><p>說清楚哪句規則、哪個順序需要改。</p>' + action("cause", "improve"))}${stage("choose", icon("choice") + '<span>你來決定去處</span><p>放進 skill、團隊規則、程式旁，或這次略過。</p>' + action("choose", "improve"), "learning-decision")}${stage("apply", icon("repeat") + '<span>確認後用在下輪</span><p>只改你同意的地方，讓下一次真的讀得到。</p>' + action("apply", "improve"))}<span class="learning-return" aria-hidden="true">↶</span></div>
-    <div class="method-split"><p class="learning-note">值得留下的改法，當場放到會被讀到的位置；<br>不適用的就略過，不讓規則越堆越厚。</p>${preview("improve")}</div>
+    <div class="learning-route" aria-label="從這輪對話到下輪改進的四個步驟">
+      <div class="learning-steps">${stage("friction", icon("question") + '<span>哪一步卡住？</span><p>指回這輪真的發生的事，不憑空發明問題。</p>')}${stage("cause", icon("search") + '<span>怎樣改才有用？</span><p>把失敗的步驟和具體改法擺在一起，讓你判斷值不值得留下。</p>')}${stage("choose", icon("choice") + '<span>收進哪裡？</span><p>由你決定提醒的適用範圍，避免放錯地方。</p>', "learning-decision")}${stage("apply", icon("repeat") + '<span>下輪用得上</span><p>你確認後才修改；下一輪真的會讀到。</p>')}</div>
+      <div class="learning-destinations" aria-label="收進哪裡的分流選項"><span><b>Skill</b><small>流程每次都該用</small></span><span><b>團隊／專案規則</b><small>只在這裡適用</small></span><span><b>程式旁註解</b><small>只提醒這個位置</small></span><span><b>個人偏好</b><small>留給自己</small></span><span><b>略過</b><small>不值得變成規則</small></span></div>
+    </div>
   </div>`;
   return "";
 };

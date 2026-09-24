@@ -26,6 +26,24 @@
     ["tool", "Search · 依主題找到『庫存預留與取消』的對話，對照報告與任務結果"],
     ["assistant", "找到了。預留和取消已完成，查詢改善延後、缺貨通知還待確認；PR 等待 review，部署尚未進行。可以先讀報告，需要當時的取捨再打開原對話。", { documents: ["report", "find-session", "sync-report"] }]
   ];
+  const installConversations = {
+    claude: [
+      ["user", "/plugin marketplace add FooJiaYin/dev-skills"],
+      ["tool", "Claude Code · 登錄 dev-skills 來源（網站模擬）"],
+      ["assistant", "來源加好了。接著輸入 /plugin install dev-skills，把 skill 安裝進 Claude Code。"],
+      ["user", "/plugin install dev-skills"],
+      ["tool", "Claude Code · 安裝 dev-skills（網站模擬）"],
+      ["assistant", "示範到這裡。真正安裝後，重啟 Claude Code，再試試 /sync 或 /wrap-up。這個網站沒有改動你的電腦。"]
+    ],
+    codex: [
+      ["user", "我想在 Codex 用 dev-skills。"],
+      ["assistant", "先把整份 repo 留在本地；有些 skill 會用到裡面的 bin/ 工具。接著把 skills 連結到 Codex 的目錄。"],
+      ["tool", "示範指令 · git clone https://github.com/FooJiaYin/dev-skills.git ~/dev-skills"],
+      ["tool", "示範指令 · mkdir -p ~/.codex/skills"],
+      ["tool", "示範指令 · for skill in ~/dev-skills/skills/*; do ln -s \"$skill\" ~/.codex/skills/; done"],
+      ["assistant", "完成連結後，可以在 Codex 試試 $sync 或 $wrap-up。這裡只是對話示範，沒有替你執行指令。"]
+    ]
+  };
   const scenes = demos.filter(d => sceneId(d.id) === d.id).map(d => d.id !== "meeting-notes" ? d : ({
     ...d,
     skillIds: meetingSkills,
@@ -51,6 +69,7 @@
     return { ...d, ...group, skillIds: group.skills, stageStarts: Object.fromEntries(wrappedSegments.map(([id], index) => [id, wrappedSegments.slice(0, index).reduce((n, [, messages]) => n + messages.length, 0)])), messages: wrappedSegments.flatMap(([stage, messages]) => messages.map(([role, text, meta]) => [role, text, { ...meta, methodStage: d.id === "report" && stage === "rename-session" ? "report" : stage }])) };
   });
   const sceneById = new Map(scenes.map(d => [d.id, d]));
+  sceneById.set("install", { id: "install", chapter: "install", title: "安裝 dev-skills · 示範", messages: installConversations.claude });
   const meetingStarts = {};
   let meetingOffset = 0;
   for (const id of meetingSkills) {
@@ -122,8 +141,7 @@
     "verify": "測試執行示範",
     "update-docs": "文件更新預覽", "code-review": "REVIEW.md",
     "report": "2026-09-22-庫存預留與取消-3f9a21.md", "rename-session": "session.md",
-    "wrap-up": "收尾清單.md", "sync-report": "Notion 任務結果", "find-session": "demo-0922.log.md",
-    "improve": "改進提案"
+    "wrap-up": "收尾清單.md", "sync-report": "Notion 任務結果", "find-session": "demo-0922.log.md"
   };
   // Cards, chips and sidebar show what kind of document it is; the IDE tab shows the example filename above.
   const documentLabels = {
@@ -142,7 +160,7 @@
     "verify": ["discuss", "update-docs", "code-review"],
     "wrap-up": [],
     "sync-report": ["sync-report", "report"],
-    "improve": ["improve", "report"]
+    "improve": []
   };
   const documentIcon = id => documentNames[id].endsWith(".md") ? '<span class="md-icon" aria-hidden="true">M↓</span>' : '<span class="document-icon" aria-hidden="true">▤</span>';
   const markdownLines = text => globalThis.DevSkillsMarkdown ? globalThis.DevSkillsMarkdown.lines(text) : String(text).split("\n").map(esc);
@@ -177,7 +195,7 @@
     return '<div class="section-actions" aria-label="' + d.id + ' 示範操作"><button type="button" class="section-cta section-cta--replay playback-cta playback-cta--' + d.id + '" data-demo-replay="' + d.id + '" aria-label="從頭重播 /' + d.id + ' 對話：' + call + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + drawing + '</svg><code class="cta-skill">/' + d.id + '</code><span>' + call + '</span></button>' + links + '</div>';
   }
 
-  const folders = { intake: "Source", prepare: "Prepare", check: "Check", handoff: "Handoff", remember: "Memory", evolve: "Improve" };
+  const folders = { intake: "Source", prepare: "Prepare", check: "Wrap-up", handoff: "Wrap-up", remember: "Memory", evolve: "Wrap-up" };
   const wrapSkills = ["verify", "update-docs", "code-review", "report", "rename-session", "sync-report", "improve"];
   function explorerEntry(d, parent = false) {
     return '<div class="skill-entry" data-skill-entry="' + d.id + '"><a class="file file--nested' + (parent ? ' file--skill-folder' : '') + '" href="#demo-' + d.id + '" data-scene="' + d.id + '" title="demo 檔：demos/' + d.id + '.js">' + (parent ? '<span class="skill-folder-caret" aria-hidden="true">⌄</span>' : '') + '<span class="file__icon file__icon--skill" aria-hidden="true">✦</span><span>' + skillName(d.id) + '</span></a><div class="skill-related" data-skill-related="' + d.id + '" hidden></div></div>';
@@ -201,7 +219,7 @@
       section.dataset.skills = (d.skillIds || [d.id]).join(",");
       section.setAttribute("aria-labelledby", "title-" + d.id);
       const routes = d.routes.map(r => '<span class="route-label route-label--' + r + '">' + (r === "notion" ? "N · Notion" : "⑂ · GitHub") + "</span>").join("");
-      section.innerHTML = '<div class="scene__content"><div class="demo-eyebrow"><span class="skill-name">' + skillName(d.id) + "</span><div>" + routes + '</div></div><h2 id="title-' + d.id + '">' + esc(d.title) + '</h2><p class="scene__intro">' + esc(d.intro) + '</p>' + '<ol class="demo-steps">' + d.steps.map((s, i) => "<li><span>0" + (i + 1) + "</span>" + esc(s) + "</li>").join("") + '</ol>' + (d.id === "wrap-up" ? modes : "") + (d.id === "code-review" ? '<div class="review-people"></div>' : "") + '<div class="inline-demo" aria-label="' + d.id + ' 自動示範"><div class="inline-title"><b class="chat-host-name">Claude Code</b><label class="host-picker"><span class="sr-only">切換對話示範工具</span><select data-host-picker><option value="claude">Claude Code</option><option value="codex">Codex</option></select></label></div><div class="chat-thread" role="log" aria-label="示範對話" aria-live="off"></div><div class="inline-controls"><button type="button" data-inline-pause="' + d.id + '">暫停</button><button type="button" data-inline-complete="' + d.id + '">立即顯示完整對話</button><button type="button" data-inline-replay="' + d.id + '">重播</button></div><small>虛構情境 · 使用者輸入與確認皆為自動演示</small></div></div>';
+      section.innerHTML = '<div class="scene__content"><div class="demo-eyebrow"><span class="skill-name">' + skillName(d.id) + "</span><div>" + routes + '</div></div><h2 id="title-' + d.id + '">' + esc(d.title) + '</h2><p class="scene__intro">' + esc(d.intro) + '</p>' + '<ol class="demo-steps">' + d.steps.map((s, i) => "<li><span>0" + (i + 1) + "</span>" + esc(s) + "</li>").join("") + '</ol>' + (d.id === "wrap-up" ? modes : "") + (d.id === "code-review" ? '<div class="review-people"></div>' : "") + '<div class="inline-demo" aria-label="' + d.id + ' 自動示範"><div class="inline-title"><b class="chat-host-name">Claude Code</b><label class="host-picker"><span class="sr-only">切換對話示範工具</span><select data-host-picker><option value="claude">Claude Code</option><option value="codex">Codex</option></select></label></div><div class="chat-thread" role="log" aria-label="示範對話" aria-live="off"></div><div class="chat-compose chat-compose--inline"><span>›</span><div>使用者輸入也會自動演出</div></div><div class="inline-controls"><button type="button" data-inline-pause="' + d.id + '">暫停</button><button type="button" data-inline-complete="' + d.id + '">立即顯示完整對話</button><button type="button" data-inline-replay="' + d.id + '">重播</button></div><small>虛構情境 · 使用者輸入與確認皆為自動演示</small></div></div>';
       if (!["meeting-notes", "sync", "verify", "report", "find-session"].includes(d.id)) $(".scene__content", section).insertAdjacentHTML("beforeend", sectionActions(d));
       const steps = $(".demo-steps", section);
       if (d.id === "meeting-notes") {
@@ -265,7 +283,14 @@
     }
     $("#demo-chapters").append(chapter);
   }
-  $("#demo-chapters").insertAdjacentHTML("beforeend", '<section class="chapter-heading ending"><div class="section-kicker">把兩條路接回來</div><h2>工作有留下，下一個人就接得到。</h2><p>Notion 留下需求、決定和工作結果；GitHub 留下程式修改與交付紀錄。哪些已完成、哪些還要驗收、哪些尚未部署，都分開交代。把「做到哪裡」說清楚，就是交接的一部分。</p><p>這裡介紹的 16 個 skill 都可以單獨使用，也能在需要時串起來。不必一次記住全部，從今天遇到的那件事開始就好。</p><a class="text-action" href="https://github.com/FooJiaYin/dev-skills#readme">安裝與完整使用說明 ↗</a></section>');
+  $("#demo-chapters").insertAdjacentHTML("beforeend", `<section class="chapter-heading ending install-ending" id="install" data-scene-panel="install" aria-labelledby="install-title">
+    <div class="section-kicker">從今天遇到的那件事開始</div>
+    <h2 id="install-title">讓你的 agent 認識 dev-skills。</h2>
+    <p>不用一次學完所有流程。先安裝，下一次開工時試試 <code>/sync</code>；要收好這輪工作，就試試 <code>/wrap-up</code>。</p>
+    <div class="install-method"><div><h3>Claude Code</h3><p>在對話輸入框依序送出：</p><div class="install-commands"><code>/plugin marketplace add FooJiaYin/dev-skills</code><code>/plugin install dev-skills</code></div><small>安裝後重啟 Claude Code，讓 skill 載入。</small></div><div><h3>Codex</h3><p>在自己的電腦執行，保留整份 repo，再連結 skill：</p><div class="install-commands"><code>git clone https://github.com/FooJiaYin/dev-skills.git ~/dev-skills</code><code>mkdir -p ~/.codex/skills</code><code>for skill in ~/dev-skills/skills/*; do ln -s "$skill" ~/.codex/skills/; done</code></div><small>如果已下載 repo，跳過第一行；已有同名 skill 不會被覆寫。</small><a class="install-guide" href="https://github.com/FooJiaYin/dev-skills#codex-local-clone" target="_blank" rel="noopener noreferrer">查看 Codex 安裝細節 ↗</a></div></div>
+    <div class="install-actions"><button class="install-download playback-cta" type="button" data-demo-replay="install">在右邊看安裝示範 <span aria-hidden="true">↗</span></button><a class="install-readme" href="https://github.com/FooJiaYin/dev-skills#install" target="_blank" rel="noopener noreferrer">完整安裝說明 ↗</a></div>
+    <div id="demo-install"><div class="inline-demo" aria-label="安裝 dev-skills 模擬對話"><div class="inline-title"><b class="chat-host-name">Claude Code</b><label class="host-picker"><span class="sr-only">切換對話示範工具</span><select data-host-picker><option value="claude">Claude Code</option><option value="codex">Codex</option></select></label></div><div class="chat-thread" role="log" aria-label="安裝示範對話" aria-live="off"></div><div class="chat-compose chat-compose--inline"><span>›</span><div>使用者輸入也會自動演出</div></div><div class="inline-controls"><button type="button" data-inline-pause="install">暫停</button><button type="button" data-inline-complete="install">立即顯示完整對話</button><button type="button" data-inline-replay="install">重播</button></div><small>虛構示範 · 不會真的安裝或修改你的電腦</small></div></div>
+  </section>`);
 
   const phaseIcons = {
     source: '<path d="M4 4h16v12H9l-5 4z"/><path d="M8 8h8M8 12h5"/>',
@@ -380,6 +405,13 @@
   selectEditorTab("story", false);
   const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
   const threadFor = id => mobile.matches ? $("#demo-" + id + " .chat-thread") : desktopThread;
+  const composeFor = id => mobile.matches ? $("#demo-" + id + " .chat-compose") : $(".chat-compose", desktop);
+  function resetComposers() {
+    $$(".chat-compose").forEach(compose => {
+      compose.classList.remove("is-composing");
+      $("div", compose).textContent = "使用者輸入也會自動演出";
+    });
+  }
   $$(".chat-thread").forEach(thread => {
     follow.set(thread, true);
     thread.addEventListener("scroll", () => follow.set(thread, thread.scrollHeight - thread.clientHeight - thread.scrollTop < 50), { passive: true });
@@ -391,7 +423,8 @@
     "這兩項怎麼處理？": "只修選定項目", "確認提交後，要推到 GitHub 嗎？": "先不 push",
     "報告和這次修改的提交範圍確認好了。怎麼交付？": "開 PR", "目前沒有自動部署設定，要現在部署嗎？": "先不要",
     "驗證報告的寫法要用在哪裡？": "團隊共用", "這張任務要更新成哪個狀態？": "Testing（測試中）", "GitHub Link 目前是空白，要補上這輪版本嗎？": "補上這輪版本",
-    "套用這兩項更新嗎？": "全部套用", "清理這個暫存檔，提交本輪修改後怎麼交付？": "開 PR"
+    "套用這兩項更新嗎？": "全部套用", "清理這個暫存檔，提交本輪修改後怎麼交付？": "開 PR",
+    "這兩處文件更新要套用嗎？": "兩處都套用", "找到 4 項：1 Warning、1 Suggestion、2 Nit。怎麼處理？": "只修選定項目"
   };
   function renderQuestion(body, text) {
     const [prompt, options = ""] = text.split("\n");
@@ -447,14 +480,16 @@
     const shortcut = $('[data-jump="chat"]');
     shortcut.setAttribute("aria-label", hostName() + " 對話");
     shortcut.title = hostName() + " 對話";
+    if (active === "install") play("install", true);
   }
   $$("[data-host-picker]").forEach(picker => picker.addEventListener("change", () => setHost(picker.value)));
   function restore(thread, d, count) {
     thread.replaceChildren(...d.messages.slice(0, count).map((message, index) => {
+      if (message[0] === "user" && d.messages[index - 1]?.[0] === "question") return null;
       const node = messageNode(message);
       if (message[0] === "question" && index + 1 < count) markQuestionAnswer(node, message[1]);
       return node;
-    }));
+    }).filter(Boolean));
     follow.set(thread, true);
     scrollChat(thread);
     if (d.id === "meeting-notes") renderMeetingProgress(count);
@@ -496,7 +531,7 @@
     $$(".playback-cta").forEach(button => button.classList.remove("is-playing", "is-complete"));
     delete desktop.dataset.demo;
     $("#chat-skill").textContent = "";
-    $(".chat-compose div").textContent = "使用者輸入也會自動演出";
+    resetComposers();
     $("#demo-progress").textContent = "README.md";
     $("#status-skill").hidden = true;
     $("#status-page").hidden = true;
@@ -512,6 +547,7 @@
     id = sceneId(id);
     const d = sceneById.get(id);
     if (!d) return;
+    if (id === "install") d.messages = installConversations[host];
     const t = ++token;
     active = id;
     paused = false;
@@ -519,20 +555,46 @@
     const count = progress.get(id) || 0, thread = threadFor(id);
     desktop.classList.remove("is-reading");
     desktop.dataset.demo = id;
-    $("#chat-skill").textContent = d.skillIds ? d.title : skillName(id);
+    $("#chat-skill").textContent = id === "install" ? d.title : d.skillIds ? d.title : skillName(id);
     $("#demo-progress").textContent = $("#demo-" + id + " h2")?.textContent || d.title;
-    $("#status-page").textContent = (scenes.indexOf(d) + 1) + " / " + scenes.length;
-    $("#status-page").hidden = false;
-    $(".chat-compose div").textContent = "使用者輸入也會自動演出";
-    $$("[data-stage]", desktop).forEach(item => item.classList.toggle("is-active", item.dataset.stage === d.chapter));
+    $("#status-page").textContent = id === "install" ? "" : (scenes.indexOf(d) + 1) + " / " + scenes.length;
+    $("#status-page").hidden = id === "install";
+    resetComposers();
+    const lifecycleStage = ["check", "handoff", "evolve"].includes(d.chapter) ? "wrap-up" : d.chapter;
+    $$("[data-stage]", desktop).forEach(item => item.classList.toggle("is-active", item.dataset.stage === lifecycleStage));
     mark(id);
     restore(thread, d, count);
     controls(count === d.messages.length);
     for (let i = count; i < d.messages.length; i++) {
       if (!await ready(t)) return;
       const message = d.messages[i], [role, text, metadata] = message, node = messageNode(message, false);
+      if (role === "user" && d.messages[i - 1]?.[0] === "question") {
+        const question = $$('[data-role=question]', thread).at(-1);
+        if (question) markQuestionAnswer(question, d.messages[i - 1][1]);
+        progress.set(id, i + 1);
+        renderMethodProgress(d, i + 1);
+        if (!reduced.matches) await wait(420);
+        continue;
+      }
       const body = $(".chat-bubble, .event-body", node);
-      const typed = !reduced.matches && (role === "assistant" || role === "user");
+      if (role === "user" && !reduced.matches) {
+        const compose = composeFor(id);
+        const input = $("div", compose);
+        const chars = Array.from(text);
+        input.textContent = "";
+        compose.classList.add("is-composing");
+        for (let n = 1; n <= chars.length; n += 2) {
+          if (!await ready(t)) return;
+          input.textContent = chars.slice(0, n + 1).join("");
+          await wait(52);
+        }
+        if (!await ready(t)) return;
+        await wait(140);
+        if (!await ready(t)) return;
+        compose.classList.remove("is-composing");
+        input.textContent = "使用者輸入也會自動演出";
+      }
+      const typed = !reduced.matches && role === "assistant";
       if (typed) body.textContent = "";
       thread.append(node);
       showStatusSkill(d, i + 1);
@@ -547,15 +609,11 @@
           if (!await ready(t)) return;
           renderMessageText(body, chars.slice(0, n + 1).join(""));
           scrollChat(thread);
-          await wait(role === "user" ? 52 : 48);
+          await wait(48);
         }
         body.classList.remove("is-typing");
       }
       if (t !== token) return;
-      if (role === "user" && d.messages[i - 1]?.[0] === "question") {
-        const question = $$("[data-role=question]", thread).at(-1);
-        if (question) markQuestionAnswer(question, d.messages[i - 1][1]);
-      }
       appendDocumentChips(node, metadata);
       scrollChat(thread);
       progress.set(id, i + 1);
@@ -565,7 +623,7 @@
       if (!reduced.matches) await wait(role === "question" ? 700 : 170);
     }
     if (t !== token) return;
-    $(".chat-compose div").textContent = "使用者輸入也會自動演出";
+    resetComposers();
     $(".playback-announcement").textContent = id + " 示範對話已播放，可重播或繼續閱讀。";
     controls(true);
   }
@@ -586,7 +644,7 @@
   }
   function syncPlaybackButtons(id, finished = false) {
     $$(".playback-cta").forEach(button => button.classList.remove("is-playing", "is-complete"));
-    const root = $("#demo-" + id);
+    const root = id === "install" ? $("#install") : $("#demo-" + id);
     if (!root) return;
     $$(".playback-cta", root).forEach(button => {
       const step = button.closest(".method-stage, .meeting-flow-step");

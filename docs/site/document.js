@@ -3,7 +3,7 @@
   const params = new URLSearchParams(location.search);
   const id = params.get("skill");
   const registry = window.DEV_SKILLS_DEMOS || {};
-  const demo = id === "meeting-transcript" ? registry["meeting-notes"]?.source : Object.hasOwn(registry, id) ? registry[id] : null;
+  const demo = id === "improve" ? null : id === "meeting-transcript" ? registry["meeting-notes"]?.source : Object.hasOwn(registry, id) ? registry[id] : null;
   const $ = selector => document.querySelector(selector);
   document.body.classList.toggle("light", params.get("theme") === "light");
   function updateThemeLabel() {

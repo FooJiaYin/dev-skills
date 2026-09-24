@@ -109,8 +109,8 @@ assert(app.includes('else if (id !== active) play(id, true)'), "scroll-back repl
 assert(app.includes('data-assistant-name') && app.includes('class="skill-command"'), "assistant skill label and code typography");
 assert(app.includes('const skillName = id => "/" + id'), "skill labels use slash notation");
 assert(app.includes('node.classList.add("chat-skill-event", "chat-entry--tool")'), "skill calls share tool-event layout");
-assert.deepEqual([...html.matchAll(/<span data-stage="[^"]+" title="[^"]+">([^<]+)<\/span>/g)].map(match => match[1]), ["Source", "Prepare", "Check", "Handoff", "Memory", "Improve"], "English stepper labels");
-assert(app.includes('intake: "Source", prepare: "Prepare", check: "Check", handoff: "Handoff", remember: "Memory", evolve: "Improve"'), "explorer folders match the chat stepper");
+assert.deepEqual([...html.matchAll(/<span data-stage="[^"]+" title="[^"]+">([^<]+)<\/span>/g)].map(match => match[1]), ["Source", "Prepare", "Wrap-up", "Memory"], "English stepper labels");
+assert(app.includes('check: "Wrap-up", handoff: "Wrap-up", remember: "Memory", evolve: "Wrap-up"'), "explorer folders match the chat stepper");
 assert(!html.includes('data-scene="wrap-up"'), "wrap-up has no pinned shortcut");
 assert(!app.includes('members.filter(d => d.id !== "wrap-up")'), "wrap-up remains in the delivery explorer group");
 assert.deepEqual(sceneResult.scenes.filter(d => d.chapter === "check").map(d => d.id), ["wrap-up", "verify"], "wrap-up precedes the connected quality method");
@@ -134,10 +134,16 @@ const methods = readFileSync(path.join(site, "methods.js"), "utf8");
 vm.runInContext(methods, visualContext);
 for (const id of ["sync", "verify", "report", "find-session", "improve"]) {
   const markup = visualContext.window.devSkillsMethod({id}, target => `<figure>${target}</figure>`);
-  assert(markup.includes("data-method-play"), id + ": stages can trigger chat");
+  if (id !== "improve") assert(markup.includes("data-method-play"), id + ": stages can trigger chat");
   assert(!/琢奧|ERP|庫存|預留/.test(markup), id + ": explanations remain general");
 }
-assert(methods.includes('method-memory') && methods.includes('handoff-rail') && methods.includes('learning-cycle'), "different methods have distinct compositions");
+assert(methods.includes('memory-tier--team') && methods.includes('handoff-rail') && methods.includes('learning-destinations'), "different methods have distinct compositions");
+const memoryMarkup = visualContext.window.devSkillsMethod({id:"find-session"}, target => `<figure>${target}</figure>`);
+assert(['Context', 'Plan', '# Changes Made', '# Verification', '# Result', '# Updates', '# Unsolved Issues'].every(section => memoryMarkup.includes(section)), "Memory shows what is collected in one report");
+const improveMarkup = visualContext.window.devSkillsMethod({id:"improve"}, target => `<figure>${target}</figure>`);
+assert.equal((improveMarkup.match(/data-method-play=/g) || []).length, 0, "Improve relies on its one section-level conversation CTA");
+assert.equal((improveMarkup.match(/class="method-stage /g) || []).length, 4, "Improve keeps four steps");
+assert(!improveMarkup.includes('data-demo-document=') && !app.includes('"improve": ["improve"'), "Improve suggestions stay in conversation, not a preview file");
 assert(!methods.includes('<span>重要決定</span>'), "rejected four-label handoff treatment is removed");
 assert(methods.includes('handoff-summary__track') && ['完成範圍', '驗證證據', '接續事項'].every(label => methods.includes(label)), "handoff shows three scannable report outcomes");
 const handoffMarkup = visualContext.window.devSkillsMethod({id:"report"}, target => `<figure>${target}</figure>`);
@@ -147,7 +153,7 @@ assert(handoffMarkup.includes('/report</code><span aria-hidden="true"> → </spa
 assert(!handoffMarkup.includes('data-demo-document="rename-session"') && !handoffMarkup.includes('data-demo-document="wrap-up"'), "no fictional file CTA for naming or delivery");
 assert(methods.includes('class="playback-cta"') && app.includes('確認品質') && app.includes('找回工作脈絡'), "playback invitations describe each section");
 const renderer = vm.createContext({ demos: featuredDemos });
-vm.runInContext('const byId = new Map(Object.entries(demos)); const esc = value => String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll(\'"\', "&quot;");\n' + app.slice(app.indexOf('  const documentNames ='), app.indexOf('  const relatedDocuments =')) + app.slice(app.indexOf('  const documentIcon ='), app.indexOf('  function sectionActions')) + '\nglobalThis.previews = Object.keys(demos).map(id => documentPreview(id));', renderer);
+vm.runInContext('const byId = new Map(Object.entries(demos)); const esc = value => String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll(\'"\', "&quot;");\n' + app.slice(app.indexOf('  const documentNames ='), app.indexOf('  const relatedDocuments =')) + app.slice(app.indexOf('  const documentIcon ='), app.indexOf('  function sectionActions')) + '\nglobalThis.previews = Object.keys(demos).filter(id => id !== "improve").map(id => documentPreview(id));', renderer);
 for (const preview of renderer.previews) {
   assert(preview.includes('class="document-preview-excerpt"') && preview.includes('<pre>'), "preview shows document text");
   assert(preview.indexOf('class="document-preview-open"') > preview.indexOf('</pre>'), "button is below preview content");
@@ -183,17 +189,19 @@ assert.equal(renderer.bubble.children.length, 1, "one chip group inside assistan
 assert(renderer.bubble.children[0].innerHTML.includes('data-demo-document="report"'));
 assert(!app.includes('class="demo-artifact"'), "document bodies are no longer inline");
 assert(app.includes('data-demo-replay=') && app.includes('data-demo-document='), "section CTAs");
-assert(!app.includes('target="_blank"'), "documents do not open browser tabs");
+assert(!/<a[^>]*data-demo-document[^>]*target="_blank"/.test(app), "document actions stay in IDE tabs");
 assert(app.includes('function openDocument') && html.includes('id="story-panel"'), "internal editor tabs");
 assert(!/(?<!\$)\$\([^\n;]*\)\.forEach/.test(app), "collections use querySelectorAll");
 assert(html.indexOf('src="demos/setup-notion.js"') < html.indexOf('src="demos/meeting-notes.js"'), "setup before meeting notes");
 const documentHtml = readFileSync(path.join(site, "document.html"), "utf8");
 const documentScript = readFileSync(path.join(site, "document.js"), "utf8");
+assert(documentScript.includes('id === "improve" ? null'), "Improve has no standalone document view");
 for (const [id, d] of Object.entries({ ...demos, "meeting-transcript": demos["meeting-notes"].source })) {
   if (excluded.includes(id)) {
     assert(!documentHtml.includes('src="demos/' + id + '.js"'), id + ": excluded from document viewer");
     continue;
   }
+  if (id === "improve") continue;
   assert(documentHtml.includes('src="demos/' + (id === "meeting-transcript" ? "meeting-notes" : id) + '.js"'), id + ": available in document viewer");
   const elements = new Map();
   const element = selector => {

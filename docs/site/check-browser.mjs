@@ -87,12 +87,12 @@ try {
   assert.equal(await evaluate("document.querySelector('.demo-scene').dataset.scenePanel"), "setup-notion");
   assert.equal(await evaluate("document.querySelector('#demo-files .file').dataset.scene"), "setup-notion");
   assert.equal(await evaluate("document.querySelectorAll('.demo-artifact').length"), 0);
-  assert.equal(await evaluate("document.querySelectorAll('[data-demo-replay]').length"), 3);
-  assert(await evaluate("[...document.querySelectorAll('.playback-cta')].every(button => (button.querySelector('.cta-skill')?.textContent || '').startsWith('/'))"), "every playback CTA names its skill");
+  assert.equal(await evaluate("document.querySelectorAll('[data-demo-replay]').length"), 4);
+  assert(await evaluate("[...document.querySelectorAll('.playback-cta')].every(button => button.dataset.demoReplay === 'install' || (button.querySelector('.cta-skill')?.textContent || '').startsWith('/'))"), "skill playback CTAs name their skill; installation is a separate demo");
   assert(await evaluate("document.querySelector('[data-method-play=delivery] .cta-skill').textContent === '/wrap-up' && document.querySelector('[data-method-play=resume] .cta-skill').textContent === '/find-session' && document.querySelector('[data-play-stage=meeting-notes] .cta-skill').textContent === '/meeting-notes'"), "process-only stages name the skill they demonstrate");
   assert.equal(await evaluate("document.querySelectorAll('#demo-meeting-notes [data-play-stage=transcript]').length"), 0, "the transcript is input, not a duplicate /meeting-notes action");
   assert.equal(await evaluate("document.querySelectorAll('#demo-meeting-notes [data-play-stage=meeting-notes]').length"), 1, "the note conversion has one /meeting-notes action");
-  assert.equal(await evaluate("new Set([...document.querySelectorAll('[data-demo-replay]')].map(button => button.textContent.trim())).size"), 3, "remaining sections have specific playback invitations");
+  assert.equal(await evaluate("new Set([...document.querySelectorAll('[data-demo-replay]')].map(button => button.textContent.trim())).size"), 4, "sections and installation have distinct playback invitations");
   assert.equal(await evaluate("new Set([...document.querySelectorAll('[data-demo-replay]')].map(button => getComputedStyle(button).backgroundColor)).size >= 2"), true, "sections use distinct CTA color roles");
   assert(await evaluate("[...document.querySelectorAll('#demo-setup-notion .scene__content, #demo-wrap-up .scene__content, #demo-improve .scene__content')].every(e => e.lastElementChild.classList.contains('section-actions'))"), "remaining sections keep bottom CTAs");
   assert.equal(await evaluate("document.querySelectorAll('#demo-meeting-notes .section-actions, #demo-sync .section-actions, #demo-verify .section-actions, #demo-report .section-actions, #demo-find-session .section-actions').length"), 0, "method flows do not repeat step and document actions in footer rows");
@@ -102,7 +102,7 @@ try {
   assert(await evaluate("document.querySelector('.titlebar__title').textContent.includes('foojiayin')"));
   assert(await evaluate("[...document.querySelectorAll('.skill-related')].every(group => group.hidden)"));
   assert(await evaluate("getComputedStyle(document.querySelector('.chat-ready')).display !== 'none'"));
-  assert.deepEqual(await evaluate("[...document.querySelectorAll('.chat-lifecycle [data-stage]')].map(e => e.textContent)"), ["Source", "Prepare", "Check", "Handoff", "Memory", "Improve"]);
+  assert.deepEqual(await evaluate("[...document.querySelectorAll('.chat-lifecycle [data-stage]')].map(e => e.textContent)"), ["Source", "Prepare", "Wrap-up", "Memory"]);
   assert(await evaluate("document.querySelectorAll('#story-panel h2 .title-type-glyph').length > 0 && document.querySelectorAll('#story-panel h1 .title-type-glyph, #story-panel h3 .title-type-glyph').length === 0"), "only large white headings type");
   await evaluate("document.querySelector('#why-title').scrollIntoView({block:'center'})");
   await until("[...document.querySelectorAll('#why-title .title-type-glyph')].every(glyph => getComputedStyle(glyph).visibility === 'visible')", 4000);
@@ -113,7 +113,8 @@ try {
   assert.equal(await evaluate("document.querySelectorAll('.explorer-shortcuts [data-scene=wrap-up]').length"), 0);
   assert.deepEqual(await evaluate("[...document.querySelectorAll('[data-skill-folder=wrap-up] .skill-folder__children [data-scene]')].map(e => e.dataset.scene)"), ["verify", "update-docs", "code-review", "report", "rename-session", "sync-report", "improve"]);
   assert.equal(await evaluate("new Set([...document.querySelectorAll('[data-scene]')].map(e => e.dataset.scene)).size"), 17, "no duplicated skill entries");
-  assert(await evaluate("[...document.querySelectorAll('.demo-scene:not(#demo-wrap-up)')].every(section => section.querySelector('[data-demo-document]:not([target])'))"));
+  assert(await evaluate("[...document.querySelectorAll('.demo-scene:not(#demo-wrap-up):not(#demo-improve)')].every(section => section.querySelector('[data-demo-document]:not([target])'))"));
+  assert.equal(await evaluate("document.querySelectorAll('#demo-improve [data-demo-document]').length"), 0, "Improve suggestions stay in chat, not a document");
   assert.equal(await evaluate("document.querySelectorAll('#demo-wrap-up [data-demo-document], [data-method-stage=sync] [data-demo-document], [data-method-stage=rename-session] [data-demo-document], [data-method-stage=delivery] [data-demo-document]').length"), 0, "steps without documents do not invent file CTAs");
   assert(await evaluate("[...document.querySelectorAll('.method-actions button, .section-cta--replay')].every(button => button.classList.contains('playback-cta') && button.querySelector('svg')) && [...document.querySelectorAll('.meeting-step-actions button')].every(button => button.classList.contains('playback-cta') && button.textContent.trim().startsWith('試試 /'))"), "playback uses the prominent CTA and meeting steps say 試試 /skill");
   assert(await evaluate("document.querySelectorAll('.document-preview').length >= 5"));
@@ -121,6 +122,10 @@ try {
   assert.equal(await evaluate("document.querySelectorAll('.github-branch-path .branch-node').length"), 3);
   assert.equal(await evaluate("document.querySelectorAll('#demo-wrap-up .skill-visual').length"), 0, "wrap-up uses the two timelines instead of a duplicate diagram");
   assert.equal(await evaluate("document.querySelectorAll('.method-layout').length"), 5, "prepare, quality, handoff, memory and improvement have dedicated compositions");
+  assert.deepEqual(await evaluate("[...document.querySelectorAll('#install .install-method > div:first-child .install-commands code')].map(el => el.textContent)"), ["/plugin marketplace add FooJiaYin/dev-skills", "/plugin install dev-skills"], "ending shows the real Claude Code install sequence");
+  assert.deepEqual(await evaluate("[...document.querySelectorAll('#install .install-method > div:last-child .install-commands code')].map(el => el.textContent)"), ["git clone https://github.com/FooJiaYin/dev-skills.git ~/dev-skills", "mkdir -p ~/.codex/skills", 'for skill in ~/dev-skills/skills/*; do ln -s "$skill" ~/.codex/skills/; done'], "ending gives Codex runnable clone and safe symlink commands");
+  assert.equal(await evaluate("document.querySelector('#install .install-download').dataset.demoReplay"), "install", "ending opens a simulated installation conversation, not a ZIP download");
+  assert(await evaluate("document.querySelector('#install .install-readme').href.endsWith('/dev-skills#install')"), "complete installation guide remains available");
   assert.equal(await evaluate("document.querySelectorAll('.handoff-summary__track > div').length"), 3, "handoff shows three distinct report outcomes");
   assert.equal(await evaluate("document.querySelectorAll('#claude-chat [data-route]').length"), 0);
   assert(await evaluate("!document.querySelector('#story-panel').innerText.includes('琢奧')"), "project name stays outside the narrative");
@@ -133,10 +138,12 @@ try {
   };
   // Real animation, including an automatically answered question. No clicking.
   await scrollTo("setup-notion");
+  await until("document.querySelector('#claude-chat .chat-compose.is-composing') !== null");
+  assert.equal(await evaluate("document.querySelectorAll('#claude-chat [data-role=user]').length"), 0, "user text starts in the composer, not in a chat bubble");
   await until("document.querySelector('#claude-chat .is-typing') !== null");
   await until("document.querySelector('#claude-chat .chat-complete').disabled");
-  assert.equal(await evaluate("document.querySelectorAll('#claude-chat [data-role=user]').length"), 2);
-  assert.equal(await evaluate("document.querySelectorAll('#claude-chat .chat-entry').length"), await evaluate("window.DEV_SKILLS_DEMOS['setup-notion'].messages.length"));
+  assert.equal(await evaluate("document.querySelectorAll('#claude-chat [data-role=user]').length"), 1, "selecting an answer does not type another user message");
+  assert.equal(await evaluate("document.querySelectorAll('#claude-chat .chat-entry').length"), await evaluate("window.DEV_SKILLS_DEMOS['setup-notion'].messages.length - 1"));
   assert.deepEqual(await evaluate("[...document.querySelectorAll('#claude-chat [data-role=question] .question-option')].map(button => button.textContent)"), ["沿用", "另外提供"], "agent confirmation uses visible option buttons");
   assert.equal(await evaluate("document.querySelector('#claude-chat [data-role=question] .question-option.is-selected').textContent"), "沿用", "automatic reply visibly selects its option");
   assert.equal(await evaluate("document.querySelectorAll('#claude-chat .chat-document-chip[data-demo-document=setup-notion]').length"), 1);
@@ -150,7 +157,7 @@ try {
   assert.equal(await evaluate("getComputedStyle(document.querySelector('#claude-chat [data-role=skill] .skill-command')).color"), await evaluate("getComputedStyle(document.querySelector('#claude-chat [data-role=user] .skill-command')).color"));
   await evaluate("(() => { const picker = document.querySelector('#claude-chat [data-host-picker]'); picker.value = 'codex'; picker.dispatchEvent(new Event('change')); })()");
   assert(await evaluate("[...document.querySelectorAll('[data-assistant-name]')].every(e => e.textContent === 'Codex')"));
-  assert.equal(await evaluate("document.querySelectorAll('#claude-chat .chat-entry').length"), await evaluate("window.DEV_SKILLS_DEMOS['setup-notion'].messages.length"), "host switch does not restart");
+  assert.equal(await evaluate("document.querySelectorAll('#claude-chat .chat-entry').length"), await evaluate("window.DEV_SKILLS_DEMOS['setup-notion'].messages.length - 1"), "host switch does not restart");
   await scrollTo("sync");
   await scrollTo("setup-notion");
   await until("document.querySelector('#claude-chat .is-typing') !== null");
@@ -212,7 +219,7 @@ try {
   for (const name of names) {
     await scrollTo(name);
     await until("document.querySelector('#claude-chat').dataset.demo === " + JSON.stringify(name) + " && document.querySelector('#claude-chat .chat-complete').disabled");
-    const expected = Number(await evaluate("document.querySelector('#demo-" + name + "').dataset.messageCount"));
+    const expected = Number(await evaluate("document.querySelector('#demo-" + name + "').dataset.messageCount")) - Number(await evaluate("document.querySelectorAll('#claude-chat [data-role=question]').length"));
     assert.equal(await evaluate("document.querySelectorAll('#claude-chat .chat-entry').length"), expected, name);
     assert.equal(await evaluate("document.querySelector('.file.is-active').dataset.scene"), name);
   }
@@ -284,8 +291,9 @@ try {
   assert(await evaluate("document.documentElement.scrollWidth <= innerWidth"), "mobile has no horizontal overflow");
   assert(await evaluate("[...document.querySelectorAll('.demo-scene .picture-node, .demo-scene .flow-node')].every(node => { const rect = node.getBoundingClientRect(); return Math.abs(rect.width - rect.height) < 1 && node.scrollHeight <= node.clientHeight + 1; })"), "mobile square nodes contain their labels");
   await evaluate("document.querySelector('#demo-meeting-notes').scrollIntoView({behavior:'instant'})");
-  await until("document.querySelectorAll('#demo-meeting-notes .chat-entry').length === ['meeting-notes','upload-meeting','create-tasks','fetch-task'].reduce((n,id) => n + window.DEV_SKILLS_DEMOS[id].messages.length, 0)");
+  await until("document.querySelectorAll('#demo-meeting-notes .chat-entry').length === ['meeting-notes','upload-meeting','create-tasks','fetch-task'].reduce((n,id) => n + window.DEV_SKILLS_DEMOS[id].messages.length - window.DEV_SKILLS_DEMOS[id].messages.filter(message => message[0] === 'question').length, 0)");
   assert(await evaluate("document.querySelector('#demo-meeting-notes .inline-demo').getBoundingClientRect().height > 0"));
+  assert(await evaluate("document.querySelector('#demo-meeting-notes .inline-demo .chat-compose') !== null"), "mobile conversation has its own composer");
   assert(await evaluate("document.querySelector('#demo-meeting-notes .chat-document-chip[data-demo-document=meeting-notes]') !== null"), "mobile chips render in combined conversation");
   assert(await evaluate("[...document.querySelectorAll('.chat-document-chip')].every(chip => chip.closest('.chat-bubble') && chip.closest('[data-role=assistant]'))"), "all file chips stay inside assistant replies");
   const mobilePosition = await evaluate("window.scrollY");
@@ -293,6 +301,16 @@ try {
   assert(await evaluate("document.documentElement.scrollWidth <= innerWidth"), "document mobile width");
   await evaluate("document.querySelector('#tab-story').click()");
   assert(Math.abs(await evaluate("window.scrollY") - mobilePosition) < 2, "mobile reading position retained");
+  await evaluate("document.querySelector('#install').scrollIntoView({behavior:'instant'})");
+  await evaluate("(() => { const picker = document.querySelector('#demo-install [data-host-picker]'); picker.value = 'claude'; picker.dispatchEvent(new Event('change')); })()");
+  await evaluate("document.querySelector('#install [data-demo-replay=install]').click()");
+  await evaluate("document.querySelector('#demo-install [data-inline-complete=install]').click()");
+  await until("document.querySelector('#demo-install .chat-thread').textContent.includes('重啟 Claude Code')");
+  await evaluate("(() => { const picker = document.querySelector('#demo-install [data-host-picker]'); picker.value = 'codex'; picker.dispatchEvent(new Event('change')); })()");
+  await evaluate("document.querySelector('#demo-install [data-inline-complete=install]').click()");
+  await until("document.querySelector('#demo-install .chat-thread').textContent.includes('git clone')");
+  assert(await evaluate("document.querySelector('#demo-install .chat-thread').textContent.includes('沒有替你執行指令')"), "install demo switches to Codex without executing anything");
+  assert(await evaluate("document.documentElement.scrollWidth <= innerWidth"), "installation stays within mobile width");
   assert.equal(errors.length, 0, JSON.stringify(errors));
   console.log("PASS: 16 skills in 8 method-led scenes; continuous workflows; host switch; scroll replay; contextual files; return buttons; IDE tabs; icons; typing; desktop/mobile; no JS errors.");
   // Screenshots last: capture can stall the CDP connection on some installations.
