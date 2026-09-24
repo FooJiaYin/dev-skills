@@ -79,7 +79,7 @@ No task file detected → **first scan `docs/reports/` for a very recent report 
 
 ## Report Generation Process
 
-1. **Analyze Chat History**: Review the conversation to capture only the core issue, discussion points and decisions made, solutions attempted and their outcomes. If the session has a log (`python3 ~/agent-skills/dev-skills/bin/session-log.py show`), read it first: `[user]`/`[ask]` are the user's exact words (quote decisions verbatim from there, don't paraphrase from memory), `[note]` are decisions recorded as they happened, `[write]` is the authoritative file list, `[error]` the friction, `[web]` every URL fetched or searched (including by subagents) — the `# References` section comes from there, not from memory. This works after a compaction too, when the conversation itself is only a summary.
+1. **Analyze Chat History**: Review the conversation to capture only the core issue, discussion points and decisions made, solutions attempted and their outcomes. In Claude Code, if the session has a log (`python3 ~/agent-skills/dev-skills/bin/session-log.py show`), read it first: `[user]`/`[ask]` are the user's exact words (quote decisions verbatim from there, don't paraphrase from memory), `[note]` are decisions recorded as they happened, `[write]` is the authoritative file list, `[error]` the friction, `[web]` every URL fetched or searched (including by subagents) — the `# References` section comes from there, not from memory. This works after a compaction too, when the conversation itself is only a summary.
    In Codex, refresh/read `python3 <dev-skills-root>/bin/session-adapter.py log --stdout`.
    Local notes survive refreshes. Tool output is abbreviated; `[write]` covers only
    completed `fileChange` events. Supplement shell/MCP writes and missing details
@@ -121,7 +121,7 @@ If there are no issues in a bucket, omit that bucket's content — do not stub t
 After writing the report, if a plan was used during the conversation:
 
 1. Identify the plan file path (e.g. `~/.claude/plans/some-plan-name.md`)
-2. Run `bash <skill-base>/attach-plan.sh <mode> <plan> <report>` where `<skill-base>` is announced at skill load. If unknown, fallback: `find ~/agent-skills ~/.claude -name attach-plan.sh -path '*/report/*' | head -1`.
+2. Run `bash <skill-base>/attach-plan.sh <mode> <plan> <report>` where `<skill-base>` is announced at skill load. Resolve the installed `SKILL.md` symlink and use its sibling `attach-plan.sh`; do not pick an arbitrary cached copy.
    - `<mode>` is `prepend` for Task / Bug Fix reports, `append` for Planning reports
 
 Do NOT read the plan file yourself. The script handles everything.

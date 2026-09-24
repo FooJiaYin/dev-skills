@@ -10,7 +10,7 @@ This skill runs the verification checks defined in the implementation plan. It i
 ## 1. Locate the plan
 
 - Look for the implementation plan file the user has been working from. Common locations:
-  - `~/.claude/plans/*.md` (most recently modified is usually correct)
+  - Claude Code only: `~/.claude/plans/*.md`, matched to this task rather than chosen by modification time
   - A planning doc the user explicitly pointed to in this conversation
   - A `docs/plans/` or similar folder in the project
 - If multiple candidates exist and it's ambiguous, ask the user which plan to verify against. Don't guess.
