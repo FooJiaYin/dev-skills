@@ -155,7 +155,7 @@ For local development against a clone:
 ```
 
 Session operations use one cross-host entry point: `bin/session-adapter.py`
-provides `show`, `rename`, and `export`, then delegates to the Claude Code or
+provides `show`, `rename`, `export`, and Codex `log`, then delegates to the Claude Code or
 Codex backend. `bin/codex-session.py` remains as a compatibility shim.
 
 ### Codex working logs

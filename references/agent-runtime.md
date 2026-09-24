@@ -72,13 +72,13 @@ tool and permission rules before any skill defaults.
   Use the report/task title for the name. Preserve `Session: <title> (<id>)` in
   commit messages and `session:` in reports. If no ID is exposed, use the honest
   marker `codex-id-unavailable`; it is not a resumable session identifier.
-- Codex renaming: run `python3 <dev-skills-root>/bin/codex-session.py rename
+- Session renaming: run `python3 <dev-skills-root>/bin/session-adapter.py rename
   '<title>'`. It calls app-server `thread/name/set` and verifies with
   `thread/read`; never write directly to Codex SQLite or rollout files. If the
   sandbox blocks app-server state initialization under `~/.codex`, request the
   host's normal filesystem approval and retry once.
-- Codex transcript export: run `python3
-  <dev-skills-root>/bin/codex-session.py export [--full] [-o PATH]`. It reads the
+- Session transcript export: run `python3
+  <dev-skills-root>/bin/session-adapter.py export [--full] [-o PATH]`. It reads the
   explicit current thread ID and pages through app-server turns. Do not substitute
   Claude's JSONL helpers or reconstruct a supposedly complete transcript from
   visible chat context.
