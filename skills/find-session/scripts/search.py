@@ -39,7 +39,7 @@ WRAPPERS = [
 def cwd_project_dir(cwd: str | None = None) -> Path:
     """Translate a working directory to its Claude Code project folder name.
 
-    `/Users/unilife/agent-skills` → `~/.claude/projects/-Users-unilife-agent-skills`.
+    `/Users/me/proj` → `~/.claude/projects/-Users-me-proj`.
     """
     cwd = cwd or os.getcwd()
     flat = cwd.replace("/", "-")
@@ -123,19 +123,29 @@ def scan_log(log: Path, sid: str, topic: str | None, touched: str | None,
     instead of its jsonl: ~100× smaller, human-readable, and [write] lines are
     exact (git diff at write time), not regex guesses."""
     topic_re = re.compile(re.escape(topic), re.I) if topic else None
-    touched_norm = os.path.realpath(os.path.expanduser(touched)) if touched else None
+    touched_x = os.path.expanduser(touched) if touched else None  # suffix match, same as scan_session
+    touched_norm = os.path.realpath(touched_x) if touched else None
     text = log.read_text(encoding="utf-8", errors="replace")
     head, _, body = text.partition("\n")
-    year = str(__import__("datetime").datetime.fromtimestamp(log.stat().st_mtime).year)
     recs: list[dict] = []
     for line in body.splitlines():
         m = RX_LOG_RECORD.match(line)
         if m:
-            recs.append({"ts": f"{year}-{m.group(1).replace(' ', 'T')}", "tag": m.group(2), "body": m.group(3)})
+            recs.append({"ts": m.group(1).replace(" ", "T"), "tag": m.group(2), "body": m.group(3)})
         elif recs:
             recs[-1]["body"] += "\n" + line
     if not recs:
         return None
+    # Lines carry only MM-DD; the last one is in the mtime's year. Walk backwards
+    # and step the year down whenever the month jumps up (a New Year crossing).
+    year = __import__("datetime").datetime.fromtimestamp(log.stat().st_mtime).year
+    next_month = None
+    for r in reversed(recs):
+        month = int(r["ts"][:2])
+        if next_month is not None and month > next_month:
+            year -= 1
+        next_month = month
+        r["ts"] = f"{year}-{r['ts']}"
     first_ts, last_ts = recs[0]["ts"], recs[-1]["ts"]
     if since and last_ts < since:
         return None
@@ -150,7 +160,7 @@ def scan_log(log: Path, sid: str, topic: str | None, touched: str | None,
             topic_hits.append((r["ts"], r["tag"], r["body"][s:e]))
         if touched_norm and r["tag"] == "write":
             fp = r["body"].split(" ", 1)[0]
-            if os.path.realpath(fp) == touched_norm or fp.endswith(touched) or touched.endswith(fp):
+            if os.path.realpath(fp) == touched_norm or fp.endswith(touched_x) or touched_x.endswith(fp):
                 tool = re.search(r"tool=(\S+)", r["body"])
                 touch_hits.append((r["ts"], tool.group(1) if tool else "?", fp))
     if topic and not topic_hits:

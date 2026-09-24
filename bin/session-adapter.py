@@ -265,7 +265,8 @@ def full_item(item: dict[str, Any]) -> str | None:
 
 
 def render_transcript(thread: dict[str, Any], turns: list[dict[str, Any]], full: bool) -> str:
-    title = thread.get("name") or thread.get("preview", "").splitlines()[0][:80] or f"Session {thread['id'][:8]}"
+    preview = (thread.get("preview") or "").splitlines()
+    title = thread.get("name") or (preview[0][:80] if preview else "") or f"Session {thread['id'][:8]}"
     lines = [
         f"# {title}",
         "",

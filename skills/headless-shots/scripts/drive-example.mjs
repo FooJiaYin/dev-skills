@@ -1,12 +1,15 @@
 // Drive two save scenarios through headless Chrome CDP. Usage: node drive.mjs <token> <outdir> <editProductId>
 import { spawn } from "node:child_process";
 import { writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 
 const [token, outDir, editId] = process.argv.slice(2);
 const port = 9334;
-const chrome = spawn("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", [
+const BASE_URL = process.env.BASE_URL || "http://localhost:3000";
+const COOKIE = process.env.SESSION_COOKIE || "session";
+const chrome = spawn(process.env.CHROME || "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", [
   "--headless=new", "--disable-gpu", "--hide-scrollbars", "--no-first-run",
-  `--remote-debugging-port=${port}`, "--user-data-dir=/tmp/claude-501/chrome-prof2", "--window-size=1440,900", "about:blank",
+  `--remote-debugging-port=${port}`, `--user-data-dir=${tmpdir()}/headless-shots-prof2`, "--window-size=1440,900", "about:blank",
 ], { stdio: "ignore" });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 for (let i = 0; i < 40; i++) { try { await fetch(`http://127.0.0.1:${port}/json/version`); break; } catch { await sleep(250); } }
@@ -29,11 +32,11 @@ const hardKill = setTimeout(() => { console.log("HARD TIMEOUT"); try { chrome.ki
 const call = (method, params = {}) => new Promise((res, rej) => { const n = ++id; pending.set(n, { res, rej }); ws.send(JSON.stringify({ id: n, method, params })); });
 const evalJs = async (expression) => { const r = await call("Runtime.evaluate", { expression, awaitPromise: true, returnByValue: true }); if (r.err) return { __cdpError: r.err.message }; if (r.exceptionDetails) throw new Error(r.exceptionDetails.text + " " + JSON.stringify(r.exceptionDetails.exception?.description)); return r.result.value; };
 const shot = async (name) => { const s = await call("Page.captureScreenshot", { format: "png" }); if (s.err) { console.log("SHOT SKIPPED:", s.err.message); return; } writeFileSync(`${outDir}/${name}.png`, Buffer.from(s.data, "base64")); };
-const goto = async (p) => { await call("Page.navigate", { url: `http://localhost:3000${p}` }); await sleep(2500); };
+const goto = async (p) => { await call("Page.navigate", { url: `${BASE_URL}${p}` }); await sleep(2500); };
 
 await call("Page.enable");
 await call("Network.enable");
-await call("Network.setCookie", { name: "sparktoy_session", value: token, domain: "localhost", path: "/", httpOnly: true });
+await call("Network.setCookie", { name: COOKIE, value: token, domain: new URL(BASE_URL).hostname, path: "/", httpOnly: true });
 await call("Emulation.setDeviceMetricsOverride", { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
 
 // helper injected into pages: React-safe setters
