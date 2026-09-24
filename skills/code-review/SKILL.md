@@ -134,7 +134,7 @@ When writing finding text:
 
 ## Output Format
 
-Write to `REVIEW.md` in the repo root.
+Write to `REVIEW.md` in the repo root — the user's project checkout, never a temporary worktree or scratch copy (those get wiped). Add `REVIEW.md` to `.gitignore` if it isn't ignored yet.
 
 ### Frontmatter (YAML)
 
