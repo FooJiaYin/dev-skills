@@ -1,0 +1,45 @@
+name: Deploy dev-skills site
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - docs/site/**
+      - .github/workflows/pages.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check site demos
+        run: node docs/site/check-demos.mjs
+      - name: Prepare published files
+        run: |
+          mkdir -p _site/demos
+          cp docs/site/{index.html,document.html,styles.css,markdown-view.css,app.js,visuals.js,methods.js,markdown-view.js,document.js} _site/
+          cp docs/site/demos/{setup-notion,meeting-notes,upload-meeting,create-tasks,sync,fetch-task,discuss,wrap-up,verify,update-docs,code-review,report,rename-session,sync-report,find-session,improve}.js _site/demos/
+          if grep -R -n -E 'localhost|127\.0\.0\.1|file://' _site; then exit 1; fi
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

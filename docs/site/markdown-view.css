@@ -1,0 +1,15 @@
+/* Markdown source highlighting for demo documents. Uses the palette tokens from styles.css, so both themes follow. */
+.md-h { color: var(--accent); font-weight: 700; }
+.md-mark { color: var(--muted); }
+.md-strong { color: var(--text); font-weight: 700; }
+.md-inline { color: var(--mint); }
+.md-code { color: var(--mint); }
+.md-fence { color: var(--muted); }
+.md-link { color: var(--blue); }
+.md-url { color: var(--muted); }
+.md-tag { color: var(--violet); }
+.md-comment { color: var(--muted); font-style: italic; }
+.md-strike { color: var(--muted); text-decoration: line-through; }
+.md-key { color: var(--violet); }
+.md-meta { color: var(--muted); }
+.md-quote { color: var(--muted); font-style: italic; }

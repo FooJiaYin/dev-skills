@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="dev-skills：把團隊協作護欄裝進 AI coding 工作流。"
+    />
+    <title>dev-skills — AI coding 的協作工作台</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="markdown-view.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#workspace">跳到主要內容</a>
+    <header class="titlebar">
+      <div class="traffic-lights" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="titlebar__title">
+        <span>foojiayin</span><b>/</b> dev-skills
+      </div>
+      <div class="titlebar__controls">
+        <button class="panel-toggle panel-toggle--chat" type="button" data-toggle-panel="chat" aria-controls="claude-chat" aria-expanded="true" aria-label="收合對話欄" title="收合對話欄">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M15 4v16"/></svg>
+        </button>
+        <button
+          class="theme-toggle"
+          type="button"
+          aria-label="切換至 Catppuccin Latte"
+          title="原版深色 · 切換至 Catppuccin Latte"
+        >
+          <span aria-hidden="true">◐</span>
+        </button>
+      </div>
+    </header>
+
+    <main id="workspace" class="workspace">
+      <aside class="activitybar" aria-label="主要導覽">
+        <button
+          class="activitybar__button is-active"
+          type="button"
+          data-toggle-panel="explorer"
+          aria-controls="skill-explorer"
+          aria-expanded="true"
+          aria-label="檔案總管"
+          title="檔案總管"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 4h6l2 2h8v14H4z" />
+          </svg>
+        </button>
+        <button
+          class="activitybar__button"
+          type="button"
+          data-jump="workflow"
+          aria-label="工作流程"
+          title="工作流程"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="6" cy="5" r="2" />
+            <circle cx="18" cy="12" r="2" />
+            <circle cx="6" cy="19" r="2" />
+            <path
+              d="M8 5h3a3 3 0 0 1 3 3v1a3 3 0 0 0 3 3M8 19h3a3 3 0 0 0 3-3v-1a3 3 0 0 1 3-3"
+            />
+          </svg>
+        </button>
+        <button
+          class="activitybar__button"
+          type="button"
+          data-jump="chat"
+          aria-label="Claude Code 對話"
+          title="Claude Code 對話"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5 5h14v11H9l-4 3z" />
+            <path d="M8 9h8M8 12h5" />
+          </svg>
+        </button>
+        <a
+          class="activitybar__button activitybar__button--bottom"
+          href="https://github.com/FooJiaYin/dev-skills"
+          target="_blank"
+          rel="noreferrer"
+          aria-label="開啟 GitHub"
+          title="GitHub"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M12 3a9 9 0 0 0-3 17.5v-2.2c-2.5.5-3-1.1-3-1.1-.4-1-.9-1.3-.9-1.3-.7-.5 0-.5 0-.5.8.1 1.2.8 1.2.8.7 1.2 1.9.9 2.4.7.1-.5.3-.9.6-1.1-2-.2-4.1-1-4.1-4.4 0-1 .3-1.8.9-2.4-.1-.2-.4-1.1.1-2.3 0 0 .7-.2 2.5.9a8.5 8.5 0 0 1 4.5 0c1.7-1.1 2.5-.9 2.5-.9.5 1.2.2 2.1.1 2.3.6.6.9 1.4.9 2.4 0 3.4-2.1 4.2-4.1 4.4.3.3.6.8.6 1.6v2.8A9 9 0 0 0 12 3Z"
+            />
+          </svg>
+        </a>
+      </aside>
+
+      <aside class="explorer" id="skill-explorer" aria-label="內容導覽">
+        <div class="pane-title">EXPLORER<button class="pane-collapse" type="button" data-toggle-panel="explorer" aria-controls="skill-explorer" aria-expanded="true" aria-label="收合檔案總管" title="收合檔案總管"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg></button></div>
+        <div class="repo-name"><span>⌄</span> DEV-SKILLS</div>
+        <nav class="file-tree" aria-label="Skill 與相關文件">
+          <div class="explorer-shortcuts">
+            <a class="file is-active" href="#welcome" data-scene="welcome"
+              ><span class="file__icon md-icon" aria-hidden="true">M↓</span
+              >README.md</a
+            >
+          </div>
+          <div id="demo-files"></div>
+        </nav>
+      </aside>
+
+      <section class="editor" aria-label="互動內容">
+        <div class="document-bar" role="tablist" aria-label="編輯器文件">
+          <div class="editor-tab-item">
+            <button
+              type="button"
+              class="editor-tab"
+              id="tab-story"
+              role="tab"
+              aria-selected="true"
+              aria-controls="story-panel"
+              data-editor-tab="story"
+            >
+              <span class="md-icon">M↓</span><span>README.md</span>
+            </button>
+          </div>
+        </div>
+
+        <div
+          class="editor__scroll"
+          id="story-panel"
+          role="tabpanel"
+          aria-labelledby="tab-story"
+          tabindex="0"
+        >
+          <section
+            class="scene is-active"
+            id="welcome"
+            data-scene-panel="welcome"
+            tabindex="-1"
+          >
+            <div class="line-numbers" aria-hidden="true">
+              01<br />02<br />03<br />04<br />05<br />06<br />07<br />08<br />09<br />10<br />11<br />12<br />13<br />14<br />15<br />16<br />17<br />18
+            </div>
+            <div class="scene__content hero">
+              <div class="eyebrow">
+                <span>README.md</span> / 給每個正在和 AI 一起寫 code 的團隊
+              </div>
+              <h1>AI 寫 code 很快。<br /><em>交付，還是得一起來。</em></h1>
+              <p class="hero__lede">
+                所以我把任務、同步、review、記憶和交接串成一套 skill。 Notion
+                留下我們要做什麼、做到哪裡；GitHub 留下程式怎麼改、怎麼交付。
+                兩條路接在一起，下一個人就不用重新猜一次。
+              </p>
+              <section class="why-block" aria-labelledby="why-title">
+                <div class="section-kicker">
+                  WHY · 先不是功能，是我們真的遇過的事
+                </div>
+                <h2 id="why-title">AI 已經會寫了，為什麼團隊還是會卡住？</h2>
+                <p>
+                  因為工作不會停在「code
+                  生出來」那一刻。當它要跨過好幾個視窗、好幾天，最後交到另一個人手上時，麻煩才慢慢跑出來。
+                </p>
+                <div class="pain-map">
+                  <article>
+                    <div class="pain-visual pain-visual--files">
+                      <i></i><i></i><i></i><b>×</b>
+                    </div>
+
+                    <h3>改動突然不見</h3>
+                    <p>
+                      AI
+                      很聽話，但一句「幫我處理」可能讓它選到最快、也最危險的解法。
+                    </p>
+                  </article>
+                  <article>
+                    <div class="pain-visual pain-visual--diff">
+                      <i></i><i></i><i></i><i></i>
+                    </div>
+
+                    <h3>review 開始塞車</h3>
+                    <p>code 一下子變多了，真正需要判斷的地方反而更難被看見。</p>
+                  </article>
+                  <article>
+                    <div class="pain-visual pain-visual--memory">
+                      <i>A</i><i>…</i><i>?</i>
+                    </div>
+
+                    <h3>換個 session 就斷線</h3>
+                    <p>昨天談過的取捨、還沒回答的問題，今天又得重新猜一次。</p>
+                  </article>
+                  <article>
+                    <div class="pain-visual pain-visual--board">
+                      <i>?</i><i>?</i><i>?</i>
+                    </div>
+
+                    <h3>任務還停在昨天</h3>
+                    <p>
+                      repo
+                      裡其實做完了，但團隊看的任務頁沒有結果，也不知道怎麼接。
+                    </p>
+                  </article>
+                </div>
+              </section>
+
+              <section class="beliefs" aria-labelledby="beliefs-title">
+                <div class="section-kicker">
+                  CORE · 我想做的，不是再加一份規定
+                </div>
+                <h2 id="beliefs-title">把協作變成 AI 真的走得完的路。</h2>
+                <div class="belief-system">
+                  <div class="belief-system__center">
+                    <span>✦</span><b>團隊的工作流</b><small>裝在 AI 身上</small>
+                  </div>
+                  <article>
+                    <b>靠流程，不靠誰剛好記得</b>
+                    <p>開工、驗證、交接都有下一步。</p>
+                  </article>
+                  <article>
+                    <b>不只把事情做好，也交付好</b>
+                    <p>為多人、多天、多視窗留下接手點。</p>
+                  </article>
+                  <article>
+                    <b>skill 彼此接得起來</b>
+                    <p>單獨叫可以，完整走一圈也可以。</p>
+                  </article>
+                  <article>
+                    <b>能算的，就不要叫模型猜</b>
+                    <p>狀態、diff、驗證交給程式確認。</p>
+                  </article>
+                  <article>
+                    <b>每次摩擦，都能讓流程變好</b>
+                    <p>不是怪人或怪 AI，而是回頭改護欄。</p>
+                  </article>
+                  <article>
+                    <b>跨工具，但脈絡不斷掉</b>
+                    <p>Claude Code、Codex、git 和 Notion 接成一段。</p>
+                  </article>
+                </div>
+              </section>
+
+              <div class="lifecycle-heading">
+                <div class="section-kicker">
+                  WHY · 一份工作，兩條都要接得上的路
+                </div>
+                <h2>工作從哪裡來，結果就回到哪裡。</h2>
+                <p class="scene__intro">
+                  需求先進 Notion，帶著背景到 repo 裡工作。GitHub
+                  接住程式的同步、檢查與交付，最後把結果帶回原本的任務。
+                </p>
+              </div>
+              <div
+                class="lifecycle-graph"
+                aria-label="需求進入 Notion，在 repo 工作時分支到 GitHub 操作，成果再回到 Notion"
+              >
+                <div class="lifecycle-map lifecycle-main-path">
+                  <article class="lifecycle-node lifecycle-node--source">
+                    <i>會</i><b>會議／需求</b><small>一句承諾先有出處</small>
+                  </article>
+                  <div class="lifecycle-command">
+                    <span>→</span>/create-tasks
+                  </div>
+                  <article class="lifecycle-node lifecycle-node--notion">
+                    <i>N</i><b>Notion task</b><small>背景與選定方案</small>
+                  </article>
+                  <div class="lifecycle-command"><span>→</span>/fetch-task</div>
+                  <article class="lifecycle-node lifecycle-node--work">
+                    <i>⌘</i><b>在 repo 工作</b><small>帶著脈絡動手</small>
+                  </article>
+                  <div class="lifecycle-command">
+                    <span>→</span>/sync-report
+                  </div>
+                  <article class="lifecycle-node lifecycle-node--result">
+                    <i>✓</i><b>結果回到 Notion</b
+                    ><small>報告 · 進度 · GitHub 連結</small>
+                  </article>
+                </div>
+                <svg
+                  class="lifecycle-branch-lines"
+                  viewBox="0 0 1000 420"
+                  preserveAspectRatio="none"
+                  aria-hidden="true"
+                >
+                  <defs>
+                    <marker
+                      id="branch-arrow"
+                      viewBox="0 0 10 10"
+                      refX="8"
+                      refY="5"
+                      markerWidth="6"
+                      markerHeight="6"
+                      orient="auto-start-reverse"
+                    >
+                      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" />
+                    </marker>
+                  </defs>
+                  <path
+                    class="branch-out"
+                    d="M 640 146 V 174 Q 640 192 620 192 H 176 Q 158 192 158 210 V 257"
+                    marker-end="url(#branch-arrow)"
+                  />
+                  <path
+                    class="branch-back"
+                    d="M 842 262 V 230 Q 842 217 867 217 H 914 Q 938 217 938 193 V 153"
+                    marker-end="url(#branch-arrow)"
+                  />
+                  <circle cx="640" cy="146" r="4" />
+                </svg>
+                <div class="github-branch-caption">
+                  <span>⑂</span><b>GitHub</b
+                  ><small>在 repo 工作時，也接上團隊的程式進度</small>
+                </div>
+                <div class="github-branch-path">
+                  <article class="branch-node">
+                    <i>↻</i><b>開工同步</b><small>/sync</small>
+                    <p>拿到隊友的最新進度</p>
+                  </article>
+                  <span class="branch-step-arrow">→</span>
+                  <article class="branch-node">
+                    <i>✦</i><b>實作與檢查</b
+                    ><small>/verify · /code-review</small>
+                    <p>修改與證據一起留下</p>
+                  </article>
+                  <span class="branch-step-arrow">→</span>
+                  <article class="branch-node branch-node--done">
+                    <i>⑂</i><b>commit／PR</b><small>/wrap-up</small>
+                    <p>把這輪成果交出去</p>
+                  </article>
+                </div>
+                <div class="branch-return-label">
+                  ↗ 程式版本與檢查結果，接回原任務
+                </div>
+                <div class="lifecycle-return">
+                  <span>下一次工作，從更新後的任務繼續</span>
+                </div>
+              </div>
+              <p class="lifecycle-note">
+                例如：Notion 已回填，不代表程式已 push；GitHub 已開
+                PR，也不代表正式網站已部署。流程會把這些分開交代。
+              </p>
+              <div class="status-strip" aria-label="專案狀態">
+                <span><i class="status-icon">✓</i> safe defaults</span>
+                <span><i class="status-icon">⌘</i> Claude Code + Codex</span>
+                <span><i class="status-icon">↻</i> 從摩擦持續改進</span>
+              </div>
+            </div>
+          </section>
+
+          <div id="demo-chapters"></div>
+          <noscript
+            ><p class="scene__intro">
+              請啟用 JavaScript，以閱讀全部 skill 示範與自動播放對話。
+            </p></noscript
+          >
+        </div>
+        <div class="editor-documents"></div>
+      </section>
+
+      <aside
+        class="agent-panel is-reading"
+        id="claude-chat"
+        aria-label="Claude Code 對話示意"
+      >
+        <div class="chat-header">
+          <div class="chat-header__mark">✦</div>
+          <div>
+            <b class="chat-host-name">Claude Code</b
+            ><small><i></i> dev-skills 已載入 · 模擬</small>
+          </div>
+          <label class="host-picker"
+            ><span class="sr-only">切換對話示範工具</span
+            ><select data-host-picker>
+              <option value="claude">Claude Code</option>
+              <option value="codex">Codex</option>
+            </select></label
+          >
+          <button
+            type="button"
+            class="chat-reset"
+            aria-label="重新播放這個 demo"
+            title="重新播放"
+          >
+            ↻
+          </button>
+          <button class="chat-panel-close" type="button" data-toggle-panel="chat" aria-controls="claude-chat" aria-expanded="true" aria-label="收合對話欄" title="收合對話欄"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M15 4v16"/></svg></button>
+        </div>
+        <div class="chat-context">
+          <span>正在示範</span><b id="chat-skill"></b>
+        </div>
+        <div class="chat-lifecycle" aria-label="目前所在的工作階段">
+          <span
+            data-stage="source"
+            title="會議與需求"
+            aria-label="會議與需求"
+          ></span
+          ><span data-stage="task" title="任務" aria-label="任務"></span
+          ><span
+            data-stage="work"
+            title="實作與檢查"
+            aria-label="實作與檢查"
+          ></span
+          ><span data-stage="result" title="交付" aria-label="交付"></span>
+        </div>
+        <div class="chat-ready" role="status">
+          <span class="ready-mark" aria-hidden="true">✓</span
+          ><b>模擬安裝完成</b>
+          <p>dev-skills 已載入，準備好了。</p>
+          <small>先慢慢看，讀到各個 skill 時，對話就會自動開始。</small>
+        </div>
+        <div
+          class="chat-thread"
+          role="log"
+          aria-label="示範對話"
+          aria-live="off"
+        ></div>
+        <div class="chat-playback">
+          <button type="button" class="chat-pause">暫停</button
+          ><button type="button" class="chat-complete">立即顯示完整對話</button>
+        </div>
+        <div class="chat-compose">
+          <span>›</span>
+          <div>使用者輸入也會自動演出</div>
+        </div>
+        <p class="chat-source">
+          琢奧 ERP 示範對話 · 資料皆為虛構，不會執行真實操作。
+        </p>
+        <div class="sr-only playback-announcement" aria-live="polite"></div>
+      </aside>
+    </main>
+
+    <footer class="statusbar">
+      <div>
+        <span id="status-page" hidden></span><span id="demo-progress">README.md</span><span id="status-skill" hidden></span>
+      </div>
+      <div><span>Notion ＋ GitHub</span><span>✦ 純示範，無外部操作</span></div>
+    </footer>
+    <template id="review-team-template">
+      <div class="review-team">
+        <article class="role-card" style="--role-color: var(--orange)">
+          <header>
+            <svg class="role-portrait" viewBox="0 0 76 84" aria-hidden="true">
+              <rect
+                width="76"
+                height="84"
+                rx="18"
+                fill="currentColor"
+                opacity=".13"
+              />
+              <path d="M8 84Q10 61 30 61H46Q67 62 69 84" fill="currentColor" />
+              <path d="M31 53V65Q38 73 45 65V53" fill="#c98f72" />
+              <ellipse cx="38" cy="36" rx="19" ry="24" fill="#edbd9d" />
+              <path
+                d="M18 31Q16 8 38 10Q60 9 58 33L51 22L24 24Z"
+                fill="#34343e"
+              />
+              <path
+                d="M29 37h2m14 0h2"
+                stroke="#34343e"
+                stroke-width="3"
+                stroke-linecap="round"
+              />
+              <path
+                d="M33 48q5 4 10 0"
+                stroke="#865849"
+                stroke-width="2"
+                fill="none"
+                stroke-linecap="round"
+              />
+              <g fill="none" stroke="#34343e" stroke-width="1.8">
+                <rect x="23" y="32" width="13" height="11" rx="4" />
+                <rect x="40" y="32" width="13" height="11" rx="4" />
+                <path d="M36 36h4" />
+              </g>
+            </svg>
+            <div>
+              <h3>錯誤與安全</h3>
+              <p>輸入、權限、失敗處理</p>
+            </div>
+          </header>
+        </article>
+        <article class="role-card" style="--role-color: var(--mint)">
+          <header>
+            <svg class="role-portrait" viewBox="0 0 76 84" aria-hidden="true">
+              <rect
+                width="76"
+                height="84"
+                rx="18"
+                fill="currentColor"
+                opacity=".13"
+              />
+              <path d="M8 84Q10 61 30 61H46Q67 62 69 84" fill="currentColor" />
+              <path d="M31 53V65Q38 73 45 65V53" fill="#c98f72" />
+              <ellipse cx="38" cy="36" rx="19" ry="24" fill="#c98f72" />
+              <path
+                d="M17 53V28Q17 7 38 10Q62 7 60 31V55L51 44V25L24 26V46Z"
+                fill="#34343e"
+              />
+              <path
+                d="M29 37h2m14 0h2"
+                stroke="#34343e"
+                stroke-width="3"
+                stroke-linecap="round"
+              />
+              <path
+                d="M33 48q5 4 10 0"
+                stroke="#865849"
+                stroke-width="2"
+                fill="none"
+                stroke-linecap="round"
+              />
+            </svg>
+            <div>
+              <h3>程式品質</h3>
+              <p>結構、重複、維護</p>
+            </div>
+          </header>
+        </article>
+        <article class="role-card" style="--role-color: var(--blue)">
+          <header>
+            <svg class="role-portrait" viewBox="0 0 76 84" aria-hidden="true">
+              <rect
+                width="76"
+                height="84"
+                rx="18"
+                fill="currentColor"
+                opacity=".13"
+              />
+              <path d="M8 84Q10 61 30 61H46Q67 62 69 84" fill="currentColor" />
+              <path d="M31 53V65Q38 73 45 65V53" fill="#c98f72" />
+              <ellipse cx="38" cy="36" rx="19" ry="24" fill="#edbd9d" />
+              <path
+                d="M18 29L20 16L31 19L36 9L45 16L54 14L59 31L49 23L23 29Z"
+                fill="#34343e"
+              />
+              <path
+                d="M29 37h2m14 0h2"
+                stroke="#34343e"
+                stroke-width="3"
+                stroke-linecap="round"
+              />
+              <path
+                d="M33 48q5 4 10 0"
+                stroke="#865849"
+                stroke-width="2"
+                fill="none"
+                stroke-linecap="round"
+              />
+            </svg>
+            <div>
+              <h3>專案規則</h3>
+              <p>檔案位置、命名、慣例</p>
+            </div>
+          </header>
+        </article>
+        <article class="role-card" style="--role-color: var(--violet)">
+          <header>
+            <svg class="role-portrait" viewBox="0 0 76 84" aria-hidden="true">
+              <rect
+                width="76"
+                height="84"
+                rx="18"
+                fill="currentColor"
+                opacity=".13"
+              />
+              <path d="M8 84Q10 61 30 61H46Q67 62 69 84" fill="currentColor" />
+              <path d="M31 53V65Q38 73 45 65V53" fill="#c98f72" />
+              <ellipse cx="38" cy="36" rx="19" ry="24" fill="#c98f72" />
+              <path
+                d="M17 31Q12 20 21 15Q22 6 33 11Q47 5 51 14Q65 15 58 32L50 22L25 24Z"
+                fill="#34343e"
+              />
+              <path
+                d="M29 37h2m14 0h2"
+                stroke="#34343e"
+                stroke-width="3"
+                stroke-linecap="round"
+              />
+              <path
+                d="M33 48q5 4 10 0"
+                stroke="#865849"
+                stroke-width="2"
+                fill="none"
+                stroke-linecap="round"
+              />
+            </svg>
+            <div>
+              <h3>計畫對照</h3>
+              <p>需求與實作是否一致</p>
+            </div>
+          </header>
+        </article>
+        <article class="role-card" style="--role-color: var(--yellow)">
+          <header>
+            <svg class="role-portrait" viewBox="0 0 76 84" aria-hidden="true">
+              <rect
+                width="76"
+                height="84"
+                rx="18"
+                fill="currentColor"
+                opacity=".13"
+              />
+              <path d="M8 84Q10 61 30 61H46Q67 62 69 84" fill="currentColor" />
+              <path d="M31 53V65Q38 73 45 65V53" fill="#c98f72" />
+              <ellipse cx="38" cy="36" rx="19" ry="24" fill="#edbd9d" />
+              <path
+                d="M17 29Q19 11 36 11Q58 8 59 31L52 22L24 27Z"
+                fill="#34343e"
+              />
+              <path
+                d="M29 37h2m14 0h2"
+                stroke="#34343e"
+                stroke-width="3"
+                stroke-linecap="round"
+              />
+              <path
+                d="M33 48q5 4 10 0"
+                stroke="#865849"
+                stroke-width="2"
+                fill="none"
+                stroke-linecap="round"
+              />
+              <g fill="none" stroke="#34343e" stroke-width="1.8">
+                <rect x="23" y="32" width="13" height="11" rx="4" />
+                <rect x="40" y="32" width="13" height="11" rx="4" />
+                <path d="M36 36h4" />
+              </g>
+            </svg>
+            <div>
+              <h3>修改脈絡</h3>
+              <p>歷史決定與影響</p>
+            </div>
+          </header>
+        </article>
+        <article class="role-card" style="--role-color: var(--danger)">
+          <header>
+            <svg class="role-portrait" viewBox="0 0 76 84" aria-hidden="true">
+              <rect
+                width="76"
+                height="84"
+                rx="18"
+                fill="currentColor"
+                opacity=".13"
+              />
+              <path d="M8 84Q10 61 30 61H46Q67 62 69 84" fill="currentColor" />
+              <path d="M31 53V65Q38 73 45 65V53" fill="#c98f72" />
+              <ellipse cx="38" cy="36" rx="19" ry="24" fill="#c98f72" />
+              <path
+                d="M20 30Q15 14 32 11L53 14L60 28L52 25L26 28Z"
+                fill="#34343e"
+              />
+              <path
+                d="M29 37h2m14 0h2"
+                stroke="#34343e"
+                stroke-width="3"
+                stroke-linecap="round"
+              />
+              <path
+                d="M33 48q5 4 10 0"
+                stroke="#865849"
+                stroke-width="2"
+                fill="none"
+                stroke-linecap="round"
+              />
+              <path
+                d="M15 39V29a23 23 0 0 1 46 0v10M15 36v10m46-10v10"
+                stroke="currentColor"
+                stroke-width="5"
+                fill="none"
+              />
+            </svg>
+            <div>
+              <h3>效能</h3>
+              <p>資料量與等待時間</p>
+            </div>
+          </header>
+        </article>
+      </div>
+    </template>
+    <script src="demos/setup-notion.js"></script>
+    <script src="demos/meeting-notes.js"></script>
+    <script src="demos/upload-meeting.js"></script>
+    <script src="demos/create-tasks.js"></script>
+    <script src="demos/sync.js"></script>
+    <script src="demos/fetch-task.js"></script>
+    <script src="demos/discuss.js"></script>
+    <script src="demos/wrap-up.js"></script>
+    <script src="demos/verify.js"></script>
+    <script src="demos/update-docs.js"></script>
+    <script src="demos/code-review.js"></script>
+    <script src="demos/report.js"></script>
+    <script src="demos/rename-session.js"></script>
+    <script src="demos/sync-report.js"></script>
+    <script src="demos/find-session.js"></script>
+    <script src="demos/improve.js"></script>
+    <script src="visuals.js"></script>
+    <script src="methods.js"></script>
+    <script src="markdown-view.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
