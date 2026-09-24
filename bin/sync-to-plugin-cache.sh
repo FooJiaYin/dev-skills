@@ -1,11 +1,11 @@
 #!/bin/bash
 # PostToolUse hook: when an Edit/Write/MultiEdit lands a file under
-# ~/agent-skills/dev-skills/skills/, mirror it into every matching plugin
+# this clone's skills/, mirror it into every matching plugin
 # cache version so the next skill invocation runs the updated copy.
 # Exit non-zero only on internal error; never block the tool.
 set -e
 
-SRC_ROOT="$HOME/agent-skills/dev-skills/skills"
+SRC_ROOT="$(cd "$(dirname "$0")/.." && pwd)/skills"
 CACHE_ROOT="$HOME/.claude/plugins/cache/dev-skills/dev-skills"
 
 INPUT="$(cat 2>/dev/null || true)"

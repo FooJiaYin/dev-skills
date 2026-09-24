@@ -5,13 +5,13 @@ description: Screenshot or drive a locally running web app through headless Goog
 
 # headless-shots
 
-Headless Chrome (`/Applications/Google Chrome.app`) + CDP over Node 24's built-in `WebSocket`. No deps.
+Headless Chrome (`/Applications/Google Chrome.app` by default; set `CHROME` to another binary) + CDP over Node 24's built-in `WebSocket`. No deps.
 
 ## Screenshots
 ```bash
-node scripts/shoot.mjs <cookieValue> <outDir> /path1 /path2 ...
+SESSION_COOKIE=<cookieName> BASE_URL=http://localhost:3000 node scripts/shoot.mjs <cookieValue> <outDir> /path1 /path2 ...
 ```
-Edit the cookie name (`sparktoy_session`) and base URL (`localhost:3000`) at the top of the script if the app differs. Full-page PNG per path; `Read` the PNGs and fix what you see.
+Set `SESSION_COOKIE` to the app's session cookie name (default `session`) and `BASE_URL` if it isn't `http://localhost:3000`; `drive-example.mjs` reads the same two variables. Full-page PNG per path; `Read` the PNGs and fix what you see.
 
 Mint a session cookie the same way the app does (e.g. jose HS256 with `SESSION_SECRET` from `.env.local`; find the payload shape in the app's `session.ts`) — never reuse a real user's browser cookie.
 

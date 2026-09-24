@@ -177,9 +177,8 @@ question only when the structured input tool is unavailable.
 
 ### Codex (local clone)
 
-Link each skill from the clone into `~/.codex/skills/`. For this workspace the
-20 links already point to `~/agent-skills/dev-skills/skills/<name>`; edits are
-available through those links without copying or reinstalling. Invoke a skill
+Link each skill from the clone (`<clone>/skills/<name>`) into `~/.codex/skills/`;
+edits are available through those links without copying or reinstalling. Invoke a skill
 with `$wrap-up`, `$verify`, or its name in your request.
 
 Keep the entire clone for skills that use `bin/` helpers. Session operations

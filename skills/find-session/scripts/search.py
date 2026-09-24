@@ -39,7 +39,7 @@ WRAPPERS = [
 def cwd_project_dir(cwd: str | None = None) -> Path:
     """Translate a working directory to its Claude Code project folder name.
 
-    `/Users/unilife/agent-skills` → `~/.claude/projects/-Users-unilife-agent-skills`.
+    `/Users/me/proj` → `~/.claude/projects/-Users-me-proj`.
     """
     cwd = cwd or os.getcwd()
     flat = cwd.replace("/", "-")
