@@ -9,7 +9,7 @@ In Codex, replace the Claude session-log operations below with this procedure:
 - Enumerate repos and files from this conversation's actual tool results, then inspect fresh working and staged diffs. `session-log.py show` and `writes` are available, but `writes` covers only completed `fileChange` events; shell/MCP writes may be absent. Do not use `--mine`/`--stage` or treat this list as a complete dirty-file inventory.
 - Read session identity with `python3 <dev-skills-root>/bin/session-adapter.py show --json`; use its `id` and `name` (report/task title if unnamed) for the footer. If the host exposes no ID, report that limitation instead of guessing another session.
 - For mixed files, use verified pre/post edit evidence and an isolated index or worktree to stage only this task's changes. If that evidence is unavailable, leave the mixed file uncommitted and explain why; do not overwrite the working file to reconstruct guessed edits.
-- `find-session` defaults to the current host; use `--host` to select history. Codex `--touched` matches completed `fileChange` evidence, not shell writes. Do not treat an empty search as proof a dirty file is yours.
+- `find-session` searches both Claude and Codex by default; use `--host claude|codex` to select one source. Codex `--touched` matches completed `fileChange` evidence, not shell writes. Do not treat an empty search as proof a dirty file is yours.
 
 All remaining Git scope, verification, and publication requirements still apply.
 

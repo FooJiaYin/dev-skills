@@ -83,5 +83,5 @@ permissions, and instruction precedence.
   explicit current thread ID and pages through app-server turns. Do not substitute
   Claude's JSONL helpers or reconstruct a supposedly complete transcript from
   visible chat context.
-- Installing these skills does not install hooks, memory, MCP connections, or
+- Linking these skills alone does not install hooks, memory, MCP connections, or
   session logging. Do not assume those facilities are active.

@@ -197,8 +197,12 @@ as **Arguments** so both hosts can parse the same metadata.
 |---|---|
 | Planning, verification, reports, reviews | Shared workflow with host tool mappings |
 | Notion operations | Require an available, authenticated connection; use its actual schemas |
+| Session search | Searches Claude + Codex by default; `--host codex` or `--host claude` restricts the source |
 | Session rename | `bin/session-adapter.py rename` selects the host and verifies the saved title |
 | Raw transcript export | `bin/session-adapter.py export` selects the host exporter; Codex pages persisted turns |
+| Working log | `session-adapter.py log --open` refreshes and opens a persistent `.log.md`; `--watch` polls while running; local notes survive refresh |
+| Write attribution | Completed `fileChange` events only; shell writes and Claude hunk snapshots are not inferred |
+| Session-log hooks | Four user hooks configured locally; `/hooks` trust review is required before they run. See [hook setup](docs/hooks-codex-session-log.md) |
 
 ### Gemini CLI
 
