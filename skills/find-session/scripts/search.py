@@ -48,6 +48,8 @@ def cwd_project_dir(cwd: str | None = None) -> Path:
 
 def iter_session_files(scope: str, cwd: str | None = None):
     """Yield (session_id, jsonl_path) pairs honouring scope."""
+    if not PROJECTS_ROOT.exists():
+        return
     if scope == "cwd":
         roots = [cwd_project_dir(cwd)]
     else:
@@ -367,7 +369,7 @@ def format_graph(hits: list[dict]) -> str:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0] if __doc__ else None)
-    ap.add_argument("--host", choices=["claude", "codex"], help="history host (default: current host; otherwise Claude)")
+    ap.add_argument("--host", choices=["all", "claude", "codex"], default="all", help="history sources (default: all); current uses the active host")
     ap.add_argument("--topic", help="keyword to search in user/assistant text and tool inputs")
     ap.add_argument("--touched", help="file path; match sessions that Wrote/Edited this file")
     ap.add_argument("--scope", choices=["cwd", "all", "all-bak"], default="cwd")
@@ -383,7 +385,23 @@ def main() -> int:
     ap.add_argument("--open-id", metavar="UUID", help="open this session's log directly (Codex: current or unique prefix); no search")
     args = ap.parse_args()
 
-    host = args.host or ("codex" if os.environ.get("CODEX_THREAD_ID") or os.environ.get("CODEX_SESSION_ID") else "claude")
+    host = args.host
+    if args.open_id == "current":
+        if host == "all":
+            host = "codex" if os.environ.get("CODEX_THREAD_ID") or os.environ.get("CODEX_SESSION_ID") else "claude"
+        if host == "claude":
+            args.open_id = os.environ.get("CLAUDE_CODE_SESSION_ID") or os.environ.get("CLAUDE_SESSION_ID")
+            if not args.open_id:
+                ap.error("current Claude session ID is unavailable; provide an explicit ID")
+    if host == "all":
+        if not args.open_id and not args.topic and not args.touched:
+            ap.error("provide --topic, --touched, or --open-id")
+        sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "bin"))
+        from types import SimpleNamespace
+        from session_search_all import search_main
+        backend = SimpleNamespace(**{name: globals()[name] for name in (
+            "PROJECTS_ROOT", "iter_session_files", "scan_session", "log_path_for", "open_in_editor", "format_full", "format_graph")})
+        return search_main(args, backend)
     if host == "codex":
         sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "bin"))
         from codex_history import search_main

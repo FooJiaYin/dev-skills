@@ -4,16 +4,32 @@ description: |
   Find and open Claude Code or Codex session history by topic or edited file.
   Use for "find the conversation where…", "who wrote this file", "搜 session",
   "open this session log", or recovering earlier development decisions.
-  Uses the current host by default, with an explicit --host override.
+  Searches Claude and Codex together by default, with an explicit --host filter.
 ---
 
 Read [agent runtime compatibility](../../references/agent-runtime.md) before executing this skill; its platform mappings also apply to the steps below.
 
 # find-session
 
-Search the current host by default; use `--host claude` or `--host codex` to
-choose explicitly. Label results by host and use the matching resume command.
+Search both Claude and Codex by default (`--host all`); use `--host claude` or
+`--host codex` to restrict the source. Combined results are labeled by host,
+numbered, and sorted newest first. `--limit` applies to the merged list and
+`--open N` opens that list's N-th result using the correct backend.
+With `--escalate`, search both sources within cwd first, then expand together
+through all and all-bak only if neither source matches. Try literal then all-word
+matching within each scope. A backend failure still prints available results,
+but reports an incomplete search and exits 2.
+`--open-id current` uses the active host's explicit session ID. Other IDs/prefixes
+are resolved across both sources; ambiguous IDs require `--host` or a longer ID.
+Resume with `claude --resume <ID>` or `codex resume <ID>` as labeled.
 Do not infer the current session from whichever log was modified most recently.
+
+Example combined search:
+
+```bash
+python3 scripts/search.py --topic "workflow inventory" --escalate
+python3 scripts/search.py --touched docs/PRD.md --limit 10 --open 2
+```
 
 ## Codex logs and search
 
@@ -61,7 +77,7 @@ app-server state access or the editor, use the host's normal escalation mechanis
 ## Claude history
 
 Claude history still uses `~/.claude/projects/` and the existing hook-generated
-`.log.md` files. Pass `--host claude` when investigating it from Codex. The
+`.log.md` files. Pass `--host claude` to search only Claude from either host. The
 remaining instructions describe this backend.
 
 ## When to invoke
