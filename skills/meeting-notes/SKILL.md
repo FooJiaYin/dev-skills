@@ -1,8 +1,9 @@
 ---
 name: meeting-notes
-description: Turn a meeting transcript into a structured Traditional-Chinese meeting note at docs/meetings/YYYY-MM-DD-<title>.md. Accepts multiple sources — a Plaud.ai share URL (web.plaud.ai/s/pub_…), a local .txt/.md transcript file, or transcript text pasted directly into chat. Use when the user says "整理成會議記錄", "做會議記錄", "/meeting-notes", "meeting notes from this transcript", or similar.
-argument-hint: "<url | file-path | (paste transcript)>"
+description: Turn a meeting transcript into a structured Traditional-Chinese meeting note at docs/meetings/YYYY-MM-DD-title.md. Accepts multiple sources — a Plaud.ai share URL (web.plaud.ai/s/pub_…), a local .txt/.md transcript file, or transcript text pasted directly into chat. Use when the user says "整理成會議記錄", "做會議記錄", "/meeting-notes", "meeting notes from this transcript", or similar.
 ---
+
+**Arguments:** `<url | file-path | (paste transcript)>`
 
 # meeting-notes — transcript → structured meeting notes
 

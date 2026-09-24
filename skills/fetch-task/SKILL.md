@@ -1,6 +1,6 @@
 ---
 name: fetch-task
-description: Pull a Notion task into a local working file at docs/tasks/<slug>.md. Creates the file on first run; on subsequent runs, refreshes only the managed `# Context` section + frontmatter `last_synced` while preserving every other section byte-identical. With no args, shows a picker of the current user's active tasks (Current view, Assignee == me). Use when the user says "/fetch-task", "fetch task", "check out this Notion task", or passes a Notion task URL.
+description: Pull a Notion task into a local working file at docs/tasks/task-slug.md. Creates the file on first run; on subsequent runs, refreshes only the managed `# Context` section + frontmatter `last_synced` while preserving every other section byte-identical. With no args, shows a picker of the current user's active tasks (Current view, Assignee == me). Use when the user says "/fetch-task", "fetch task", "check out this Notion task", or passes a Notion task URL.
 ---
 
 # fetch-task — Notion task → local working file

@@ -1,8 +1,9 @@
 ---
 name: update-docs
 description: Detection-driven docs updater. Scans the project's doc layout, classifies the diff (schema / api / service / component / design / infra), proposes a per-file update plan, and edits only after user confirmation. Use when the user says "update the docs", "sync docs", "are the docs up to date?", "audit doc drift", or invokes /update-docs. Also invoked by /wrap-up step 3.
-argument-hint: "[scope: default=uncommitted | <commit> | <range> | --pr <num> | --all]"
 ---
+
+**Arguments:** `[scope: default=uncommitted | <commit> | <range> | --pr <num> | --all]`
 
 # update-docs — detection-driven docs updater
 

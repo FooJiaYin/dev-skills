@@ -1,6 +1,6 @@
 ---
 name: create-tasks
-description: Turn a meeting note into Notion tasks. Extracts commitments from the meeting body, classifies each as LINK / DRAFT / SKIP, pre-matches against the Roadmap's Current view, renders a plan-mode preview for user iteration, and on approval creates new tasks, appends meeting context to linked tasks (inside `# Context` only), wires up the meeting's Tasks relation, and rewrites the original commitment text inline as `<mention-page>` references. Use when the user says "/create-tasks", "extract tasks from meeting", "turn this meeting into tasks", or passes a Notion meeting URL / local markdown / pasted notes.
+description: Turn a meeting note into Notion tasks. Extracts commitments from the meeting body, classifies each as LINK / DRAFT / SKIP, pre-matches against the Roadmap's Current view, renders a plan-mode preview for user iteration, and on approval creates new tasks, appends meeting context to linked tasks (inside `# Context` only), wires up the meeting's Tasks relation, and rewrites the original commitment text inline as Notion page-mention references. Use when the user says "/create-tasks", "extract tasks from meeting", "turn this meeting into tasks", or passes a Notion meeting URL / local markdown / pasted notes.
 ---
 
 # create-tasks — meeting → Notion tasks
