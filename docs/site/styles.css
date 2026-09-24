@@ -123,6 +123,9 @@ button { color: inherit; }
 h1, h2, h3, p { margin-top: 0; }
 h1 { margin-bottom: 22px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: clamp(40px, 5.2vw, 76px); line-height: .98; letter-spacing: -.055em; font-weight: 750; max-width: 880px; }
 h1 em { color: var(--mint); font-style: normal; }
+.is-title-typing .title-type-glyph { visibility: hidden; }
+.is-title-typing .title-type-glyph.is-revealed { visibility: visible; }
+@media (prefers-reduced-motion: reduce) { .is-title-typing .title-type-glyph { visibility: visible; } }
 h2 { margin-bottom: 17px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: clamp(28px, 3.3vw, 50px); line-height: 1.1; letter-spacing: -.035em; max-width: 780px; }
 .hero__lede, .scene__intro { max-width: 720px; color: var(--muted); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 16px; line-height: 1.75; }
 .hero__lede { font-size: 18px; max-width: 760px; }
@@ -783,9 +786,9 @@ select:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .chat-ready p { font-size: 12px; line-height: 1.7; }
 .chat-ready small { display: block; font-size: 11px; line-height: 1.8; }
 .agent-panel.is-reading .chat-header small i { background: var(--mint); }
-.chat-lifecycle { display: flex; justify-content: space-between; gap: 12px; min-height: 36px; padding: 4px 12px 8px; }
-.chat-lifecycle > span { position: relative; flex: 1; padding: 6px 2px; font: 11px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; }
-.chat-lifecycle > span:not(:last-child)::after { content: "›"; position: absolute; right: -10px; color: var(--faint); }
+.chat-lifecycle { display: flex; justify-content: space-between; gap: 4px; min-height: 36px; padding: 4px 12px 8px; }
+.chat-lifecycle > span { position: relative; flex: 1; min-width: 0; padding: 6px 1px; font: 11px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; }
+.chat-lifecycle > span:not(:last-child)::after { content: "›"; position: absolute; right: -6px; color: var(--faint); }
 .chat-lifecycle svg, .lifecycle-node i svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .chat-skill-event { background: none; border: 0; border-radius: 0; }
 .chat-skill-event .event-body { color: var(--text); }

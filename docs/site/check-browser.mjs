@@ -102,7 +102,10 @@ try {
   assert(await evaluate("document.querySelector('.titlebar__title').textContent.includes('foojiayin')"));
   assert(await evaluate("[...document.querySelectorAll('.skill-related')].every(group => group.hidden)"));
   assert(await evaluate("getComputedStyle(document.querySelector('.chat-ready')).display !== 'none'"));
-  assert.deepEqual(await evaluate("[...document.querySelectorAll('.chat-lifecycle [data-stage]')].map(e => e.textContent)"), ["Source", "Task", "Build", "Deliver"]);
+  assert.deepEqual(await evaluate("[...document.querySelectorAll('.chat-lifecycle [data-stage]')].map(e => e.textContent)"), ["Source", "Prepare", "Check", "Handoff", "Memory", "Improve"]);
+  assert(await evaluate("document.querySelectorAll('#story-panel h2 .title-type-glyph').length > 0 && document.querySelectorAll('#story-panel h1 .title-type-glyph, #story-panel h3 .title-type-glyph').length === 0"), "only large white headings type");
+  await evaluate("document.querySelector('#why-title').scrollIntoView({block:'center'})");
+  await until("[...document.querySelectorAll('#why-title .title-type-glyph')].every(glyph => getComputedStyle(glyph).visibility === 'visible')", 4000);
   assert(await evaluate("[...document.querySelectorAll('.skill-name')].every(e => e.textContent.startsWith('/'))"));
   assert(await evaluate("[...document.querySelectorAll('[data-scene]:not([data-scene=welcome])')].every(e => e.textContent.includes('/' + e.dataset.scene))"));
   assert(await evaluate("[...document.querySelectorAll('[data-scene]:not([data-scene=welcome])')].every(e => e.querySelector('.file__icon--skill'))"));

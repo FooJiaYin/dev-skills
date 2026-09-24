@@ -7,7 +7,7 @@
       name="description"
       content="dev-skills：把團隊協作護欄裝進 AI coding 工作流。"
     />
-    <title>dev-skills — AI coding 的協作工作台</title>
+    <title>dev-skills — 給 AI 的軟工實踐流程</title>
     <link rel="stylesheet" href="styles.css" />
     <link rel="stylesheet" href="markdown-view.css" />
   </head>
@@ -385,18 +385,12 @@
           <span>正在示範</span><b id="chat-skill"></b>
         </div>
         <div class="chat-lifecycle" aria-label="目前所在的工作階段">
-          <span
-            data-stage="source"
-            title="會議與需求"
-            aria-label="會議與需求"
-          ></span
-          ><span data-stage="task" title="任務" aria-label="任務"></span
-          ><span
-            data-stage="work"
-            title="實作與檢查"
-            aria-label="實作與檢查"
-          ></span
-          ><span data-stage="result" title="交付" aria-label="交付"></span>
+          <span data-stage="intake" title="討論與任務">Source</span>
+          <span data-stage="prepare" title="接上進度、確認方向">Prepare</span>
+          <span data-stage="check" title="驗證與複查">Check</span>
+          <span data-stage="handoff" title="收好這輪成果">Handoff</span>
+          <span data-stage="remember" title="找回工作脈絡">Memory</span>
+          <span data-stage="evolve" title="改善下一輪流程">Improve</span>
         </div>
         <div class="chat-ready" role="status">
           <span class="ready-mark" aria-hidden="true">✓</span

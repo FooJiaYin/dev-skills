@@ -177,7 +177,7 @@
     return '<div class="section-actions" aria-label="' + d.id + ' 示範操作"><button type="button" class="section-cta section-cta--replay playback-cta playback-cta--' + d.id + '" data-demo-replay="' + d.id + '" aria-label="從頭重播 /' + d.id + ' 對話：' + call + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + drawing + '</svg><code class="cta-skill">/' + d.id + '</code><span>' + call + '</span></button>' + links + '</div>';
   }
 
-  const folders = { intake: "notion", prepare: "workflows", check: "delivery", handoff: "delivery", remember: "project-memory", evolve: "refinements" };
+  const folders = { intake: "Source", prepare: "Prepare", check: "Check", handoff: "Handoff", remember: "Memory", evolve: "Improve" };
   const wrapSkills = ["verify", "update-docs", "code-review", "report", "rename-session", "sync-report", "improve"];
   function explorerEntry(d, parent = false) {
     return '<div class="skill-entry" data-skill-entry="' + d.id + '"><a class="file file--nested' + (parent ? ' file--skill-folder' : '') + '" href="#demo-' + d.id + '" data-scene="' + d.id + '" title="demo 檔：demos/' + d.id + '.js">' + (parent ? '<span class="skill-folder-caret" aria-hidden="true">⌄</span>' : '') + '<span class="file__icon file__icon--skill" aria-hidden="true">✦</span><span>' + skillName(d.id) + '</span></a><div class="skill-related" data-skill-related="' + d.id + '" hidden></div></div>';
@@ -275,7 +275,6 @@
   };
   for (const [phase, drawing] of Object.entries(phaseIcons)) {
     const svg = '<svg viewBox="0 0 24 24" aria-hidden="true">' + drawing + '</svg>';
-    $('[data-stage="' + phase + '"]').textContent = { source: "Source", task: "Task", work: "Build", result: "Deliver" }[phase];
     const node = $(".lifecycle-node--" + ({source:"source",task:"notion",work:"work",result:"result"}[phase]) + " > i");
     node.innerHTML = svg;
     node.setAttribute("aria-hidden", "true");
@@ -525,8 +524,7 @@
     $("#status-page").textContent = (scenes.indexOf(d) + 1) + " / " + scenes.length;
     $("#status-page").hidden = false;
     $(".chat-compose div").textContent = "使用者輸入也會自動演出";
-    const stage = { intake: "source", prepare: "task", check: "work", handoff: "result", remember: "work", evolve: "result" }[d.chapter];
-    $$("[data-stage]", desktop).forEach(item => item.classList.toggle("is-active", item.dataset.stage === stage));
+    $$("[data-stage]", desktop).forEach(item => item.classList.toggle("is-active", item.dataset.stage === d.chapter));
     mark(id);
     restore(thread, d, count);
     controls(count === d.messages.length);
@@ -663,6 +661,53 @@
     });
     previewObserver.observe(card);
   });
+  // Keep headings readable without JavaScript or reduced motion; reveal their
+  // existing text only when the reader reaches them, without changing layout.
+  if (!reduced.matches) {
+    const headingTimers = new WeakMap();
+    const finishHeading = heading => {
+      clearInterval(headingTimers.get(heading));
+      headingTimers.delete(heading);
+      heading.classList.remove("is-title-typing");
+      $$(".title-type-glyph", heading).forEach(glyph => glyph.classList.remove("is-revealed"));
+    };
+    const headingObserver = new IntersectionObserver(entries => {
+      for (const { target, isIntersecting } of entries) {
+        if (!isIntersecting) { finishHeading(target); continue; }
+        if (headingTimers.has(target)) continue;
+        const glyphs = $$(".title-type-glyph", target);
+        if (!glyphs.length) continue;
+        target.classList.add("is-title-typing");
+        let index = 0;
+        const reveal = () => {
+          glyphs[index++].classList.add("is-revealed");
+          if (index === glyphs.length) finishHeading(target);
+        };
+        reveal();
+        if (index < glyphs.length) headingTimers.set(target, setInterval(reveal, Math.max(18, Math.min(42, 950 / glyphs.length))));
+      }
+    }, { threshold: 0.18 });
+    $$("#story-panel h2").forEach(heading => {
+      const label = heading.textContent.trim();
+      const walker = document.createTreeWalker(heading, NodeFilter.SHOW_TEXT);
+      const nodes = [];
+      while (walker.nextNode()) nodes.push(walker.currentNode);
+      for (const node of nodes) {
+        const fragment = document.createDocumentFragment();
+        for (const character of Array.from(node.textContent)) {
+          if (/\s/.test(character)) { fragment.append(document.createTextNode(character)); continue; }
+          const glyph = document.createElement("span");
+          glyph.className = "title-type-glyph";
+          glyph.setAttribute("aria-hidden", "true");
+          glyph.textContent = character;
+          fragment.append(glyph);
+        }
+        node.replaceWith(fragment);
+      }
+      heading.setAttribute("aria-label", label);
+      headingObserver.observe(heading);
+    });
+  }
   renderMeetingProgress(0);
   function readingPosition() {
     if (frame || changingLayout || editorTab !== "story") return;

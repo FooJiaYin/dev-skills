@@ -109,7 +109,8 @@ assert(app.includes('else if (id !== active) play(id, true)'), "scroll-back repl
 assert(app.includes('data-assistant-name') && app.includes('class="skill-command"'), "assistant skill label and code typography");
 assert(app.includes('const skillName = id => "/" + id'), "skill labels use slash notation");
 assert(app.includes('node.classList.add("chat-skill-event", "chat-entry--tool")'), "skill calls share tool-event layout");
-assert(app.includes('source: "Source", task: "Task", work: "Build", result: "Deliver"'), "English stepper labels");
+assert.deepEqual([...html.matchAll(/<span data-stage="[^"]+" title="[^"]+">([^<]+)<\/span>/g)].map(match => match[1]), ["Source", "Prepare", "Check", "Handoff", "Memory", "Improve"], "English stepper labels");
+assert(app.includes('intake: "Source", prepare: "Prepare", check: "Check", handoff: "Handoff", remember: "Memory", evolve: "Improve"'), "explorer folders match the chat stepper");
 assert(!html.includes('data-scene="wrap-up"'), "wrap-up has no pinned shortcut");
 assert(!app.includes('members.filter(d => d.id !== "wrap-up")'), "wrap-up remains in the delivery explorer group");
 assert.deepEqual(sceneResult.scenes.filter(d => d.chapter === "check").map(d => d.id), ["wrap-up", "verify"], "wrap-up precedes the connected quality method");
