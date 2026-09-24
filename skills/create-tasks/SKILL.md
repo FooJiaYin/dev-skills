@@ -63,6 +63,8 @@ Meeting-shape heuristic: input is meeting-shaped if ≥2 of {date marker like `2
 
 From this point, operate on the resolved source page — or, for the Standalone branch, on the raw input text with no source page.
 
+**Design-discussion carryover.** When the task request follows a design discussion and the user has selected or approved an approach, treat the settled design text as source material for the task. Preserve it verbatim as an optional `# Plan` section; do not collapse it into a synthesized objective, context, or acceptance summary. A concise summary may supplement the copied plan, but never replace it.
+
 Meetings-DB title format is owned by `/upload-meeting` (it reads AGENTS.md's `Meetings title format` and applies it). Custom-parent uploads (handled inline here) use the first H1 / filename verbatim as the title.
 
 ### 3. Fetch meeting + active task pool
@@ -134,6 +136,7 @@ LLM pass over the source content:
     - Deliverable type (e.g. `付款`, `設計`, `規劃書`)
 
     Capture the byte-range of each related section. A single commitment commonly maps to **2–4 sections** (one near the Action Items, others in the discussion body, possibly one in 結論 / 截止期程). Include all of them. The "bounding section the commitment text physically lives under" is usually just `## Action Items` and is the LEAST informative — explicitly EXCLUDE it unless no other section matches.
+  - **Approved design plan** (optional) — when the task follows a design discussion, capture the settled design proposal and its trade-offs verbatim. Keep its heading structure and wording intact so it can be copied under `# Plan` at creation time. Do not infer approval from an unselected list of options.
   - The proposed assignee (resolved from Participants + @-mentions + team roster).
   - A first-pass classification: `LINK` (matches an active task), `DRAFT` (new), `SKIP` (with reason).
 - Skip by default: coordination ("X 與 Y 約時間"), admin chores ("update progress doc"), in-line decisions ("結論：方案2"), items already followed by `<mention-page>` in the body, items assigned to non-engineers.
@@ -226,6 +229,7 @@ N items · X create · Y link · Z skip · W meeting-note annotations
 **CREATE** · <Type> · <Complexity> · @<Display Name> (<member|guest> · <id-prefix>) · <Project or _unset_> · <Release> · Time: <YYYY-MM-DD or _unset_>
 - Source commitment: "<verbatim span — byte-exact, becomes the annotation anchor>"
 - Body: `# Context` + `## <meeting>` + topic section ([expand])
+- Plan: `# Plan` + approved design text verbatim ([expand]) — only when an approved design plan exists
 - Annotate original text with inline mention-page in meeting body
 
 ## 3. <verbatim commitment text>
@@ -276,6 +280,10 @@ Order matters:
 
    ### 會議記錄 §<related sections, comma-separated>
    [verbatim content from each related section per §4 "Related sections", concatenated in document order, separated by `---` between sections]
+
+   # Plan
+
+   [approved design plan verbatim, preserving headings and trade-offs; omit this entire section when none exists]
    ```
    The literal first character of the `content` string must be `\n`. A single leading newline (which renders as an empty paragraph in the block tree) is enough to protect the H1 — verified empirically. No fixup call is needed afterward.
 
@@ -336,9 +344,9 @@ For each selected URL, dispatch `/fetch-task <url>`. Skipped silently if 0 tasks
 - **No Notion writes before plan approval.** User's chat reply against the plan file (step 7) is the gate. Reads are fine.
 - **Never regenerate-overwrite a hand-edited plan file.** Once the user may have touched `docs/tasks/_plan-*.md` (IDE-opened, edited, restructured) or a second session is involved, switch to additive `Edit`s after a fresh live `Read`; never `Write`/`cp` the whole file. Prove additivity by diffing against the just-read bytes, not a backup. One writer per file. (See §7 overwrite caveat — this is the most expensive failure mode this skill has caused: full data loss of a user's multi-source curated plan.)
 - **Never call `ExitPlanMode`.** Popups displace plan text.
-- **Body writes only inside `# Context`.** Never touch `# Description`, `# Updates`, `# Changes Made`, `# Result`, `# Release Notes`, `# Resource`, or legacy dated `# <mention-date>` blocks.
+- **Existing-task body writes only inside `# Context`.** LINK updates never touch `# Plan`, `# Description`, `# Updates`, `# Changes Made`, `# Result`, `# Release Notes`, `# Resource`, or legacy dated `# <mention-date>` blocks. CREATE pages may also receive a new `# Plan` copied verbatim from an approved design discussion; summaries may supplement it but never replace it.
 - **Never overwrite existing properties on existing tasks.** LINK targets only get `# Context` appends + relation inclusion.
-- **Body content is the related sections, verbatim.** All related sections per §4 "Related sections", concatenated in document order. No synthesis — every line must originate verbatim in the source. Transcript fragments are off by default; only included when the user explicitly asks.
+- **`# Context` content is the related sections, verbatim.** All related sections per §4 "Related sections", concatenated in document order. No synthesis — every line must originate verbatim in the source. Transcript fragments are off by default; only included when the user explicitly asks. When present, `# Plan` separately preserves the approved design text verbatim.
 - **LINK appends go through `/fetch-task` first** for the byte-exact `# Context` anchor.
 - **Meeting body annotates, doesn't replace.** `new_str` contains `old_str` as prefix.
 - **Idempotency on re-run.** Anchors: meeting's `Tasks` relation; adjacent `<mention-page>` annotation.
