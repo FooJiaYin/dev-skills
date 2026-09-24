@@ -20,7 +20,7 @@ session: 2026-09-25-interactive-dev-skills-site (01a0d3e4-ea97-7152-b043-b64458a
 
 - `node docs/site/check-demos.mjs`：16 個精選示範與文件視圖、四個排除 skill、CTA 和情境內容檢查通過。
 - `node docs/site/check-browser.mjs`：本機 Chrome 檢查桌面與手機寬度、連續流程、對話與 host 切換、IDE tab、文件連結、重播及安裝示範，通過且無 JS 錯誤。測試一度期待 Claude Code 文案卻沿用前一步的 Codex host；先明確切回 Claude Code 後再驗證切換，通過。
-- 尚未在本報告寫入時驗證 GitHub Pages 部署；本地檢查不能代替公開網址讀回。
+- GitHub Pages Action `36072983036` 對 `07b01c7` 部署成功；公開站 `https://foojiayin.github.io/dev-skills/app.js` 讀回包含 `installConversations` 與結尾安裝示範。這是部署檔案讀回，未對公開站再次跑完整瀏覽器互動檢查。
 
 # Suggested Doc Updates
 
@@ -29,4 +29,4 @@ session: 2026-09-25-interactive-dev-skills-site (01a0d3e4-ea97-7152-b043-b64458a
 
 # Result
 
-網站在本機完成互動與響應式檢查。GitHub Pages 發布與公開網址讀回待提交、推送後另行確認。工作樹含其他視窗的修改；提交範圍必須排除它們，尤其 `docs/site/index.html` 的外來 favicon 連結。
+網站在本機完成互動與響應式檢查，已透過 GitHub Pages 發布並讀回新版本的腳本。提交排除了其他視窗的修改，尤其 `docs/site/index.html` 的外來 favicon 連結；那些檔案仍留在工作樹，沒有被刪除。
