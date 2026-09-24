@@ -14,7 +14,15 @@ TITLE="$1"
 SID="${CLAUDE_CODE_SESSION_ID:-$CLAUDE_SESSION_ID}"
 SESSION_FILE=""
 # Look up by id across all projects — the shell's pwd may have drifted into a subdirectory.
-[ -n "$SID" ] && SESSION_FILE=$(ls "$HOME"/.claude/projects/*/"$SID".jsonl 2>/dev/null | head -1)
+# A migrated/backed-up project dir can hold a stale copy of the same id: take the newest, say so.
+if [ -n "$SID" ]; then
+  MATCHES=$(ls -t "$HOME"/.claude/projects/*/"$SID".jsonl 2>/dev/null || true)
+  SESSION_FILE=$(printf '%s\n' "$MATCHES" | head -1)
+  if [ "$(printf '%s\n' "$MATCHES" | grep -c .)" -gt 1 ]; then
+    echo "Warning: $SID found in several projects; renaming the newest:" >&2
+    printf '%s\n' "$MATCHES" | sed 's/^/  /' >&2
+  fi
+fi
 if [ -n "$SESSION_FILE" ]; then
   SESSION_ID="$SID"
 else
