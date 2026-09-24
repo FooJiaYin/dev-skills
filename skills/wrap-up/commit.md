@@ -7,7 +7,7 @@ Universal commit hygiene. Wrapped by `./full.md` Step 7 and `./quick.md` Step 7 
 In Codex, replace the Claude session-log operations below with this procedure:
 
 - Enumerate repos and files from this conversation's actual tool results, then inspect fresh working and staged diffs. `session-log.py show` and `writes` are available, but `writes` covers only completed `fileChange` events; shell/MCP writes may be absent. Do not use `--mine`/`--stage` or treat this list as a complete dirty-file inventory.
-- Use the runtime guide's host-specific session identity for the footer. Never guess a Claude session ID.
+- Read session identity with `python3 <dev-skills-root>/bin/session-adapter.py show --json`; use its `id` and `name` (report/task title if unnamed) for the footer. If the host exposes no ID, report that limitation instead of guessing another session.
 - For mixed files, use verified pre/post edit evidence and an isolated index or worktree to stage only this task's changes. If that evidence is unavailable, leave the mixed file uncommitted and explain why; do not overwrite the working file to reconstruct guessed edits.
 - `find-session` defaults to the current host; use `--host` to select history. Codex `--touched` matches completed `fileChange` evidence, not shell writes. Do not treat an empty search as proof a dirty file is yours.
 
@@ -59,7 +59,7 @@ Give suggestions for what to commit.
 
 ## Session footer
 
-Always end the commit message with a `Session: <name> (<id>)` footer line. For Codex, resolve identity per the runtime guide above; the following lookup applies only to Claude Code. Source: **id** = `$CLAUDE_CODE_SESSION_ID` (fallback: basename of the newest `~/.claude/projects/<encoded-cwd>/*.jsonl`); **name** = the title on line 1 of the session log (`session-log.py show | head -1`; it mirrors the latest `rename-session` title), falling back to the latest `customTitle` entry in the jsonl. If the name isn't set yet, fall back to the report/branch title. The PreToolUse footer hook denies a `git commit` that lacks this line and prints the exact footer to add.
+Always end the commit message with a `Session: <name> (<id>)` footer line. For Codex, resolve identity with `session-adapter.py show --json` as described above. The following source lookup and hook apply only to Claude Code. Source: **id** = `$CLAUDE_CODE_SESSION_ID` (fallback: basename of the newest `~/.claude/projects/<encoded-cwd>/*.jsonl`); **name** = the title on line 1 of the session log (`session-log.py show | head -1`; it mirrors the latest `rename-session` title), falling back to the latest `customTitle` entry in the jsonl. If the name isn't set yet, fall back to the report/branch title. The PreToolUse footer hook denies a `git commit` that lacks this line and prints the exact footer to add.
 
 When the work spans multiple sessions, list each pair comma-separated: `Session: feat-work (a1b2c3d4), bug-fix (e5f6g7h8)`.
 

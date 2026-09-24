@@ -175,6 +175,31 @@ In shared skill instructions, Claude Code's `AskUserQuestion` maps to Codex's
 host's approval mechanism for shell permissions; fall back to a concise chat
 question only when the structured input tool is unavailable.
 
+### Codex (local clone)
+
+Link each skill from the clone into `~/.codex/skills/`. For this workspace the
+20 links already point to `~/agent-skills/dev-skills/skills/<name>`; edits are
+available through those links without copying or reinstalling. Invoke a skill
+with `$wrap-up`, `$verify`, or its name in your request.
+
+Keep the entire clone for skills that use `bin/` helpers. Session operations
+use `bin/session-adapter.py` to resolve the host, identity, and backend in code.
+Skills describe their own task-specific commands; they do not load a mandatory
+compatibility preamble. The [runtime reference](references/agent-runtime.md) is
+optional maintainer documentation for troubleshooting host differences.
+
+The shared workflow supports both Claude Code and Codex. Codex uses its own
+available tools, approval UI, inherited review-agent model, and session identity.
+Claude-specific `argument-hint` frontmatter has been moved into the skill body
+as **Arguments** so both hosts can parse the same metadata.
+
+| Capability | Codex behavior |
+|---|---|
+| Planning, verification, reports, reviews | Shared workflow with host tool mappings |
+| Notion operations | Require an available, authenticated connection; use its actual schemas |
+| Session rename | `bin/session-adapter.py rename` selects the host and verifies the saved title |
+| Raw transcript export | `bin/session-adapter.py export` selects the host exporter; Codex pages persisted turns |
+
 ### Gemini CLI
 
 Install all skills from this repo (user-level / global):

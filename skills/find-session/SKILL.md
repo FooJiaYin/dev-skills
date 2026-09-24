@@ -7,8 +7,6 @@ description: |
   Searches Claude and Codex together by default, with an explicit --host filter.
 ---
 
-Read [agent runtime compatibility](../../references/agent-runtime.md) before executing this skill; its platform mappings also apply to the steps below.
-
 # find-session
 
 Search both Claude and Codex by default (`--host all`); use `--host claude` or

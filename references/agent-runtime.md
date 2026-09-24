@@ -1,9 +1,10 @@
 # Agent runtime compatibility
 
-Read once when using a dev-skills skill. These mappings apply to its supporting
-files and chained skills too. They replace platform-specific mechanics, not the
-workflow's deliverables. Follow the current user's authorization and the host's
-tool and permission rules before any skill defaults.
+Optional maintainer reference for host differences, not an execution prerequisite.
+Keep executable host differences in `bin/session-adapter.py` and its backends;
+keep task-specific instructions in the skill that uses them. Normal skills do
+not need to load this document. The host already supplies tool contracts,
+permissions, and instruction precedence.
 
 ## Tools and interaction
 
