@@ -37,6 +37,7 @@ session: 2026-09-25-interactive-dev-skills-site (01a0d3e4-ea97-7152-b043-b64458a
 - 使用者要求手機版對話改為浮動按鈕加對話框，接著要求修手機圖解的線、加 Messenger 式開啟動畫（Codex 工作階段 01a0d3e4）。
 - 另一個 Claude 工作階段（b3ae627e）接著修 lifecycle 分支線；途中使用者追加：刪掉按鈕上的「看對話」文字、對話框開啟時圖示要在對話框右上方（像 Messenger）、修正「把討論接成工作」的歪箭頭。
 - impeccable 設計檢查指出聊天頭像移動時用 `bottom`／`padding` 做 transition 會造成 layout thrash，改成只對 `transform: translateY(...)` 做 transition，截圖確認位置不變。
+- 使用者問手機左邊 margin 為何比較多：≤580px 時 README 段落為 `01…18` 行號保留左 45px、右只有 18px。改為手機隱藏行號、左右各 20px（與下方各 skill 段落一致）；581–900px 仍顯示行號。390px 截圖確認左右對稱、lifecycle 分支線隨寬度重畫，`check-browser.mjs` PASS。`docs/site/styles.css`
 - 對話框標題列的 ✕ 關閉鈕保留，所以開啟時有兩種關閉方式；若要完全照 Messenger 只留頭像，可再移除 ✕。
 
 # Result

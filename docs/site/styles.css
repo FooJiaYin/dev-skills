@@ -436,8 +436,8 @@ body.light {
   .editor, .editor__scroll, .scene, .agent-panel { width:100%; min-width:0; max-width:100%; }
   .editor, .scene, .agent-panel { overflow-x:hidden; }
   .document-bar { position:sticky; top:38px; z-index:10; }
-  .scene { padding: 34px 18px 48px 45px; min-height:0; }
-  .line-numbers { left:9px; top:34px; }
+  .scene { padding: 34px 20px 48px; min-height:0; }
+  .line-numbers { display:none; }
   h1 { font-size:39px; overflow-wrap:anywhere; }
   h2 { font-size:29px; overflow-wrap:anywhere; }
   .hero__lede, .scene__intro { font-size:15px; }
