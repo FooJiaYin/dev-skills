@@ -238,6 +238,7 @@
               <div class="meeting-flow-detail"><p class="meeting-description">分清楚已決定、待確認和下一步。整理過的內容好讀，原文也不會被摘要取代。</p></div>
               ${meetingPreview("meeting-notes", '<div class="workflow-output method-notes"><dl><dt>已決定</dt><dd>預留與取消</dd><dt>待確認</dt><dd>缺貨通知</dd><dt>下一步</dt><dd>先完成已確認的部分</dd></dl></div>')}
               ${meetingStepActions("meeting-notes", "meeting-notes", "整理會議記錄", true)}
+              <aside class="meeting-sync-branch" data-meeting-step="upload-meeting" aria-label="會議記錄的知識同步支線"><span aria-hidden="true">↳</span><div><h3><code class="skill-name">/upload-meeting</code></h3><b>也把記錄同步到 Notion</b><p>讓團隊找得到決定的來龍去脈。</p><p class="workflow-output meeting-sync-result">✓ 會議頁已建立，原文與記錄都已同步</p>${meetingStepActions("upload-meeting", "upload-meeting", "同步會議到 Notion")}</div></aside>
             </li>
             <li class="meeting-flow-step meeting-flow-tasks" data-meeting-step="create-tasks">
               <div class="meeting-flow-node"><span class="meeting-node-icon" aria-hidden="true"></span><h3><code class="skill-name">/create-tasks</code></h3><small class="meeting-transform">Notion 任務 · 確認後建立或連結</small></div>
@@ -252,7 +253,6 @@
               ${meetingStepActions("fetch-task", "fetch-task", "帶進本地工作檔", true)}
             </li>
           </ol>
-          <aside class="meeting-sync-branch" data-meeting-step="upload-meeting" aria-label="會議記錄的知識同步支線"><span aria-hidden="true">↳</span><div><h3><code class="skill-name">/upload-meeting</code></h3><b>也把記錄同步到 Notion</b><p>讓團隊找得到決定的來龍去脈。</p><p class="workflow-output meeting-sync-result">✓ 會議頁已建立，原文與記錄都已同步</p>${meetingStepActions("upload-meeting", "upload-meeting", "同步會議到 Notion")}</div></aside>
         </div>`;
       } else if (d.id === "wrap-up") {
         $("h2", section).textContent = "選擇收尾方式";
@@ -692,8 +692,9 @@
       stage.dataset.flowState = state;
       stage.classList.toggle("is-current", id === current);
       stage.classList.toggle("is-done", state === "done");
-      for (const output of $$(".workflow-output", stage)) {
-        const visible = state === "done" || state === "preview";
+      for (const output of $$(".workflow-output", stage).filter(node => node.closest("[data-meeting-step]") === stage)) {
+        // Phones keep the conversation in a closed dialog, so outputs can't wait for playback.
+        const visible = mobile.matches || state === "done" || state === "preview";
         if (visible && !output.classList.contains("is-revealed")) restartPreview(output.closest(".document-preview"));
         output.classList.toggle("is-revealed", visible);
         output.setAttribute("aria-hidden", String(!visible));
@@ -773,6 +774,7 @@
     });
   }
   renderMeetingProgress(0);
+  mobile.addEventListener("change", () => renderMeetingProgress(progress.get("meeting-notes") || 0));
   function readingPosition() {
     if (frame || changingLayout || editorTab !== "story") return;
     frame = requestAnimationFrame(() => {

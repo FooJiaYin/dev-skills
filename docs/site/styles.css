@@ -822,7 +822,7 @@ select:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .chat-message--user .chat-message__role { justify-content: flex-end; }
 .document-return { margin-top: 32px; min-width: 88px; background: var(--accent); color: var(--on-accent); font-weight: 700; }
 .meeting-flow { display: grid; grid-template-columns: minmax(0, .85fr) repeat(3, minmax(0, 1.1fr)); gap: 14px 24px; margin: 28px 0 0; padding: 0; list-style: none; }
-.meeting-flow-step { display: grid; grid-template-rows: subgrid; grid-row: span 4; gap: 8px; position: relative; min-width: 0; }
+.meeting-flow-step { display: grid; grid-template-rows: subgrid; grid-row: span 5; gap: 8px; position: relative; min-width: 0; }
 .meeting-flow-node { position: relative; display: grid; align-content: start; gap: 8px; min-width: 0; padding-top: 4px; }
 .meeting-flow-step:not(:last-child)::before { content: ""; position: absolute; left: 20px; right: -12px; top: 9px; height: 1px; background: var(--accent); }
 .meeting-flow-step:not(:last-child)::after { content: "›"; position: absolute; right: -17px; top: -1px; color: var(--accent); font-size: 18px; line-height: 20px; }
@@ -872,7 +872,7 @@ select:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .method-workspace span { color: var(--text); font-size: 12px; }
 .method-workspace small { color: var(--muted); font-size: 10px; line-height: 1.7; }
 .method-workspace > div:first-of-type small { color: var(--blue); }
-.meeting-sync-branch { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 8px; margin: 10px 0 0 23%; padding: 12px 0; color: var(--muted); }
+.meeting-sync-branch { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 8px; margin: 14px 0 0; padding: 4px 0 0; color: var(--muted); }
 .meeting-sync-branch > span { color: var(--blue); font-size: 22px; }
 .meeting-sync-branch h3 { margin: 0 0 6px; }
 .meeting-sync-branch b { color: var(--text); font-size: 12px; font-weight: 500; }
@@ -880,7 +880,8 @@ select:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .meeting-sync-branch .skill-name { display: inline-block; font: 11px/1.7 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--accent); }
 .meeting-sync-branch a { color: var(--blue); font-size: 11px; line-height: 1.8; text-decoration: none; }
 .meeting-sync-branch a:hover { text-decoration: underline; }
-.meeting-sync-branch .meeting-step-actions { grid-template-columns: max-content max-content; align-items: start; }
+.meeting-sync-branch .meeting-step-actions { display: flex; flex-wrap: wrap; align-items: center; }
+.meeting-sync-branch .meeting-step-actions .playback-cta { width: auto; }
 .meeting-sync-branch .meeting-sync-result { color: var(--mint); }
 .meeting-sync-branch.is-current > span { color: var(--accent); }
 /* The IDE's reading column can be narrow even on a desktop display. */
@@ -893,7 +894,7 @@ select:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
   .meeting-flow-step:not(:last-child)::after { content: ""; box-sizing: border-box; left: 1.5px; right: auto; top: auto; bottom: -34px; width: 8px; height: 8px; border: solid currentColor; border-width: 0 1.5px 1.5px 0; transform: rotate(45deg); font-size: 0; line-height: 0; }
   .meeting-flow-step > .document-preview { max-width: 330px; justify-self: start; }
   .meeting-flow-step > .meeting-preview::after { display: none; }
-  .meeting-sync-branch { margin-left: 24px; }
+  .meeting-sync-branch { margin-left: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
   .meeting-node-icon { transition: none; }
@@ -1146,6 +1147,10 @@ body.document-view { overflow: auto; height: auto; min-height: 100%; font-family
   .demo-scene .wrap-modes { grid-template-columns: minmax(0, 1fr); }
   .demo-scene .flow-visual { grid-template-columns: minmax(0, 1fr) 22px minmax(0, 1fr) 22px minmax(0, 1fr); }
   .demo-scene .flow-node { padding: 10px 7px; }
+  /* Cards stay side by side here, so the connectors point right, not down. */
+  .demo-scene .flow-connector { height: auto; }
+  .demo-scene .flow-connector i { width: auto; height: 1px; margin: 0; }
+  .demo-scene .flow-connector i::after { right: 0; top: -3px; bottom: auto; border-left: 6px solid var(--faint); border-right: 0; border-top: 3px solid transparent; border-bottom: 3px solid transparent; }
 }
 
 /* Each workflow has its own visual metaphor. Color marks meaning, not whole tiles. */

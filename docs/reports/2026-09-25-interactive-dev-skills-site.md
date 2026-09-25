@@ -38,6 +38,7 @@ session: 2026-09-25-interactive-dev-skills-site (01a0d3e4-ea97-7152-b043-b64458a
 - 另一個 Claude 工作階段（b3ae627e）接著修 lifecycle 分支線；途中使用者追加：刪掉按鈕上的「看對話」文字、對話框開啟時圖示要在對話框右上方（像 Messenger）、修正「把討論接成工作」的歪箭頭。
 - impeccable 設計檢查指出聊天頭像移動時用 `bottom`／`padding` 做 transition 會造成 layout thrash，改成只對 `transform: translateY(...)` 做 transition，截圖確認位置不變。
 - 使用者問手機左邊 margin 為何比較多：≤580px 時 README 段落為 `01…18` 行號保留左 45px、右只有 18px。改為手機隱藏行號、左右各 20px（與下方各 skill 段落一致）；581–900px 仍顯示行號。390px 截圖確認左右對稱、lifecycle 分支線隨寬度重畫，`check-browser.mjs` PASS。`docs/site/styles.css`
+- 使用者回報 sync 圖箭頭方向怪、upload-meeting 位置不對、手機上 meeting-notes／create-tasks／fetch-task 內容出現太晚：(1) 窄螢幕 sync 三張卡片仍並排，卻沿用直排的 ↓ 箭頭，改為在該版面指向 →；(2) 流程卡片原本等示範對話播到該步才顯示內容，手機對話收在對話框裡看不到，改為手機直接顯示、捲到時打字動畫；(3) `/upload-meeting` 是 `/meeting-notes` 的支線，原本手機排在 `/fetch-task` 之後像第五步、桌面放在整排下方，改放進 `/meeting-notes` 步驟內、緊接其試試按鈕下方；桌面每步 subgrid 由 4 列改 5 列，避免支線疊在按鈕上。390／1440px 截圖確認，`check-demos`、`check-browser` PASS；約 700px 平板寬度因截圖腳本失真未確認。`docs/site/app.js`, `docs/site/styles.css`
 - 對話框標題列的 ✕ 關閉鈕保留，所以開啟時有兩種關閉方式；若要完全照 Messenger 只留頭像，可再移除 ✕。
 
 # Result
