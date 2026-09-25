@@ -307,10 +307,12 @@
   const desktop = $("#claude-chat");
   const desktopThread = $(".chat-thread", desktop);
   const mobile = matchMedia("(max-width: 900px)");
+  document.body.insertAdjacentHTML("beforeend", '<div class="mobile-chat-scrim" aria-hidden="true"></div><button class="mobile-chat-fab" type="button" aria-controls="claude-chat" aria-expanded="false" aria-label="開啟示範對話"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v12H9l-5 3V5Z"/><path d="M8 10h8M8 13h5"/></svg><small></small></button>');
+  const mobileFab = $(".mobile-chat-fab");
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
   const progress = new Map();
   const follow = new WeakMap();
-  let active = null, token = 0, paused = false, frame = 0, changingLayout = false;
+  let active = null, token = 0, paused = false, frame = 0, changingLayout = false, mobileChatCloseTimer = 0;
   let editorTab = "story", storyWindowTop = 0, storyScrollTop = 0;
   let host = "claude";
   const hostName = () => host === "claude" ? "Claude Code" : "Codex";
@@ -364,6 +366,7 @@
   function openDocument(id) {
     const d = byId.get(id);
     if (!d) return;
+    if (mobile.matches) setPanel("chat", false);
     if (!openedDocuments.has(id)) {
       const tab = document.createElement("div");
       tab.className = "editor-tab-item";
@@ -404,8 +407,8 @@
   });
   selectEditorTab("story", false);
   const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
-  const threadFor = id => mobile.matches ? $("#demo-" + id + " .chat-thread") : desktopThread;
-  const composeFor = id => mobile.matches ? $("#demo-" + id + " .chat-compose") : $(".chat-compose", desktop);
+  const threadFor = () => desktopThread;
+  const composeFor = () => $(".chat-compose", desktop);
   function resetComposers() {
     $$(".chat-compose").forEach(compose => {
       compose.classList.remove("is-composing");
@@ -480,6 +483,7 @@
     const shortcut = $('[data-jump="chat"]');
     shortcut.setAttribute("aria-label", hostName() + " 對話");
     shortcut.title = hostName() + " 對話";
+    if (!document.body.classList.contains("mobile-chat-open")) mobileFab.setAttribute("aria-label", "開啟" + hostName() + "示範對話");
     if (active === "install") play("install", true);
   }
   $$("[data-host-picker]").forEach(picker => picker.addEventListener("change", () => setHost(picker.value)));
@@ -537,6 +541,7 @@
     $("#status-page").hidden = true;
     $$("[data-stage]", desktop).forEach(stage => stage.classList.remove("is-active"));
     mark("welcome");
+    $("small", mobileFab).textContent = "";
     controls();
   }
   async function ready(t) {
@@ -550,6 +555,7 @@
     if (id === "install") d.messages = installConversations[host];
     const t = ++token;
     active = id;
+    $("small", mobileFab).textContent = id === "install" ? "安裝" : skillName(id);
     paused = false;
     if (replay) progress.set(id, 0);
     const count = progress.get(id) || 0, thread = threadFor(id);
@@ -784,6 +790,7 @@
     id = sceneId(id);
     const panel = id === "welcome" ? $("#welcome") : $("#demo-" + id);
     if (!panel) return;
+    if (mobile.matches) setPanel("chat", false);
     selectEditorTab("story", false);
     if (mobile.matches) panel.scrollIntoView({ behavior: "instant", block: "start" });
     else {
@@ -794,8 +801,36 @@
     else if (active !== id) play(id, true);
   }
   function setPanel(name, visible) {
+    if (name === "chat" && mobile.matches) {
+      clearTimeout(mobileChatCloseTimer);
+      if (visible) {
+        document.body.classList.remove("mobile-chat-closing");
+        document.body.classList.add("mobile-chat-open");
+        mobileFab.setAttribute("aria-expanded", "true");
+        mobileFab.setAttribute("aria-label", "收合示範對話");
+        desktop.setAttribute("role", "dialog");
+        desktop.setAttribute("aria-modal", "true");
+      } else if (document.body.classList.contains("mobile-chat-open")) {
+        const finishClose = () => {
+          document.body.classList.remove("mobile-chat-open", "mobile-chat-closing");
+          mobileFab.setAttribute("aria-expanded", "false");
+          mobileFab.setAttribute("aria-label", "開啟" + hostName() + "示範對話");
+          desktop.setAttribute("role", "complementary");
+          desktop.removeAttribute("aria-modal");
+          if (desktop.contains(document.activeElement)) mobileFab.focus({ preventScroll: true });
+        };
+        if (reduced.matches) finishClose();
+        else {
+          document.body.classList.add("mobile-chat-closing");
+          mobileChatCloseTimer = setTimeout(finishClose, 190);
+        }
+      }
+      $(".chat-panel-close", desktop).setAttribute("aria-label", "關閉對話框");
+      if (visible) $(".chat-panel-close", desktop).focus({ preventScroll: true });
+      return;
+    }
     document.body.classList.toggle(name === "explorer" ? "explorer-collapsed" : "chat-collapsed", !visible);
-    $$('[data-toggle-panel="' + name + '"]').forEach(button => {
+  $$('[data-toggle-panel="' + name + '"]').forEach(button => {
       button.setAttribute("aria-expanded", String(visible));
       const label = name === "explorer" ? (visible ? "收合檔案總管" : "展開檔案總管") : (visible ? "收合對話欄" : "展開對話欄");
       button.setAttribute("aria-label", label);
@@ -806,9 +841,22 @@
   }
   $$('[data-toggle-panel]').forEach(button => button.addEventListener("click", () => {
     const name = button.dataset.togglePanel;
+    if (name === "chat" && mobile.matches) { setPanel("chat", false); return; }
     const collapsed = document.body.classList.contains(name === "explorer" ? "explorer-collapsed" : "chat-collapsed");
     setPanel(name, collapsed);
   }));
+  mobileFab.addEventListener("click", () => setPanel("chat", !document.body.classList.contains("mobile-chat-open") || document.body.classList.contains("mobile-chat-closing")));
+  $(".mobile-chat-scrim").addEventListener("click", () => setPanel("chat", false));
+  document.addEventListener("keydown", event => {
+    if (!mobile.matches || !document.body.classList.contains("mobile-chat-open")) return;
+    if (event.key === "Escape") { setPanel("chat", false); return; }
+    if (event.key !== "Tab") return;
+    const focusable = $$("button:not(:disabled), select, a[href]", desktop).filter(node => node.getClientRects().length);
+    const first = focusable[0], last = focusable.at(-1);
+    if (!first) return;
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+  });
   $$("[data-scene]").forEach(link => link.addEventListener("click", event => {
     event.preventDefault();
     const skill = link.dataset.scene, id = sceneId(skill);
@@ -820,14 +868,12 @@
   }));
   $$("[data-jump]").forEach(button => button.addEventListener("click", () => {
     if (button.dataset.jump === "workflow") jump("wrap-up");
-    else if (mobile.matches && active) $("#demo-" + active + " .inline-demo").scrollIntoView({ behavior: "smooth" });
     else if (button.dataset.jump === "chat") setPanel("chat", true);
   }));
   $$("[data-demo-replay]").forEach(button => button.addEventListener("click", () => {
     const id = button.dataset.demoReplay;
-    if (!mobile.matches) setPanel("chat", true);
+    setPanel("chat", true);
     play(id, true);
-    if (mobile.matches) $("#demo-" + id + " .inline-demo").scrollIntoView({ behavior: "instant", block: "start" });
   }));
   document.addEventListener("click", event => {
     const methodJump = event.target.closest("[data-method-jump]");
@@ -836,10 +882,9 @@
     if (methodButton) {
       const id = methodButton.dataset.methodScene, stage = methodButton.dataset.methodPlay;
       if (editorTab !== "story") selectEditorTab("story", false);
-      if (!mobile.matches) setPanel("chat", true);
+      setPanel("chat", true);
       progress.set(id, sceneById.get(id).stageStarts?.[stage] || 0);
       play(id);
-      if (mobile.matches) $("#demo-" + id + " .inline-demo").scrollIntoView({ behavior: "instant", block: "start" });
       return;
     }
     const stageButton = event.target.closest("[data-play-stage]");
@@ -847,11 +892,10 @@
       const stage = stageButton.dataset.playStage;
       if (!Object.hasOwn(meetingStarts, stage)) return;
       if (editorTab !== "story") selectEditorTab("story", false);
-      if (!mobile.matches) setPanel("chat", true);
       if (active !== "meeting-notes") jump("meeting-notes");
+      setPanel("chat", true);
       progress.set("meeting-notes", meetingStarts[stage]);
       play("meeting-notes");
-      if (mobile.matches) $("#demo-meeting-notes .inline-demo").scrollIntoView({ behavior: "instant", block: "start" });
       return;
     }
     const link = event.target.closest("[data-demo-document]");
@@ -877,6 +921,12 @@
   mobile.addEventListener("change", () => {
     const id = active;
     changingLayout = true;
+    clearTimeout(mobileChatCloseTimer);
+    document.body.classList.remove("mobile-chat-open");
+    document.body.classList.remove("mobile-chat-closing");
+    mobileFab.setAttribute("aria-expanded", "false");
+    desktop.removeAttribute("aria-modal");
+    desktop.setAttribute("role", "complementary");
     requestAnimationFrame(() => {
       if (!mobile.matches) window.scrollTo({ top: 0, behavior: "instant" });
       if (id && editorTab === "story") { jump(id); play(id); }
@@ -885,6 +935,47 @@
     });
   });
   reduced.addEventListener("change", () => { if (active && reduced.matches) complete(); readingPosition(); });
+  const lifecycle = $(".lifecycle-graph");
+  if (lifecycle) {
+    // Phone layout stacks the cards differently, so the branch lines are routed from measured card positions.
+    const svg = $(".lifecycle-branch-lines", lifecycle), caption = $(".github-branch-caption", lifecycle);
+    const out = $(".branch-out", svg), back = $(".branch-back", svg), dot = $("circle", svg);
+    const original = [[svg, "viewBox"], [out, "d"], [back, "d"], [dot, "cx"], [dot, "cy"]].map(([node, attr]) => [node, attr, node.getAttribute(attr)]);
+    const narrow = matchMedia("(max-width: 580px)");
+    const elbow = (x1, y1, x2, y2, turn) => {
+      if (Math.abs(x2 - x1) < 1) return `M ${x1} ${y1} V ${y2}`;
+      const sx = Math.sign(x2 - x1), sy = Math.sign(y2 - y1), r = Math.min(10, Math.abs(x2 - x1) / 2, Math.abs(turn - y1), Math.abs(y2 - turn));
+      return `M ${x1} ${y1} V ${turn - sy * r} Q ${x1} ${turn} ${x1 + sx * r} ${turn} H ${x2 - sx * r} Q ${x2} ${turn} ${x2} ${turn + sy * r} V ${y2}`;
+    };
+    const routeLifecycle = () => {
+      if (!narrow.matches) {
+        original.forEach(([node, attr, value]) => node.setAttribute(attr, value));
+        svg.removeAttribute("style");
+        caption.removeAttribute("style");
+        return;
+      }
+      const box = lifecycle.getBoundingClientRect();
+      if (!box.width) return;
+      const rect = node => { const r = node.getBoundingClientRect(); return { x: r.left - box.left + r.width / 2, top: r.top - box.top, bottom: r.bottom - box.top }; };
+      const work = rect($(".lifecycle-node--work", lifecycle)), result = rect($(".lifecycle-node--result", lifecycle));
+      const steps = $$(".branch-node", lifecycle), first = rect(steps[0]), last = rect(steps.at(-1));
+      const turn = first.top - 14;
+      svg.style.top = "0";
+      svg.style.height = box.height + "px";
+      svg.setAttribute("viewBox", `0 0 ${box.width} ${box.height}`);
+      out.setAttribute("d", elbow(work.x, work.bottom, first.x, first.top - 2, turn));
+      back.setAttribute("d", elbow(last.x, last.top, result.x, result.bottom + 2, turn));
+      dot.setAttribute("cx", work.x);
+      dot.setAttribute("cy", work.bottom);
+      // Sit the ⑂ mark on the outgoing line and keep the label clear of the return line.
+      const mark = $("span", caption).getBoundingClientRect().width;
+      caption.style.justifyContent = "flex-start";
+      caption.style.paddingLeft = Math.max(0, work.x - mark / 2) + "px";
+      caption.style.paddingRight = Math.max(0, box.width - result.x + 14) + "px";
+    };
+    new ResizeObserver(routeLifecycle).observe(lifecycle);
+    narrow.addEventListener("change", routeLifecycle);
+  }
   clear();
   if (location.hash.startsWith("#demo-")) jump(location.hash.slice(6));
   readingPosition();

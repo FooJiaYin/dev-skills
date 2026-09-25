@@ -285,39 +285,80 @@ try {
     assert(await evaluate("document.documentElement.scrollWidth <= innerWidth"), "desktop width " + width);
   }
   await call("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
+  await call("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: "no-preference" }] });
   await evaluate("window.scrollTo({top:0, behavior:'instant'})");
   await sleep(120);
   assert.equal(await evaluate("getComputedStyle(document.querySelector('#claude-chat')).display"), "none");
+  assert(await evaluate("getComputedStyle(document.querySelector('.mobile-chat-fab')).display !== 'none'"), "mobile chat starts as a bottom-right button");
   assert(await evaluate("document.documentElement.scrollWidth <= innerWidth"), "mobile has no horizontal overflow");
   assert(await evaluate("[...document.querySelectorAll('.demo-scene .picture-node, .demo-scene .flow-node')].every(node => { const rect = node.getBoundingClientRect(); return Math.abs(rect.width - rect.height) < 1 && node.scrollHeight <= node.clientHeight + 1; })"), "mobile square nodes contain their labels");
   await evaluate("document.querySelector('#demo-meeting-notes').scrollIntoView({behavior:'instant'})");
-  await until("document.querySelectorAll('#demo-meeting-notes .chat-entry').length === ['meeting-notes','upload-meeting','create-tasks','fetch-task'].reduce((n,id) => n + window.DEV_SKILLS_DEMOS[id].messages.length - window.DEV_SKILLS_DEMOS[id].messages.filter(message => message[0] === 'question').length, 0)");
-  assert(await evaluate("document.querySelector('#demo-meeting-notes .inline-demo').getBoundingClientRect().height > 0"));
-  assert(await evaluate("document.querySelector('#demo-meeting-notes .inline-demo .chat-compose') !== null"), "mobile conversation has its own composer");
-  assert(await evaluate("document.querySelector('#demo-meeting-notes .chat-document-chip[data-demo-document=meeting-notes]') !== null"), "mobile chips render in combined conversation");
+  await until("document.querySelector('#claude-chat').dataset.demo === 'meeting-notes'");
+  await evaluate("document.querySelector('.mobile-chat-fab').click()");
+  assert(await evaluate("getComputedStyle(document.querySelector('#claude-chat')).display !== 'none' && document.querySelector('#claude-chat').getAttribute('role') === 'dialog'"), "floating button opens the conversation dialog");
+  assert.equal(await evaluate("getComputedStyle(document.querySelector('#claude-chat')).animationName"), await evaluate("matchMedia('(prefers-reduced-motion: reduce)').matches") ? "none" : "mobile-chat-expand", "mobile chat expands from the launcher unless reduced motion is requested");
+  assert(await evaluate("getComputedStyle(document.querySelector('#claude-chat .chat-panel-close')).display !== 'none' && parseFloat(getComputedStyle(document.querySelector('#claude-chat .chat-panel-close')).minWidth) >= 44"), "mobile dialog has a visible touch-sized close button");
+  await evaluate("document.querySelector('#claude-chat .chat-complete').click()");
+  await until("document.querySelector('#claude-chat .chat-document-chip[data-demo-document=meeting-notes]') !== null");
+  assert(await evaluate("document.querySelector('#claude-chat .chat-compose') !== null"), "mobile dialog uses the shared composer");
   assert(await evaluate("[...document.querySelectorAll('.chat-document-chip')].every(chip => chip.closest('.chat-bubble') && chip.closest('[data-role=assistant]'))"), "all file chips stay inside assistant replies");
   const mobilePosition = await evaluate("window.scrollY");
-  await evaluate("document.querySelector('#demo-meeting-notes [data-demo-document]').click()");
+  await evaluate("document.querySelector('#claude-chat .chat-document-chip[data-demo-document=meeting-notes]').click()");
+  await until("getComputedStyle(document.querySelector('#claude-chat')).display === 'none'");
   assert(await evaluate("document.documentElement.scrollWidth <= innerWidth"), "document mobile width");
   await evaluate("document.querySelector('#tab-story').click()");
   assert(Math.abs(await evaluate("window.scrollY") - mobilePosition) < 2, "mobile reading position retained");
   await evaluate("document.querySelector('#install').scrollIntoView({behavior:'instant'})");
-  await evaluate("(() => { const picker = document.querySelector('#demo-install [data-host-picker]'); picker.value = 'claude'; picker.dispatchEvent(new Event('change')); })()");
+  await evaluate("(() => { const picker = document.querySelector('#claude-chat [data-host-picker]'); picker.value = 'claude'; picker.dispatchEvent(new Event('change')); })()");
   await evaluate("document.querySelector('#install [data-demo-replay=install]').click()");
-  await evaluate("document.querySelector('#demo-install [data-inline-complete=install]').click()");
-  await until("document.querySelector('#demo-install .chat-thread').textContent.includes('重啟 Claude Code')");
-  await evaluate("(() => { const picker = document.querySelector('#demo-install [data-host-picker]'); picker.value = 'codex'; picker.dispatchEvent(new Event('change')); })()");
-  await evaluate("document.querySelector('#demo-install [data-inline-complete=install]').click()");
-  await until("document.querySelector('#demo-install .chat-thread').textContent.includes('git clone')");
-  assert(await evaluate("document.querySelector('#demo-install .chat-thread').textContent.includes('沒有替你執行指令')"), "install demo switches to Codex without executing anything");
+  await evaluate("document.querySelector('#claude-chat .chat-complete').click()");
+  await until("document.querySelector('#claude-chat .chat-thread').textContent.includes('重啟 Claude Code')");
+  await evaluate("(() => { const picker = document.querySelector('#claude-chat [data-host-picker]'); picker.value = 'codex'; picker.dispatchEvent(new Event('change')); })()");
+  await evaluate("document.querySelector('#claude-chat .chat-complete').click()");
+  await until("document.querySelector('#claude-chat .chat-thread').textContent.includes('git clone')");
+  assert(await evaluate("document.querySelector('#claude-chat .chat-thread').textContent.includes('沒有替你執行指令')"), "install demo switches to Codex without executing anything");
+  await evaluate("document.querySelector('#claude-chat .chat-panel-close').click()");
+  if (!await evaluate("matchMedia('(prefers-reduced-motion: reduce)').matches")) assert(await evaluate("document.body.classList.contains('mobile-chat-closing')"), "closing animation runs before launcher returns");
+  await until("getComputedStyle(document.querySelector('#claude-chat')).display === 'none' && document.querySelector('.mobile-chat-fab').getAttribute('aria-expanded') === 'false'");
   assert(await evaluate("document.documentElement.scrollWidth <= innerWidth"), "installation stays within mobile width");
+  await call("Emulation.setDeviceMetricsOverride", { width: 320, height: 700, deviceScaleFactor: 1, mobile: true });
+  await evaluate("document.querySelector('.mobile-chat-fab').click()");
+  await sleep(360);
+  assert(await evaluate("(() => { const box = document.querySelector('#claude-chat').getBoundingClientRect(); return box.left >= 0 && box.right <= innerWidth && box.bottom <= innerHeight; })()"), "dialog fits a narrow phone viewport");
+  await evaluate("document.querySelector('#claude-chat .chat-panel-close').click()");
+  await until("getComputedStyle(document.querySelector('#claude-chat')).display === 'none'");
+  await call("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
   assert.equal(errors.length, 0, JSON.stringify(errors));
   console.log("PASS: 16 skills in 8 method-led scenes; continuous workflows; host switch; scroll replay; contextual files; return buttons; IDE tabs; icons; typing; desktop/mobile; no JS errors.");
+  if (process.argv.includes("--mobile-shots")) {
+    await evaluate("document.querySelector('.mobile-chat-fab').click()");
+    let shot = await call("Page.captureScreenshot", { format: "png" });
+    writeFileSync(path.join(shots, "mobile-chat-open.png"), Buffer.from(shot.data, "base64"));
+    await evaluate("document.querySelector('#claude-chat .chat-panel-close').click()");
+    await until("getComputedStyle(document.querySelector('#claude-chat')).display === 'none'");
+    for (const [name, selector] of [["setup", ".visual-setup-notion"], ["improve", ".learning-route"]]) {
+      await evaluate("document.querySelector(" + JSON.stringify(selector) + ").scrollIntoView({behavior:'instant',block:'start'})");
+      await sleep(180);
+      shot = await call("Page.captureScreenshot", { format: "png" });
+      writeFileSync(path.join(shots, "mobile-" + name + ".png"), Buffer.from(shot.data, "base64"));
+    }
+    console.log("Mobile screenshots: " + shots);
+  }
   // Screenshots last: capture can stall the CDP connection on some installations.
   if (process.argv.includes("--screenshots")) {
-    await evaluate("document.querySelector('#demo-meeting-notes .inline-demo').scrollIntoView({behavior:'instant'})");
+    await evaluate("document.querySelector('.mobile-chat-fab').click()");
     let shot = await call("Page.captureScreenshot", { format: "png" });
+    writeFileSync(path.join(shots, "mobile-chat-open.png"), Buffer.from(shot.data, "base64"));
+    await evaluate("document.querySelector('#claude-chat .chat-panel-close').click()");
+    await evaluate("document.querySelector('#demo-meeting-notes .inline-demo').scrollIntoView({behavior:'instant'})");
+    shot = await call("Page.captureScreenshot", { format: "png" });
     writeFileSync(path.join(shots, "mobile.png"), Buffer.from(shot.data, "base64"));
+    for (const [name, selector] of [["setup", ".visual-setup-notion"], ["lifecycle", ".lifecycle-graph"], ["meeting", ".meeting-flow"], ["quality", ".quality-rail"], ["handoff", ".handoff-rail"], ["improve", ".learning-route"]]) {
+      await evaluate("document.querySelector(" + JSON.stringify(selector) + ").scrollIntoView({behavior:'instant',block:'start'})");
+      await sleep(180);
+      shot = await call("Page.captureScreenshot", { format: "png" });
+      writeFileSync(path.join(shots, "mobile-" + name + ".png"), Buffer.from(shot.data, "base64"));
+    }
     await call("Emulation.setDeviceMetricsOverride", { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false });
     await sleep(200);
     for (const id of ["meeting-notes", "sync", "verify", "wrap-up", "report", "find-session", "improve"]) {
