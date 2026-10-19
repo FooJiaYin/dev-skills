@@ -6,9 +6,10 @@ description: Deploy a site to Cloudflare Pages and cut its production domain ove
 # deploy-cloudflare
 
 ## Credentials
-- **wrangler OAuth** (`npx wrangler login`, user runs it): Pages/Workers scopes, **no DNS**. Token in `~/Library/Preferences/.wrangler/config/default.toml` expires after ~1h — call the API through `./cfapi.sh METHOD PATH [JSON]`, which refreshes via `wrangler whoami`.
-- **DNS**: user-created API token (template "Edit zone DNS" + `Zone:Zone:Read`, scope "All zones from an account", TTL ~2 weeks) saved to `~/.config/cf-dns-token`. Never echo tokens; print length only.
-- Domains can sit in different CF accounts — list `/zones` first and note each zone's account.
+- **Preferred: Account API Token per CF account** (Pages Edit + DNS Edit + Zone Read, no TTL or 90-day rotation), stored in macOS Keychain — read with `T=$(security find-generic-password -s cf-api-token-<account> -w)`, export as `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` for wrangler. Never echo tokens; print length only. Have the user save it with `security add-generic-password -U -a "$USER" -s <name> -w` (interactive prompt, nothing in shell history).
+- Fallback: **wrangler OAuth** (`npx wrangler login`): Pages/Workers only, **no DNS**, expires ~1h — `./cfapi.sh METHOD PATH [JSON]` refreshes via `wrangler whoami`.
+- Domains can sit in different CF accounts — list `/zones` first and note each zone's account; account tokens don't span accounts.
+- Mail keys: full-access key is admin-only (local Keychain); production gets a sending-only, single-domain key.
 
 ## Pages project
 - Decide Git-connected vs direct upload **before** creating — a direct-upload project can never be switched to Git. Git needs the Cloudflare Pages GitHub App installed per CF account (error `8000011` = not installed).
