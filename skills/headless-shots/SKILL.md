@@ -15,6 +15,9 @@ Set `SESSION_COOKIE` to the app's session cookie name (default `session`) and `B
 
 Mint a session cookie the same way the app does (e.g. jose HS256 with `SESSION_SECRET` from `.env.local`; find the payload shape in the app's `session.ts`) — never reuse a real user's browser cookie.
 
+## Viewport shots with scroll / hover steps
+`node scripts/steps.mjs <url> <outPrefix> <w> <h> <mobile 0|1> '<steps json>'` — viewport-sized JPEGs after each scripted step (`js`, `mouse`, `wait`, `shot`), for responsive widths (e.g. 1440×900 and 390×844 with touch), scroll-driven animations and hover states. No cookie; for authenticated pages set it in a `js` step or use `shoot.mjs`. Run several widths in parallel (`&` … `wait`) and tile the JPEGs into one sheet before `Read`ing them. Use this instead of resizing the Claude-in-Chrome window, which refuses sizes outside the screen bounds.
+
 ## Driving forms (write-path tests)
 `scripts/drive-example.mjs` shows the pattern: inject helpers (`__setInput` uses the native value setter + `input` event so React controlled inputs register; `__setSelect` dispatches `change`; `__byLabel` finds a control by its label text; `__btn` by button text), click, wait, read `location.pathname` + error text, screenshot. Copy it, replace the scenario, then **verify the result in the DB with SQL** — a 200 render proves nothing about writes.
 
