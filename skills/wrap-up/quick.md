@@ -8,7 +8,7 @@ Steps in order:
 |------|--------|
 | 0 Scope | Silent — run `git diff --stat`; if >25 files / >2000 lines, append `⚠️ LARGE DIFF` hint to Step 4's commit message. |
 | 1 Update docs | Invoke `/update-docs` with message: "Quick mode: propose-only, return markdown, skip edit." Capture output for Step 2. |
-| 2 Report | Invoke `/report` to write `docs/reports/YYYY-MM-DD-<title>.md`. Append `# Suggested Doc Updates` section with Step 1's propose markdown (skip section if empty). |
+| 2 Report | Invoke `/report` to write `docs/reports/YYYY-MM-DD-<title>.md`. Append `# Suggested Doc Updates` section with Step 1's propose markdown (skip section if empty). If the project has a `TODO.md`, then invoke `/update-docs` scoped to `TODO.md` only with the report's `# Unsolved Issues`. |
 | 3 Rename session | Invoke `rename-session` with the report title; it routes to the current host's supported helper. |
 | 4 Commit + push | See below — includes auto-cleanup of safe cruft (`.DS_Store`, `*.swp`, `*~`, `.#*`, `*.orig`) before staging. |
 | 5 Notion sync | If `AGENTS.md`/`CLAUDE.md` declares Notion URL AND Step 2 produced a report → **actually invoke `/sync-report`** — do NOT downgrade it to an "I can run it if you want" offer, and do NOT skip it for speed/quick-mode. Notion sync is independent of the push decision. Config may live in a **parent directory's** `AGENTS.md` (org-shared across sibling repos) — walk up to `$HOME` before deciding it's absent, and cross-check `grep -l "^notion:" docs/reports/*.md`: linked past reports mean the config exists somewhere you haven't looked. Skip ONLY when there's genuinely no Notion config / no report, or the user explicitly declines. Else skip silently. |

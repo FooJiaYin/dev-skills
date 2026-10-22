@@ -80,6 +80,7 @@ After the user confirms, apply the changes:
   - **Components**: prop signature, slot/composition pattern, where it's used.
 - Always update the matching `index.md` (ERD entry, endpoint table row, component list) alongside any per-entity / per-resource change.
 - If unrelated drift is noticed in the same file, **flag it but don't fix it inline** — surface as a follow-up at the end.
+- If the project has a `TODO.md` (repo root or a parent dir), it is one of the docs: grep it for **each** unsolved item of this change (report `# Unsolved Issues`, deferred review findings, follow-ups flagged above) and add the missing ones — follow-ups under its Unsolved/follow-up section, client questions under Questions. Copying from memory drops items.
 - Per global rule: prefer `AGENTS.md` over `CLAUDE.md`; prefer the `docs/` folder over scattered top-level files.
 
 ### How to write the update: rewrite in place as current state
