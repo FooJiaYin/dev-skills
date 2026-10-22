@@ -11,6 +11,8 @@ const chrome = spawn(process.env.CHROME || "/Applications/Google Chrome.app/Cont
   "--headless=new", "--disable-gpu", "--hide-scrollbars", "--no-first-run",
   `--remote-debugging-port=${port}`, `--user-data-dir=${tmpdir()}/headless-shots-prof2`, "--window-size=1440,900", "about:blank",
 ], { stdio: "ignore" });
+// node 被 tool timeout／Ctrl-C 殺掉時也要帶走 Chrome，否則留下孤兒 headless Chrome，使用者點 Chrome 會被導到這個隱形實例
+for (const sig of ["exit", "SIGINT", "SIGTERM", "SIGHUP"]) process.on(sig, () => { try { chrome.kill("SIGKILL"); } catch {} if (sig !== "exit") process.exit(130); });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 for (let i = 0; i < 120; i++) { try { await fetch(`http://127.0.0.1:${port}/json/version`); break; } catch { await sleep(250); } }
 let id = 0; const pending = new Map();

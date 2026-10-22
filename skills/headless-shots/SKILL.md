@@ -25,6 +25,7 @@ Mint a session cookie the same way the app does (e.g. jose HS256 with `SESSION_S
 - Give the script a hard self-timeout (`setTimeout(() => { chrome.kill(); process.exit(3) }, 90_000)`) so a wedged connection fails loudly instead of hanging the tool call.
 - Dev-mode server actions compile on first call — allow 20s+ after submitting before killing Chrome, or the action is aborted mid-flight and nothing is written.
 - Use a distinct `--remote-debugging-port` and `--user-data-dir` per script so runs don't collide.
+- **Kill Chrome on every exit path, not just the happy path** — copy the `process.on("exit"|SIGTERM…)` hook from the scripts. A node process killed by a tool timeout leaves an orphan headless Chrome (PPID 1); macOS then treats Chrome as running and the user's click on Chrome opens nothing. Fix for the user: `open -na "Google Chrome"`; cleanup is `pkill -f 'Google Chrome.*--headless'` (never a bare `pkill Chrome`).
 - `Emulation.setDeviceMetricsOverride` + `captureBeyondViewport` for full-page shots; cap height (~6000) or Chrome stalls.
 - After each save, wait until the button is enabled again and the status text actually changes before the next action — a click on a still-disabled button is silently dropped while the previous "saved" message stays on screen. Confirm each write with SQL.
 - Leave test rows in the DB for the user to inspect unless told otherwise.
