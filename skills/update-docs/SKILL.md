@@ -82,26 +82,13 @@ After the user confirms, apply the changes:
 - If unrelated drift is noticed in the same file, **flag it but don't fix it inline** — surface as a follow-up at the end.
 - Per global rule: prefer `AGENTS.md` over `CLAUDE.md`; prefer the `docs/` folder over scattered top-level files.
 
-### How to write the update: edit in place, annotate inline
+### How to write the update: rewrite in place as current state
 
-For each fact that changed, **find the upstream section that already documents that concept** (Goal, Flow, Pages, Schema, etc.) and edit it directly so the section reflects current behavior. Add a small inline marker right next to the changed bullet / paragraph / table row:
+For each fact that changed, **find the upstream section that already documents that concept** (Goal, Flow, Pages, Schema, etc.) and rewrite it so it reads as the current behavior — as if it had always been that way. Docs hold the latest state; history lives in reports and commit messages.
 
-```md
-- /login dispatcher renders welcome OR quick-profile OR redirect _(2026-05-21: 從單純 welcome 改為 RSC dispatcher; 取代 /profile/complete)_
-```
-
-Or for larger structural changes, an inline HTML comment also works:
-
-```md
-<!-- 2026-05-21: court→capacity 3-button selector restored (was plain number input) -->
-- WR-13: 1場 ≤ 8 / 2場 ≤ 17 / 3場 ≤ 26 ...
-```
-
-The marker says **when** + **what** in one line. The body around it stays the source-of-truth description of current behavior.
-
-When adding a new heading or a new file, place it at the right spot in the existing section/folder order — not at the end.
-
-**Anti-pattern to avoid:** appending a single trailing section titled `## YYYY-MM-DD updates` that mirrors upstream content. Two problems: (1) readers have to cross-reference top + bottom to know current state; (2) stale appended sections accumulate over time and bury the real source-of-truth. Edit upstream in place; the inline marker carries the date.
+- No change markers: no `_(YYYY-MM-DD: …)_`, `[Changed …]`, `<!-- date: … -->`, ~~strikethrough~~ of old text, or "YYYY-MM-DD：補…" status lines. Headings carry no dates either.
+- If a section you touch already has such markers, fold them into plain current-state text.
+- New headings / files go at the right spot in the existing order, not at the end. Never append a trailing `## YYYY-MM-DD updates` section.
 
 ## Guardrails
 
