@@ -85,6 +85,8 @@ If detected, `AskUserQuestion`: `Apply <url>` / `Skip`.
 
 **Re-sync (linked target already has body) → append only the DELTA, never the whole body.** When the target already contains the report (e.g. `notion.page` was set on a prior sync and you're re-running after adding a new section), `notion-fetch` the body and diff against the local report: identify the section(s) present locally but **not yet in Notion** (typically a freshly-appended `# Updates` / trailing section). Insert only that delta via `notion-update-page` `insert_content` with `position:{type:"end"}`. If the body has no new content, skip the append entirely. Re-pasting the full body duplicates everything (Notion has no clean edit/replace path) — so the verbatim-full-body rule above applies to the FIRST sync only; subsequent syncs are delta-only.
 
+**`update_content` anchors: Notion stores inline code as `<code>…</code>`, not backticks** (bold as `<b>`). An `old_str` copied from the local markdown that contains `` ` `` never matches. Anchor on a plain-text fragment, or copy the exact bytes from a `notion-fetch`.
+
 > **Property-name foot-gun:** the `userDefined:` prefix is ONLY for properties literally named `id` or `url` (case-insensitive). Property *types* that hold URLs — `Github Link`, `Slack Link`, `Spec URL`, etc. — use their plain name. A wrongly-prefixed property is silently ignored: the API returns `{page_id}` with no error, but the field stays empty. After writing properties, re-fetch and verify each field changed before claiming success.
 
 **9. Frontmatter write-back.** Update local report: set/refresh `notion.page` (in case 5 picked/created) and `notion.last_synced = <now>`. Body unchanged. Minimal in-place edit.

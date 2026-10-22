@@ -12,7 +12,7 @@ const chrome = spawn(process.env.CHROME || "/Applications/Google Chrome.app/Cont
   `--remote-debugging-port=${port}`, `--user-data-dir=${tmpdir()}/headless-shots-prof`, "--window-size=1440,900", "about:blank",
 ], { stdio: "ignore" });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-for (let i = 0; i < 40; i++) { try { await fetch(`http://127.0.0.1:${port}/json/version`); break; } catch { await sleep(250); } }
+for (let i = 0; i < 120; i++) { try { await fetch(`http://127.0.0.1:${port}/json/version`); break; } catch { await sleep(250); } }
 
 let id = 0; const pending = new Map();
 function call(ws, method, params = {}) {
