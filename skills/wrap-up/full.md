@@ -47,6 +47,7 @@ Sweep session-created files before commit. Scan untracked files (`git status --s
 **Move** → relocate, don't delete:
 - Agent scratchpads (`findings.md`, `*-analysis.md`, `*-notes.md`) → `docs/reports/<YYYY-MM-DD>-<slug>-artifacts/`
 - `PLAN.md` at root → `docs/plans/<YYYY-MM-DD>-<slug>.md`
+- **Also scan the session scratchpad** (it is deleted with the session): reusable scripts (QA / measurement / API sync), spec or acceptance checklists, and published-report sources → `scripts/`, `docs/`, `docs/reports/<…>-artifacts/`. Strip hard-coded scratchpad paths when moving. Skip raw screenshots, tool installs and drafts already applied. (Seen: the acceptance checklist and QA scripts nearly vanished with the scratchpad; an earlier Notion sync script did.)
 
 **Gitignore** → keep local, block commit:
 - Experimental variants: `*-v2.*`, `*-experimental.*`, `*.old.*`, `*-approach-*.*`, `*-draft.*`

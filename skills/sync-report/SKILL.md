@@ -23,7 +23,7 @@ Notion is master. One of two skills that write to Notion (the other is `/create-
 - Missing → dispatch `/setup-notion`, re-read, retry. 
 - Still missing → abort. 
 - Conflicting URLs across files → prefer `AGENTS.md` silently, then the nearest ancestor.
-- Roadmap fetch returns 404 / `object_not_found` → call `notion-get-self` at once and tell the user which workspace the connection is signed in to; ask them to reconnect Notion to the Roadmap's workspace (`/mcp`), then re-run. Don't report it as a missing database or retry.
+- Roadmap fetch returns 404 / `object_not_found` → call `notion-get-self` at once and tell the user which workspace the connection is signed in to; ask them to reconnect Notion to the Roadmap's workspace (`/mcp`), then re-run. Don't report it as a missing database or retry. If the repo or an ancestor has a `.env` with `NOTION_TOKEN` (or the Notion config says to use one), offer that as the alternative: call the Notion API with the integration token directly — it doesn't depend on which account the MCP is signed in to.
 
 **2. Read report.** Split frontmatter from body. Capture `notion.page`, H1, body, and `# Result` / `# Unsolved Issues` for Status inference.
 
