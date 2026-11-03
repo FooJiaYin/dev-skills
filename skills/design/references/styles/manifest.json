@@ -11,7 +11,6 @@
       "sha256": "30978fa02dcaca6c176bb974f941e4617d4c2a67adeb454d7322314a4df9c061",
       "source": "user-upload",
       "source_message_utc": "2026-10-29T04:03:57.870Z",
-      "source_thread": "01a1859c-3a74-7d40-bb7b-bcf3666faf2b",
       "original_url": null,
       "rights": "作者、原始網址與再利用授權未提供；僅作參考，不代表可作產品素材再發布。"
     },
@@ -25,21 +24,19 @@
       "sha256": "a8660265addd529db41a2b647f4d3da4b3a0777c6d0d6a79de2b703fde028171",
       "source": "user-upload",
       "source_message_utc": "2026-10-29T04:03:57.870Z",
-      "source_thread": "01a1859c-3a74-7d40-bb7b-bcf3666faf2b",
       "original_url": null,
       "rights": "作者、原始網址與再利用授權未提供；僅作參考，不代表可作產品素材再發布。"
     },
     {
       "id": "dark-glass-video",
       "style": "dark-glassmorphism",
-      "description": "滿版影像剪輯器：玻璃對話與時間軸浮層",
+      "description": "滿版影像剪輯器：玻璃面板與時間軸浮層",
       "file": "images/dark-glass-video.png",
       "width": 1824,
       "height": 1368,
       "sha256": "a15d23c2451e298331fec5d19005369a95f298a0255a086d654e4ccb13a6b407",
       "source": "user-upload",
       "source_message_utc": "2026-10-29T04:03:57.870Z",
-      "source_thread": "01a1859c-3a74-7d40-bb7b-bcf3666faf2b",
       "original_url": null,
       "rights": "作者、原始網址與再利用授權未提供；僅作參考，不代表可作產品素材再發布。"
     },
@@ -53,7 +50,6 @@
       "sha256": "521faceec9609eef2b2850041dedf958d45d6dc4ba3831f04b9258bd218fcade",
       "source": "user-upload",
       "source_message_utc": "2026-10-29T04:03:57.870Z",
-      "source_thread": "01a1859c-3a74-7d40-bb7b-bcf3666faf2b",
       "original_url": null,
       "rights": "作者、原始網址與再利用授權未提供；僅作參考，不代表可作產品素材再發布。"
     },
@@ -67,7 +63,6 @@
       "sha256": "11f7b0c20628419179a374870d422fee5fb0c0ab0c42f49e6a87a0e28faf5742",
       "source": "user-upload",
       "source_message_utc": "2026-10-29T04:07:07.610Z",
-      "source_thread": "01a1859c-3a74-7d40-bb7b-bcf3666faf2b",
       "original_url": null,
       "rights": "作者、原始網址與再利用授權未提供；僅作參考，不代表可作產品素材再發布。"
     },
@@ -81,7 +76,6 @@
       "sha256": "dc2191e6c3cee71cce4341ac816184d4d4f9f28e169ad275ea174e1f71a3af46",
       "source": "user-upload",
       "source_message_utc": "2026-10-29T04:07:07.610Z",
-      "source_thread": "01a1859c-3a74-7d40-bb7b-bcf3666faf2b",
       "original_url": null,
       "rights": "作者、原始網址與再利用授權未提供；僅作參考，不代表可作產品素材再發布。"
     }

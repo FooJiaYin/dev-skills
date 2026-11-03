@@ -9,6 +9,6 @@ Check in this order. A pretty version makes reviewers forgive usability problems
 | Accessibility | Text contrast ≥ 4.5:1, keyboard reachable, visible focus, reduced motion respected, no horizontal scroll on phone |
 | Brand | Each rule in `brief.md` passes or fails individually |
 | Visual | Clear hierarchy, consistent spacing and grid, the named peak moment actually lands |
-| Distinctness | Swap the headlines between two versions — if nobody would notice, they are too similar; any two differ on ≥ 3 axes |
+| Distinctness | Swap the headlines between two versions — if nobody would notice, they are too similar; no two share a layout (see [style-guide.md](style-guide.md)) |
 
 Mark each item pass / fail / can't verify, with the screenshot it rests on. Report separately what you saw in the browser, what you only read in code, and what you didn't test.
