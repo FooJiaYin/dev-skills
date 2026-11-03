@@ -17,7 +17,9 @@ Authority: **Notion is master.** This skill is one of only two skills that write
 
 ### Chat-app source (Discord / Slack)
 
-No fetch API — drive the **already-authenticated browser via Playwright MCP** (`browser_navigate` to the thread URL, then `browser_snapshot`). If it lands on the channel (not a login wall), it's logged in.
+**Discord: first run `<dev-skills-root>/bin/discord-dump.py <channel_id> <out.md> [--after YYYY-MM-DD]`** (bot API — every message incl. threads, with `↩reply_id`) and map from that file. Fall back to the browser only if it errors (bot not in that guild / no token).
+
+Otherwise no fetch API — drive the **already-authenticated browser via Playwright MCP** (`browser_navigate` to the thread URL, then `browser_snapshot`). If it lands on the channel (not a login wall), it's logged in.
 
 - **Read EVERY message, reply-threaded — do NOT keyword-search.** Parse each message's `author · timestamp · text · reply-target` from the accessibility tree (Discord: article `aria-label` carries author+text+time; the reply header `generic "<A> replying to <B>"` + the quoted-preview button gives the reply-target). A keyword grep silently skips messages and mis-attributes replies — the user will catch it.
 - **Scroll to load virtualized / older messages.** Chat lists virtualize: the first snapshot is only the bottom slice. Scroll the message scroller up/down (`browser_evaluate` set `scrollTop`) and re-snapshot until you've covered the requested date range. Don't trust one viewport.
