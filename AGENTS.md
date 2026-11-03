@@ -8,3 +8,7 @@
 ## Documentation
 1. Use `docs` folder for documentation files
 2. Use `AGENTS.md` for agent-related documentation, instead of `CLAUDE.md`, `CURSOR.md`, etc. Add symlink of `AGENTS.md` as `CLAUDE.md` for backward compatibility but prefer `AGENTS.md` for all updates.
+
+## Skills
+1. When writing a skill from a plan or discussion, list every agreed item as in-skill or deferred (with where it's tracked) before calling it done.
+2. Adding or renaming a skill: update the README skill table and the `<skill-name>` install list in the same commit.
