@@ -5,7 +5,7 @@ description: Visual / UI design workflow — quickly propose distinct design dir
 
 # design
 
-Every output is one static HTML file in the project's `docs/design/` (no interaction unless asked). If the host has the Artifact tool, publish it to one URL that stays the same across rounds; otherwise give the file path. Speed matters: the first proposal page should exist within minutes, before any heavy building.
+Every output is one static HTML file in the project's `docs/design/` (no interaction unless asked). Give the file path by default. Publish to an Artifact (one URL that stays the same across rounds) only in Remote Control mode (`$CLAUDE_CODE_BRIDGE_SESSION_ID` is set) or when the user asks for one. Speed matters: the first proposal page should exist within minutes, before any heavy building.
 
 Versions that survive are the ones anchored in something real (the existing site, a saved reference, the brand, the meeting); versions built on an invented theme are the ones that get cut. Later versions go generic when they are made "to be different from v1" — so fix every direction before building, and never let one version see another.
 
