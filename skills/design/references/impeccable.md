@@ -8,6 +8,7 @@ design owns choosing directions, multiple versions and static HTML. impeccable o
 - **detect:** run the CLI directly. Resolve it from the installed skill, newest version: `~/.claude/plugins/cache/impeccable/impeccable/*/skills/impeccable/scripts/impeccable` (Claude) or `~/.codex/plugins/cache/impeccable/impeccable/*/skills/impeccable/scripts/impeccable` (Codex). Scan as URLs so the page renders — desktop, then phone:
   - `impeccable detect file:///abs/path.html` and `impeccable detect --viewport 390x844 file:///abs/path.html` (or the local dev URL).
   - Findings go to stderr — use `2>&1` or `--json`; `--quiet` prints only counts.
+  - Exit 2 means findings were reported (not a failure); exit 1 means a target couldn't be scanned.
   - A bare file path scans source without rendering and misses most findings.
 
 ## What the user says → command
@@ -28,5 +29,5 @@ design owns choosing directions, multiple versions and static HTML. impeccable o
 | 「快好了」 | `polish` → `harden` | Finish details, then states and edge cases |
 | The version the user leans to, before tuning | `critique` | Deep review of one version only (two isolated reviewers; costly) |
 
-- While directions are still open, "更大膽／bolder" means deal a new batch of directions (design ②), not the `bolder` command — that command only refines a world that already shipped.
+- While directions are still open, "更大膽／bolder" means deal a new batch of directions (design step 2, Direction page), not the `bolder` command — that command only refines a world that already shipped.
 - Most feedback already carries its direction; the command's value is its diagnose-before-editing discipline.
