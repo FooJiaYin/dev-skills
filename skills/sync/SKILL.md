@@ -71,7 +71,10 @@ One block summary; omit empty groups; state no-ops explicitly:
 已併入: <upstream> / main / 對方 branches (或「沒新進度」)
 已 push: 是 / 否
 工作目錄: 乾淨，可以開工
+TODO.md: N 項超過 14 天沒動（前 3 條：…）（沒有 TODO.md 或沒有逾期項就省略）
 ```
+
+Staleness: use `git log -1 --format=%cs -L<line>,<line>:TODO.md` (or the file's mtime if that fails) as the age signal; keep it simple.
 
 ## Guardrails — NEVER run
 

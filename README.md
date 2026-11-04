@@ -30,7 +30,7 @@ Four phases — **start-of-day sync**, **planning**, **wrap-up**, and **session 
                                                                        │ orchestrates
                                                   ┌────────────────────┼──────────────┐
                                                   ▼                    ▼              ▼
-                                               verify            update-docs     code-review
+                                               verify            update-docs    quick-review
                                                   │                    │              │
                                                   └─────────────►   report   ◄────────┘
                                                                        │
@@ -54,18 +54,20 @@ Four phases — **start-of-day sync**, **planning**, **wrap-up**, and **session 
 | [design](skills/design/SKILL.md) | planning | Visual / UI design: named style directions with real references and a style guide per direction → one calibrated screen → parallel static versions → review → pick and combine. Output is a local HTML file. |
 | [verify](skills/verify/SKILL.md) | wrap-up | Executes the implementation plan's Test plan / Verification section. **Runner, not author** — does not write new tests. |
 | [update-docs](skills/update-docs/SKILL.md) | wrap-up | Detection-driven docs updater. Scans the project's doc layout, classifies the diff, and proposes per-file edits. |
-| [code-review](skills/code-review/SKILL.md) | wrap-up | Multi-agent review of the local git diff. Writes a single `REVIEW.md` with findings tiered Critical/Warning/Suggestion/Nit (drops only auto-zeroed false positives). |
+| [quick-review](skills/quick-review/SKILL.md) | wrap-up | Lightweight review run at the end of every session. `codex review` on this session's diff, then a second pass with the shared review commons (`shared/review/commons.md`). Writes `REVIEW.md`. |
+| [align](skills/align/SKILL.md) | planning, wrap-up | Checks that what's built matches what was asked (transcript → meeting notes → task → plan). `start` before the plan; `end` at wrap-up checks the baseline item by item and writes unfinished / untested / open questions to `TODO.md`. |
+| [code-review](skills/code-review/SKILL.md) | before merge / on demand | Multi-agent review of a whole branch or large refactor. Routes reviewers by diff, verifies each finding, writes `REVIEW.md` tiered Critical/Warning/Suggestion/Nit. Also `tree` mode for architecture audits. |
 | [report](skills/report/SKILL.md) | wrap-up | Distills the conversation, file changes, and decisions into `docs/reports/YYYY-MM-DD-[title].md`. `/report transcript` exports the raw conversation instead, listing the files read/modified. |
 | [rename-session](skills/rename-session/SKILL.md) | housekeeping | Renames the current Claude Code or Codex session with a short title. Auto-invoked after `report` runs. |
-| [wrap-up](skills/wrap-up/SKILL.md) | orchestrator | Two modes. **Full** runs `verify → update-docs → code-review → report → rename-session → cleanup → commit → deploy → improve` for the primary developer. **Quick** skips quality/deploy gates and ships report + safe commit + push only — for time-constrained or git-illiterate collaborators, or when auto-invoked from `/sync`. |
+| [wrap-up](skills/wrap-up/SKILL.md) | orchestrator | Two modes. **Full** runs `verify → update-docs → quick-review + align → report → rename-session → cleanup → commit → deploy → improve` for the primary developer. **Quick** skips quality/deploy gates and ships report + safe commit + push only — for time-constrained or git-illiterate collaborators, or when auto-invoked from `/sync`. |
 
 **How to use:**
 
 - **Opening Claude Code on a shared repo?** Run `/sync` first. It pulls the latest from `origin/main` + teammates' recent branches into your current branch so you start from the freshest state. If your tree is dirty, `/sync` will offer to run `/wrap-up` Quick to save first.
 - **Starting a non-trivial task?** Begin with `/discuss` (or just enter plan mode — `discuss` auto-invokes) to surface design alternatives before writing code.
 - **Done implementing?** Run `/wrap-up`. Picks Full or Quick mode. Full chains the full wrap-up steps; Quick ships report + safe commit + push only (for collaborators with low git literacy or anyone short on time).
-- **Need just one step?** Each skill is invocable on its own — `/verify`, `/update-docs`, `/code-review`, `/report`, `/rename-session` — and `wrap-up` will skip steps you've already run earlier in the session if nothing relevant changed.
-- **Manual flow without `wrap-up`:** `/verify` → `/update-docs` → `/code-review` → fix Critical/Warning findings (Suggestion/Nit are advisory) → `/report` → `/rename-session` → `/sync-report` → commit → deploy.
+- **Need just one step?** Each skill is invocable on its own — `/verify`, `/update-docs`, `/quick-review`, `/align`, `/code-review`, `/report`, `/rename-session` — and `wrap-up` will skip steps you've already run earlier in the session if nothing relevant changed.
+- **Manual flow without `wrap-up`:** `/verify` → `/update-docs` → `/quick-review` → `/align end` → fix Critical/Warning findings (Suggestion/Nit are advisory) → `/report` → `/rename-session` → `/sync-report` → commit → deploy.
 
 ### Notion integration
 
@@ -236,7 +238,7 @@ gh skill install FooJiaYin/dev-skills <skill-name> --agent gemini-cli --scope us
 gh skill install FooJiaYin/dev-skills <skill-name>                         # defaults to github-copilot, project scope
 ```
 
-`<skill-name>` is one of: `code-review`, `create-tasks`, `design`, `discuss`, `fetch-task`, `find-session`, `meeting-notes`, `rename-session`, `report`, `setup-notion`, `spec`, `spec-review`, `sync`, `sync-report`, `update-docs`, `upload-meeting`, `verify`, `wrap-up`. See [`gh skill install`](https://cli.github.com/manual/gh_skill_install) for the full list of supported agents and flags.
+`<skill-name>` is one of: `align`, `code-review`, `create-tasks`, `design`, `discuss`, `fetch-task`, `find-session`, `meeting-notes`, `quick-review`, `rename-session`, `report`, `setup-notion`, `spec`, `spec-review`, `sync`, `sync-report`, `update-docs`, `upload-meeting`, `verify`, `wrap-up`. See [`gh skill install`](https://cli.github.com/manual/gh_skill_install) for the full list of supported agents and flags.
 
 ### Manual
 
