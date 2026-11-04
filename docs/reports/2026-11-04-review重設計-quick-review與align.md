@@ -222,6 +222,7 @@ merge 前 ─► （沒有）                             merge 前 ─► code-
   - Fixed [Warning] `run.py` — 未裝 commons 時 `FileNotFoundError` → 改成警告並用最小安全檢查；SKILL.md 註明需整包安裝。
 - **整合時補上**：code-review frontmatter 加 `session:`（讓 quick-review 認得）；`commit.md` 的 Quick 步驟編號；`report/SKILL.md` 的 REVIEW.md 說明（不再是 confidence-scored）。
 - **跨 session 回報**：design session（`ebd15042`／`agent-skills-e6`）在真實 wrap-up 用到舊版 run.py，回報已 commit 的工作被丟掉、他人 REVIEW.md 被覆寫——兩者在本分支都已修，已回覆對方。
+- **/improve（wrap-up 收尾）**：quick-review 自審反覆出現「失敗／空的步驟被當成 clean」→ 加進 `shared/review/commons.md` 的 `## Added by /improve`（第一條）；全域 CLAUDE.md 背景 agent 第 12 條：寫外部 CLI 呼叫時 brief 貼已驗證指令。
 - **子 agent 自行決定、與計畫不同的地方**：
   - `/align` 寫進既有 TODO.md 時沿用其結構（使用者選擇保留）。
   - code-review 無法對 live 來源確認的 DB schema finding 由「上限 25」改為直接丟掉。
