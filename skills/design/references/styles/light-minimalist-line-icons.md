@@ -1,6 +1,6 @@
 # Light minimalist with line icons｜淺色極簡＋線條圖示
 
-別名：Light simplicity、白色極簡、Camera UI。原圖：[手機照片編輯器](images/light-photo-editor.png)、[相機 UI](images/light-camera.png)。
+別名：Light simplicity、白色極簡、Camera UI；CSV 對應 Minimalism & Swiss Style、Minimalist Monochrome。原圖：[手機照片編輯器](images/light-photo-editor.png)、[相機 UI](images/light-camera.png)。
 
 ## 圖片觀察
 
@@ -12,7 +12,8 @@
 
 | 項目 | 建議起點 |
 |---|---|
-| 背景 | 畫布 `#F5F6F7`；面板 `#FFFFFF`；作品本身提供主要色彩 |
+| 構圖 | 開放畫布＋靠邊的窄工具列；靠留白與對齊分區，少用容器 |
+| 背景 | 畫布 `#F5F6F7`；面板 `#FFFFFF`；內容（照片、影像）提供主要色彩 |
 | Accent | 藍色 `#2F78C4`；若採照片編輯器的粉色方向，整套改為粉色，避免混用多個主色 |
 | Border | 必要邊界 `1px solid #E6E8EB`；用於分隔，不給所有選項加外框 |
 | Radius | 面板 `10–14px`；縮圖 `4–6px`；輸入區 `6–8px`；圓形主要留給快門／播放 |
@@ -27,8 +28,8 @@
 
 ## 構圖應用
 
-- 作品放在開放畫布上，窄工具列靠邊，設定使用簡單文字列；不把每一個區塊框成面板。
-- AI 選擇可以是底部水平縮圖＋短標籤＋一條選中線，而不是固定右側三張聊天卡片。
+- 內容放在開放畫布上，窄工具列靠邊，設定使用簡單文字列；不把每一個區塊框成面板。
+- 選項可以是水平縮圖＋短標籤＋一條選中線，而不是一疊卡片。
 - 尺規、對齊線、滑桿與選區框是精緻感來源。只保留任務需要的工具，不為了像相機添加無用途的讀數。
 - 影像用自然攝影建立氣氛，避免 UI 本身大量裝飾。參考圖裡照片的粉色／藍色不必變成整套介面的底色。
 

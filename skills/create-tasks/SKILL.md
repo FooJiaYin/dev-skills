@@ -215,6 +215,8 @@ For each `LINK`-classified commitment, find the best match in the `Current` view
 3. Print one line in chat referencing the file: `Plan written to [docs/tasks/_plan-YYYY-MM-DD-<meeting-slug>.md](...) — edit directly or reply approve / comment to iterate.`
 4. Wait for the user's reply. **Do not call any approval popup** (no `ExitPlanMode`, no `AskUserQuestion` for approval). The user reads the file and replies in chat — that reply is the gate.
 
+**Every meeting commitment must end as exactly one of LINK / DRAFT / SKIP (with a reason) / TODO** — none may be left unclassified or silently dropped. `TODO` = a commitment the user doesn't want as a Notion task now but must not lose; it is written to the repo `TODO.md` in §9.
+
 Plan format (single numbered list, summary line at top):
 
 ```markdown
@@ -329,6 +331,8 @@ Order matters:
    The MCP enforces byte-exact matching. If any op fails (LLM paraphrased the text, body changed since fetch), the whole call fails — surface the failure, don't retry blind.
 
 5. **Refresh the local file.** Meeting / treat-as-meeting only. **Local-file input → additive edits to the user's file**: append ` <mention-page url="<task-url>"/>` inside each annotated commitment (pipe-table cell: `| <text> <mention-page …/> |`), bump `last_synced`; never overwrite it with the Notion body. **Notion-URL input (mirror written in §3)** → `notion-fetch` the meeting page again and overwrite the mirror with the post-execution body + refresh `last_synced`. **Skip** for Standalone and custom-parent variants.
+
+6. **Write leftovers to `TODO.md`.** After execution, every commitment that was marked `TODO`, not approved, or not executed (e.g. a half-approved batch, a failed create) is appended to the repo's `TODO.md` (create at repo root if missing; `- [ ] <commitment>（來源：<meeting>，<date>）` under `## 未完成／未驗`). Nothing from the plan may disappear because the batch was only partly approved.
 
 ### 10. Post-create checkout picker
 

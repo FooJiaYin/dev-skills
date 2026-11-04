@@ -57,7 +57,7 @@ For each file in `{FILES}`:
 
 ## Output
 
-Return a JSON array (or empty array). Each finding must include the historical evidence (commit sha or PR number):
+Return a JSON array (or empty array). Each finding must include the historical evidence (commit sha or PR number) and a `severity` (Critical / Warning / Suggestion / Nit):
 
 ```json
 [

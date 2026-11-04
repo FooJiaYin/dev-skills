@@ -109,8 +109,10 @@ If `/code-review` ran (or the conversation surfaced issues another way), record 
 
 - `- [severity] file:line — short description (deferred because: reason)`
 
+To-do items (unfinished / untested / open questions) live in the repo's `TODO.md`, written by `/align end` — don't copy them here. If `TODO.md` has open items, `# Unsolved Issues` keeps one line: `- N open items in [TODO.md](../../TODO.md)`.
+
 Sources for both buckets:
-1. `REVIEW.md` at repo root — `/code-review`'s output with confidence-scored findings.
+1. `REVIEW.md` (or `REVIEW-<id8>.md`) at repo root — `/quick-review` or `/code-review` output with severity-tiered findings.
 2. The conversation — TODOs the user said "leave for later", bugs surfaced and acknowledged.
 3. Failed verification steps — if `/verify` failed and the user chose to ship anyway.
 
