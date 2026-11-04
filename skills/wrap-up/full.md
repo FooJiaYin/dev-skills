@@ -2,11 +2,11 @@
 
 Run steps in order. Stop and surface failures rather than pushing through.
 
-**Always prompt with `AskUserQuestion` (popup) for decision points** — open-a-PR, push confirmation, manual-deploy check, deploy-command confirmation, and "fix or defer" choices in code review. Inline text questions are too easy to miss. Provide 2–4 concrete options per question; the user can still pick "Other" to type a custom response.
+**Always prompt with `AskUserQuestion` (popup) for decision points** — open-a-PR, push confirmation, manual-deploy check, deploy-command confirmation, and "fix or defer" choices in review. Inline text questions are too easy to miss. Provide 2–4 concrete options per question; the user can still pick "Other" to type a custom response.
 
 ## 0. Scope check (large diffs only)
 
-Run `git diff --stat <this session's commits> | tail -1` — find them by message / `Session:` footer (`git log --grep`), not `HEAD~1..HEAD`: in a multi-session repo HEAD is often someone else's commit. If **>25 files or >2000 lines**, ask the user via `AskUserQuestion` which steps to defer — common skips: `/code-review`, `/update-docs`, or E2E in `/verify`. Capture deferred scope in the report's `# Unsolved Issues` or the plan's Verification section. Skip this step for small diffs — **unless this session already committed or already ran the tests**: then ask (multiSelect) which steps to skip, e.g. `/verify`, `/code-review`, deploy.
+Run `git diff --stat <this session's commits> | tail -1` — find them by message / `Session:` footer (`git log --grep`), not `HEAD~1..HEAD`: in a multi-session repo HEAD is often someone else's commit. If **>25 files or >2000 lines**, ask the user via `AskUserQuestion` which steps to defer — common skips: `/quick-review`, `/update-docs`, or E2E in `/verify`. Capture deferred scope in the report's `# Unsolved Issues` or the plan's Verification section. Skip this step for small diffs — **unless this session already committed or already ran the tests**: then ask (multiSelect) which steps to skip, e.g. `/verify`, `/quick-review`, deploy.
 
 ## 1. Verify correctness
 
@@ -19,21 +19,22 @@ Run `git diff --stat <this session's commits> | tail -1` — find them by messag
 - **Run the skill — don't substitute hand-picked manual doc edits.** Even when you think you know which 2–3 docs changed, the detection pass catches stale references in docs you wouldn't open (glossary, architecture, feature-index status rows, sibling feature docs). Editing a few by hand and skipping detection leaves drift the user will catch later ("why didn't update-docs get this?").
 - Wait for `/update-docs` to finish before continuing.
 
-## 3. Code review
+## 3. Quick review + align
 
-- Invoke `/code-review` (the `code-review` skill) to run a multi-agent review of the diff (including the doc updates from step 2). It writes findings to `REVIEW.md` filtered through a confidence threshold.
-- **If you substitute a scoped reviewer for `/code-review`** (e.g. a multi-session dirty tree where the full skill would sweep dozens of other-session files, so you point a single reviewer agent at just this session's diff), you MUST still **persist its findings to `REVIEW.md`** yourself (with the `status: issues_found | clean` frontmatter). Steps 3–4 depend on the file existing — it's read here and folded into the report + deleted in step 4. An inline-only review that skips the file leaves the user without the expected artifact.
+- Invoke `/quick-review` (the `quick-review` skill) to review this session's diff (including the doc updates from step 2). Pass `--files <this session's files>` in a multi-session dirty tree, and `--base <parent of the session's first commit>` (found in step 0) when the session already committed. It writes findings to `REVIEW.md`. The heavier `/code-review` is not part of wrap-up; it stays available on request, e.g. before merging a branch.
+- **If you substitute a scoped reviewer for `/quick-review`** (e.g. a multi-session dirty tree where the skill would sweep dozens of other-session files, so you point a single reviewer agent at just this session's diff), you MUST still **persist its findings to `REVIEW.md`** yourself (with the `status: issues_found | clean` frontmatter). Steps 3–4 depend on the file existing — it's read here and folded into the report + deleted in step 4. An inline-only review that skips the file leaves the user without the expected artifact.
 - **Before writing `REVIEW.md`, check whether one already exists from a DIFFERENT session** (frontmatter `scope` / `session` / `date` describes work that isn't yours — common in a multi-session repo). If so, **do NOT overwrite or delete it** — write your findings to a distinct filename (e.g. `REVIEW-<slug>.md`) and read / fold / delete THAT file in steps 3–4–6 instead. Clobbering another session's review destroys their unaddressed findings.
 - Read `REVIEW.md`. If it has `status: issues_found`, surface the findings, then use `AskUserQuestion` to ask how to proceed. Suggested options: "Fix all", "Fix selected (I'll list them)", "Defer all to report". For per-item triage on a small number of findings, you may ask one `AskUserQuestion` per finding with options like "Fix now" / "Defer".
-- Items the user fixes: fix them, then re-run `/code-review` to confirm. Items the user defers: note them so step 4 (report) carries them into the report's `# Unsolved Issues` section. Items the user fixed during this step go into the report's `# Updates` section.
-- Wait for `/code-review` and any user fixes to finish before continuing.
+- Items the user fixes: fix them, then re-run `/quick-review` to confirm. Items the user defers: write them to `TODO.md` and note them so step 4 (report) carries them into the report's `# Unsolved Issues` section. Items the user fixed during this step go into the report's `# Updates` section.
+- Then invoke `/align end` (the `align` skill) to check the requirement baseline item by item; unfinished / untested / open items are written to `TODO.md`.
+- Wait for `/quick-review`, `/align end` and any user fixes to finish before continuing.
 
 ## 4. Generate report
 
 - Invoke `/report` (the `report` skill) to capture what was done — conversation, file changes, actions — into `docs/reports/YYYY-MM-DD-[title].md`.
 - Carry `/verify` evidence into the report: name the checks and manual scenarios, include representative inputs and observed results, and record anything intentionally not exercised. A bare “tests passed” is insufficient for non-trivial feature work.
 - Skip if the change is trivial (typo, single-line fix) or the user opts out.
-- After `/report`, if the project has a `TODO.md`, invoke `/update-docs` scoped to `TODO.md` only, passing the report's `# Unsolved Issues` — the full list exists only now (step 2 ran before review and report).
+- `TODO.md` was already written by `/align end` (step 3) — don't re-write it here; the report's `# Unsolved Issues` points to it.
 - After `/report` completes successfully, delete `REVIEW.md` — its findings are now folded into the report's `# Updates` and `# Unsolved Issues` sections, and leaving it behind causes stale-state confusion on the next wrap-up. If `/report` was skipped, leave `REVIEW.md` in place — step 6 will offer to clean it up.
 
 ## 5. Session hygiene

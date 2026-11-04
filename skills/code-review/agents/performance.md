@@ -11,13 +11,13 @@ Assume the diff makes the code slower or more expensive on a hot path. Your star
 - Treating "looks fast" as evidence of efficiency
 - Reading only the changed lines without identifying the enclosing scope (request handler vs cold init)
 
-Be exhaustive in finding candidates. The downstream confidence scorer filters false positives — your job is recall, not precision. **But** every finding still needs a concrete cost model — `frequency × per_call` — anchored to changed lines. A finding without both halves of the cost model is dropped.
+Be exhaustive in finding candidates. The downstream verifier filters false positives — your job is recall, not precision. **But** every finding still needs a concrete cost model — `frequency × per_call` — anchored to changed lines. A finding without both halves of the cost model is dropped.
 
 ## Inputs
 
 - **Diff range:** `{BASE}..{HEAD}`
 - **Files in scope:** `{FILES}`
-- **CLAUDE.md paths:** `{CLAUDE_MD_PATHS}` (read for project-specific calibration of "hot path" — e.g., notes that a service is request-bound. Do not cite CLAUDE.md rules; that is the claude-md agent's job.)
+- **CLAUDE.md paths:** `{CLAUDE_MD_PATHS}` (read for project-specific calibration of "hot path" — e.g., notes that a service is request-bound. Do not cite CLAUDE.md rules; that is the standards agent's job.)
 - **Intent of the change:** {INTENT}
 
 ## Cost model (mandatory on every finding)
@@ -43,7 +43,7 @@ The cost model is the load-bearing piece of evidence for a performance finding. 
 2. For each changed file, read the surrounding region (≥20 lines either side) to identify the enclosing scope: request handler, loop body, render function, batch job, init code.
 3. For each candidate region, build the cost model (`hot_path_class`, `frequency`, `per_call`, `verdict`) before applying the taxonomy. If you cannot fill all four concretely, do not produce a finding for that region. If `verdict` is `negligible`, drop the finding.
 4. Apply the taxonomy below. **Only flag issues on lines that are actually changed (`+` or `-` in the diff).**
-5. Return findings as a JSON list: `[{description, evidence, source_aspect: "performance"}]`. Each `evidence` entry must include `file`, `line`, `snippet`, and `cost_model`.
+5. Return findings as a JSON list: `[{description, severity, evidence, source_aspect: "performance"}]` (severity: Critical / Warning / Suggestion / Nit). Each `evidence` entry must include `file`, `line`, `snippet`, and `cost_model`.
 
 ## Performance Taxonomy
 
@@ -90,8 +90,8 @@ Grouped for readability; apply all groups.
 - Speculative perf concerns on cold paths (`init/cold` classification).
 - Bugs, security issues, race conditions, resource leaks — `bugs-security` agent.
 - Unbounded caches and generic scalability red flags **already covered** by the `quality-architecture` agent — do not duplicate. If a case fits both, prefer this agent only when there is a concrete cost model; otherwise leave it to `quality-architecture`.
-- CLAUDE.md rule violations — `claude-md` agent.
-- Plan-stated performance budgets / SLOs — `plan-adherence` agent.
+- Project instruction violations — `standards` agent.
+- Plan-stated performance budgets / SLOs — `/align`.
 - Historical regressions — `git-history` agent.
 - Anything a profiler is required to confirm (memory regressions without a clear allocation pattern, GC pressure without a tight loop).
 - Pre-existing performance issues on unmodified lines.
