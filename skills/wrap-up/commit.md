@@ -1,6 +1,6 @@
 # wrap-up — commit safety (shared by Full + Quick)
 
-Universal commit hygiene. Wrapped by `./full.md` Step 7 and `./quick.md` Step 7 — each mode adds its own decisions (Full: Include report / Open PR / hand-written message; Quick: wip auto-message / always push).
+Universal commit hygiene. Wrapped by `./full.md` Step 7 and `./quick.md` Step 6 — each mode adds its own decisions (Full: Include report / Open PR / hand-written message; Quick: wip auto-message / always push).
 
 ## Codex session evidence
 

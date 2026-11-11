@@ -25,4 +25,4 @@ The user describes feelings; directions need known style names, real images and 
 
 **System mode** (unify into components or rules). `impeccable extract` (it first asks where the design system lives) → review the migrated surfaces like step 5, and grep the old pattern to confirm every use moved → `document` (it asks before overwriting `DESIGN.md`).
 
-design reviews the rendered result; code quality belongs to `/code-review` in wrap-up.
+design reviews the rendered result; code quality belongs to `/quick-review` in wrap-up (`/code-review` before merging a branch).

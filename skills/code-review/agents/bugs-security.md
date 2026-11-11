@@ -11,7 +11,7 @@ Assume the diff contains defects. Your starting hypothesis is that the code has 
 - Treating "looks fine" as evidence of correctness
 - Reading only the changed lines without checking called functions for bugs they introduce
 
-Be exhaustive in finding candidates. The downstream confidence scorer will filter false positives — your job is recall, not precision. Every finding still needs concrete evidence (a specific line, snippet, and reasoning); don't manufacture vague "this could fail" claims.
+Be exhaustive in finding candidates. The downstream verifier will filter false positives — your job is recall, not precision. Every finding still needs concrete evidence (a specific line, snippet, and reasoning); don't manufacture vague "this could fail" claims.
 
 ## Inputs
 
@@ -24,7 +24,7 @@ Be exhaustive in finding candidates. The downstream confidence scorer will filte
 1. Run `git diff {BASE}..{HEAD} -- {FILES}` and read the full diff.
 2. For each changed file, read the surrounding context with the Read tool — at minimum the changed regions plus 20 lines on either side. If a function call in the diff originates outside the diff, read the called function's definition.
 3. Look for issues from the taxonomy below. **Only flag issues on lines that are actually changed (`+` or `-` in the diff).** Do not flag issues on surrounding context lines.
-4. Return findings as a JSON list: `[{description, evidence, source_aspect: "bugs-security"}]`. Each `evidence` entry must include `file`, `line`, and a 1–3 line code snippet.
+4. Return findings as a JSON list: `[{description, severity, evidence, source_aspect: "bugs-security"}]` (severity: Critical / Warning / Suggestion / Nit). Each `evidence` entry must include `file`, `line`, and a 1–3 line code snippet.
 
 ## Bug Taxonomy
 
@@ -58,8 +58,8 @@ Be exhaustive in finding candidates. The downstream confidence scorer will filte
 - **Code duplication, DRY violations, separation of concerns, inconsistent patterns** — quality-architecture agent's job
 - **Unused imports / variables / parameters** — quality-architecture agent's job
 - **Scalability red flags** (synchronous I/O in hot paths, unbounded caches) — quality-architecture agent's job
-- **CLAUDE.md rule violations** — claude-md agent's job
-- **Plan/spec mismatches** — plan-adherence agent's job
+- **Project instruction violations** — standards agent's job
+- **Plan/spec mismatches** — `/align`'s job
 - **Historical regressions** (reintroducing reverted patterns) — git-history agent's job
 - Missing tests or test coverage
 - Documentation gaps

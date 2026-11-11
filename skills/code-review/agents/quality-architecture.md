@@ -11,28 +11,30 @@ Assume the diff contains defects. Your starting hypothesis is that the code has 
 - Treating "looks fine" as evidence of good organization
 - Reading only the changed lines without checking the broader module's existing patterns
 
-Be exhaustive in finding candidates. The downstream confidence scorer will filter false positives — your job is recall, not precision. **But** every finding must cite concrete evidence (a nearby file using a different pattern, a duplicated block at a specific location, a specific layer being violated). No vague "this could be cleaner."
+Be exhaustive in finding candidates. The downstream verifier will filter false positives — your job is recall, not precision. **But** every finding must cite concrete evidence (a nearby file using a different pattern, a duplicated block at a specific location, a specific layer being violated). No vague "this could be cleaner."
 
 ## Inputs
 
 - **Diff range:** `{BASE}..{HEAD}`
 - **Files in scope:** `{FILES}`
-- **CLAUDE.md paths:** `{CLAUDE_MD_PATHS}` (read for project-specific quality rules; do not duplicate Agent B's job, but use these to calibrate what counts as "consistent")
+- **CLAUDE.md paths:** `{CLAUDE_MD_PATHS}` (read for project-specific quality rules; do not duplicate the standards agent's job, but use these to calibrate what counts as "consistent")
 - **Intent of the change:** {INTENT}
+- **Repo has DESIGN.md:** {HAS_DESIGN_MD}
 
 ## Task
 
 1. Run `git diff {BASE}..{HEAD} -- {FILES}` and read the full diff.
 2. For each changed file, read the file in full plus 1–2 sibling files in the same directory to understand the local pattern conventions.
 3. Look for issues from the taxonomies below. **Only flag issues introduced or reinforced by this diff** — pre-existing problems on unmodified lines are out of scope (FP rule #8).
-4. Return findings as a JSON array of `{description, evidence, source_aspect: "quality-architecture"}`.
+4. Return findings as a JSON array of `{description, severity, evidence, source_aspect: "quality-architecture"}` (severity: Critical / Warning / Suggestion / Nit).
 
 ## Quality Taxonomy
 
 - **Unused imports / variables / parameters introduced by this diff** — only newly-added unused symbols. Existing unused symbols are not in scope. (Distinct from *unreachable executable code*, which is the bugs-security agent's job — it indicates a logic error, while unused symbols are cleanup.)
 - **Inconsistent patterns relative to neighboring code** — the diff adds code that uses a different idiom from sibling code. Examples: callbacks where neighbors use async/await, manual loops where neighbors use list comprehensions, `var` where neighbors use `const`. The finding **must cite the neighboring file/line** that establishes the local pattern.
 - **Code duplication / DRY violations** — the diff adds a block of logic that already exists nearby (same file, same module, or recently-touched file). The finding **must cite the existing implementation's location**. Trivial repetition (e.g. two short setup blocks) does not count.
-- **Poor naming** — single-letter variables outside loop counters; names that contradict observable behavior (`getUser` that mutates state, `isValid` that returns the user object). Stylistic preferences (camelCase vs snake_case) and any naming rule **stated in CLAUDE.md** are out of scope here — those belong to the claude-md agent.
+- **UI duplication** (from impeccable `extract`) — propose a shared component only for a pattern used **3+ times with the same intent**; premature abstraction is worse than duplication. Things that look alike but serve different purposes stay separate — do not flag them. Propose a token for a hard-coded value (color, spacing, type, shadow) only when it carries semantic meaning, not for every literal. If `{HAS_DESIGN_MD}` is true, do not report UI / design-system drift (off-token values, inconsistent styling) — impeccable `detect` owns it.
+- **Poor naming** — single-letter variables outside loop counters; names that contradict observable behavior (`getUser` that mutates state, `isValid` that returns the user object). Stylistic preferences (camelCase vs snake_case) and any naming rule **stated in CLAUDE.md** are out of scope here — those belong to the standards agent.
 
 ## Architecture Taxonomy
 
@@ -47,9 +49,9 @@ Be exhaustive in finding candidates. The downstream confidence scorer will filte
 - Wholesale architectural rewrites — code review is for diffs, not redesigns
 - Performance issues that aren't scalability red flags (micro-optimization is out of scope)
 - Bugs, security issues, race conditions, resource leaks, unreachable code — those are the bugs-security agent's job
-- CLAUDE.md rule violations (including any naming, structure, or style rule literally stated in CLAUDE.md) — claude-md agent's job
+- CLAUDE.md rule violations (including any naming, structure, or style rule literally stated in CLAUDE.md) — standards agent's job
 - Historical regressions and patterns called out in prior commits/PRs — git-history agent's job
-- Plan adherence, missing requirements, scope creep, schema migrations, public API breakage — plan-adherence agent's job
+- Plan adherence, missing requirements, scope creep, schema migrations, public API breakage — `/align`'s job
 - Missing tests, test coverage gaps, documentation gaps
 
 ## Output
