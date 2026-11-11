@@ -44,7 +44,9 @@ Before resolving the target file or choosing a template, decide whether to write
 
 **Distinct deliverable = its own report.** A distinct deliverable or implementation phase gets its OWN report file **even when related to a prior report** — never hand-append a feature write-up into another report's body. Create a new file, cross-reference the related report, and still run the Plan Integration (`attach-plan.sh`) step on the new file. If you hand-authored a report outside this skill, you still owe it the attach-plan step — don't skip it.
 
-For multiple reports: §0 (target file) and the template choice apply per report. Plan integration and session rename happen after all reports are written.
+For multiple reports: §0 (target file) and the template choice apply per report. Plan integration and session rename happen after all reports are written. When per-task reports are delegated to subagents, each agent invokes `/report` (and `/sync-report`) through the Skill tool — a brief that paraphrases the steps drops some (seen: `attach-plan.sh` skipped in all 8).
+
+**Screenshots belong in the report.** Verification screenshots (browser checks, headless shots) are copied into `docs/reports/<report>-artifacts/screenshots/` and referenced under `## 畫面` at the end of `# Verification` — not left in the scratchpad, which is wiped on restart. `/sync-report` uploads them to the Notion task.
 
 ## 0. Resolve Target File (lifecycle-aware)
 
