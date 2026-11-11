@@ -109,7 +109,7 @@ If `/code-review` ran (or the conversation surfaced issues another way), record 
 
 - `- [severity] file:line — short description (deferred because: reason)`
 
-To-do items (unfinished / untested / open questions) live in the repo's `TODO.md`, written by `/align end` — don't copy them here. If `TODO.md` has open items, `# Unsolved Issues` keeps one line: `- N open items in [TODO.md](../../TODO.md)`.
+To-do items (unfinished / untested / open questions) live in the repo's `TODO.md`, written by `/align end` — don't copy them here. If `TODO.md` has open items, `# Unsolved Issues` keeps one line: `- N open items in [TODO.md](../../TODO.md)`. Every `# Unsolved Issues` bullet that is not already in `TODO.md` gets appended there too, using the format and sections in align §4.
 
 Sources for both buckets:
 1. `REVIEW.md` (or `REVIEW-<id8>.md`) at repo root — `/quick-review` or `/code-review` output with severity-tiered findings.

@@ -63,7 +63,8 @@ Create at repo root if missing:
 # Questions and Resources
 ```
 
-- One item per line: `- [ ] <item>（來源：<stage/file>，<YYYY-MM-DD>）`. Delete items when done — no ✓ history.
+- One item per line: `- [ ] <item>（來源：<stage/file>，<YYYY-MM-DD>）`. If the item has a Notion task, the source is the task link. Delete items when done — no ✓ history.
+- Several sessions write `TODO.md` at the same time, so use additive `Edit` only, and re-read the file right before each write.
 - Group items by the kind of next step, not by feature. Unsolve Issues = needs a code change. Chores = merge, deploy, cleanup, credentials, test data. Documentation = docs, Notion tickets, meeting pages. Manual Test = already built or deployed, and someone needs to click through and confirm. Questions and Resources = decisions the client or PM must make, or materials we need from them.
 - If one item has two kinds of next step, split it into two lines. Add `##` feature subheadings only when a section gets long.
 - If TODO.md already exists, keep its structure and language: put items in its closest-matching section, add a missing section only when nothing fits, and write items in its language.
