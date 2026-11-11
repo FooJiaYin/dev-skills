@@ -83,6 +83,8 @@ If the Notion task body has **no `# Context` heading** (older task, or one creat
 _(This Notion task has no managed `# Context` section. Add working notes below under your own headings.)_
 ```
 
+Exception: a task created by hand with `notion-create-pages` whose body *starts* with the meeting excerpt (e.g. a `來源：<mention>` line) lost its `# Context` H1 at create time (Notion strips a leading H1). Put that content under a local `# Context` instead of the placeholder, and tell the user to prepend the heading in Notion (`insert_content` at start) so `/sync-report` can match it. Creators avoid this with a leading blank line, as `/create-tasks` does.
+
 **File exists (refresh mode)** → in-place edit:
 - Replace **only the `# Context` block** (from the `# Context` heading up to but not including the next `# `-level heading, or EOF) with the fresh content from Notion.
 - Update `notion.last_synced` in frontmatter.
