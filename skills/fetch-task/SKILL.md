@@ -107,7 +107,7 @@ If the task's current Status is `Completed 🙌` or `Paused`, fire `AskUserQuest
 
 ### 4. Summary
 
-Print one line per URL processed: `<path> · <action: created|refreshed|archived>`.
+Print one line per URL processed: `<path> · <action: created|refreshed|archived>`. Also list the repo `TODO.md` items related to this task, either ones linking to it or ones on the same topic. If a related item has no link yet, add this task's link to it.
 
 ## Hard constraints
 

@@ -168,6 +168,7 @@ Use the following section structure. Section names are fixed; **drop a section e
    - 唯一可不補的是純閒聊（見 §5「預設全部寫進去」規則）。
 
 2. **TODO掃描**：每一個待辦事項都要對應到 Action Items。
+3. **對照 repo 的 TODO.md**：會議裡已經回答、已經驗證、已經不用做的項目，照全域「TODO.md 跟著進度更新」的規則刪掉或改寫。答案帶出新工作就新增一條。收尾時列出改了哪幾條。
 
 ## 6. Offer Notion upload (optional)
 

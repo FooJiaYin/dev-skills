@@ -24,7 +24,7 @@ If several candidates fit, pick by the task / topic of this session; ask only wh
 
 ## 2. `start`
 
-1. **Baseline = the furthest stage that exists.** Extract its items: each concrete requirement, including UI placement, appearance and wording ("put it next to X", "like the tax field") — those get lost first.
+1. **Baseline = the furthest stage that exists.** Extract its items: each concrete requirement, including UI placement, appearance and wording ("put it next to X", "like the tax field") — those get lost first. Also grep the repo `TODO.md` for items related to this task and offer them as baseline items; when one is finished, its TODO line is deleted.
 2. Compare against **one stage back** (plan ↔ task, task ↔ meeting notes, notes ↔ transcript). Go to the transcript only when an item is ambiguous or the notes look compressed.
 3. Every item present upstream but missing or weakened downstream → `AskUserQuestion` (batch up to 4 items per call), options: **Add to baseline** / **Covered by another task** (user names it) / **Move to TODO.md**. Nothing drops silently.
 4. Write `## Baseline` at the end of the plan (or the task file when there is no plan; never inside the task's managed `# Context`):

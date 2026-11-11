@@ -96,6 +96,7 @@ Remember:
 - Never run a deploy command without explicit user confirmation in the same turn.
 - Never re-deploy if Branch B detected an earlier deploy in this session — confirm only.
 - Skip cleanly when CI/CD is detected — don't manufacture a manual deploy.
+- After a merge or deploy finishes (whichever branch it came from), update `TODO.md`. Delete Chores items that were waiting on this merge or deploy. For Manual Test items that were waiting on this deploy, rewrite them with the revision and note they can be verified now.
 - **Schema ships before code.** If the repo has a migrations dir, diff it against the target DB's applied-migrations table *before* deploying and apply what's pending. A stale schema fails at runtime, not at deploy time — the deploy "succeeds" and pages 500 days later.
 
 ### Branch A — CI/CD handles deploy → skip

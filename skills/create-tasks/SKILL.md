@@ -343,7 +343,7 @@ Order matters:
 
 5. **Refresh the local file.** Meeting / treat-as-meeting only. **Local-file input → additive edits to the user's file**: append ` <mention-page url="<task-url>"/>` inside each annotated commitment (pipe-table cell: `| <text> <mention-page …/> |`), bump `last_synced`; never overwrite it with the Notion body. **Notion-URL input (mirror written in §3)** → `notion-fetch` the meeting page again and overwrite the mirror with the post-execution body + refresh `last_synced`. **Skip** for Standalone and custom-parent variants.
 
-6. **Write leftovers to `TODO.md`.** After execution, every commitment that was marked `TODO`, not approved, or not executed (e.g. a half-approved batch, a failed create) is appended to the repo's `TODO.md` (create at repo root if missing; `- [ ] <commitment>（來源：<meeting>，<date>）` under `## 未完成／未驗`). Nothing from the plan may disappear because the batch was only partly approved.
+6. **Write leftovers to `TODO.md`.** After execution, every commitment that was marked `TODO`, not approved, or not executed (e.g. a half-approved batch, a failed create) is appended to the repo's `TODO.md` (create at repo root if missing; `- [ ] <commitment>（來源：<meeting>，<date>）` in the matching section, see align §4). Nothing from the plan may disappear because the batch was only partly approved. Also check the existing `TODO.md`: if the meeting answered a Questions item, or settled or dropped some other item, delete or rewrite it. If an item now has a task, add the task link to it, and delete it only once the task is done.
 
 ### 10. Post-create checkout picker
 
