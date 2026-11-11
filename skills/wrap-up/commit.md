@@ -65,7 +65,7 @@ When the work spans multiple sessions, list each pair comma-separated: `Session:
 
 ## Push (with non-ff fallback)
 
-- If `git log @{u}..HEAD` includes commits this session didn't make (another session's unpushed work), ask before pushing — a push publishes theirs too. Overrides Quick mode's "always push".
+- If `git log @{u}..HEAD` includes commits this session didn't make (another session's unpushed work), ask before pushing — a push publishes theirs too. Overrides Quick mode's "always push". For a PR branch, offer first: rebase only this session's commits onto `origin/<base>` (`git rebase --onto origin/<base> <last foreign commit>`), so the PR doesn't carry their work.
 - `git push` (auto `-u origin HEAD` if no upstream).
 - On non-ff rejection: `git switch -c wip/<YYYYMMDD-HHMM>-<original-branch>` → `git push -u origin HEAD` → tell user 人話: 「原 branch 跟 remote 分岔，存到 `wip/...`，請聯絡 reviewer」.
 - **Never** `--force` / `--force-with-lease`.

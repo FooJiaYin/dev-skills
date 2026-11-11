@@ -228,12 +228,18 @@ merge 前 ─► （沒有）                             merge 前 ─► code-
   - code-review 無法對 live 來源確認的 DB schema finding 由「上限 25」改為直接丟掉。
   - code-review 的 context agent 會掃 diff 片段來分類。
   - Baseline 用 B1/B2 編號，並有 `### Excluded` 小節。
+- **PR 收尾** _(2026-11-11)_：
+  - PR #2 一開始帶進 4 個其他 session 未推的 design commit（分支從本地 main 切出）→ 用 `git rebase --onto origin/main 279c746` 只留本 session 的 2 個 commit，`--force-with-lease` 推回；README 安裝清單衝突只加 `align`、`quick-review`。
+  - design 經 PR #1 先合進 main → PR #2 衝突；把 `origin/main` merge 進 `review-align`（不再 force-push）：安裝清單同時保留 `design`、`align`、`quick-review`；`design/SKILL.md` 的邊界句改指 wrap-up 的 `/quick-review`。PR #2 已合併（`7900b5c`），worktree 與 `review-align` 分支（本地＋遠端）已刪。
+  - 安裝：plugin cache 還是 11/3 的 0.1.0（沒有 quick-review、align），自動同步 hook 只鏡像主 checkout 的編輯 → 版本升到 0.2.0，讓 `/plugin update` 抓得到。
+  - `/sync-org-forks` 已檢查（unilife 落後 106、dropout 落後 89），使用者選擇先不同步。
+  - /improve：`wrap-up/commit.md` 既有「推送前若含他人 commit 要先問」那條，加上優先選項「把本 session 的 commit rebase 到 `origin/<base>`」。
 
 # Result
 
 - 每次 wrap-up 都會跑的 `quick-review`：一次 codex review＋一次 resume，跨模型、帶安全清單、不錨定；在測試 repo 抓到兩個植入問題，也在本分支自審抓到 18 個真實 bug。
 - `code-review` 改成 merge 前用、依 diff 派 agent；`/align` 把 transcript → meeting notes → task → plan 的需求鏈接到 TODO.md。
-- 全部在分支 `review-align`（worktree `/Users/unilife/agent-skills/dev-skills-review-align`），尚未 commit、未合併；合併時 `README.md` 會與 main 上其他 session 未 commit 的改動衝突。
+- 經 PR #2 合併進 main（`7900b5c`），plugin 版本升到 0.2.0；org forks 尚未同步。
 - 對其他程式的影響：REVIEW.md 格式改變（無 `Confidence:`、新增 `session:`／`engine`／`status: incomplete`）；wrap-up Quick 現在會跑 review。
 
 # Unsolved Issues
