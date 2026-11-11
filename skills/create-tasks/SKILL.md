@@ -291,6 +291,8 @@ Order matters:
    ```
    The literal first character of the `content` string must be `\n`. A single leading newline (which renders as an empty paragraph in the block tree) is enough to protect the H1 — verified empirically. No fixup call is needed afterward.
 
+   **Notion markup when writing** (this skill's `<mention-page …/>` is shorthand): a page link is `<mention url="<page-url>"/>` — `<mention-page>` is stored as literal text. Chat / LINE excerpts go inside a code block, or lines like `-----` and `1.` become dividers and lists.
+
    **Opt-in transcript enrichment**: when the user explicitly asks to include a transcript / chat-export sidecar (do not auto-detect), append after the `### 會議記錄` block:
    ```markdown
    ### <Transcript label> <date range>
