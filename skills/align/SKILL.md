@@ -56,13 +56,14 @@ If several candidates fit, pick by the task / topic of this session; ask only wh
 Create at repo root if missing:
 
 ```markdown
-# TODO
-
-## 未完成／未驗
-## 待客戶確認
-## 需要人手操作
+# Unsolve Issues
+# Chores
+# Documentation
+# Manual Test
+# Questions and Resources
 ```
 
 - One item per line: `- [ ] <item>（來源：<stage/file>，<YYYY-MM-DD>）`. Delete items when done — no ✓ history.
-- Route: unfinished / untested / review defers → 未完成／未驗; questions only the client/team can answer → 待客戶確認; deploys, credentials, uploads, manual tests → 需要人手操作.
+- Group items by the kind of next step, not by feature. Unsolve Issues = needs a code change. Chores = merge, deploy, cleanup, credentials, test data. Documentation = docs, Notion tickets, meeting pages. Manual Test = already built or deployed, and someone needs to click through and confirm. Questions and Resources = decisions the client or PM must make, or materials we need from them.
+- If one item has two kinds of next step, split it into two lines. Add `##` feature subheadings only when a section gets long.
 - If TODO.md already exists, keep its structure and language: put items in its closest-matching section, add a missing section only when nothing fits, and write items in its language.
