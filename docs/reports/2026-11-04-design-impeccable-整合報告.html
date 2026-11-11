@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>design 演進報告</title>
+<link rel="icon" type="image/svg+xml" href="../site/favicon.svg">
+<!-- The site's real stylesheet: palette tokens, Latte light theme, document-view page. -->
+<link rel="stylesheet" href="../site/styles.css">
+<style>
+/* Report-only additions, built from the site's tokens (docs/site/DESIGN.md). */
+body.document-view{font-size:15px;line-height:1.75}
+.wrap{display:grid;grid-template-columns:232px minmax(0,1fr);gap:clamp(28px,4vw,56px);max-width:1280px;margin:0 auto;padding:40px clamp(16px,4vw,48px) 96px}
+aside{position:sticky;top:24px;align-self:start;background:var(--panel);border-radius:11px;padding:12px 8px;font:12.5px/1.8 ui-monospace,SFMono-Regular,Menlo,monospace}
+aside b{display:block;padding:0 10px 6px;color:var(--muted);font-size:11px;font-weight:500;letter-spacing:.05em}
+aside a{display:block;padding:3px 10px;border-radius:5px;color:var(--muted);text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+aside a::before{content:"# ";color:var(--muted)}
+aside a:hover{background:var(--panel-3);color:var(--text)}
+main.report{min-width:0}
+main.report .section-kicker{font-size:11px;letter-spacing:.04em}
+main.report header h1{font-size:clamp(30px,4.4vw,52px);font-weight:750;line-height:1.08;letter-spacing:-.045em;margin:0 0 16px}
+main.report header p{color:var(--muted);margin:0 0 4px}
+main.report h2{font-size:24px;font-weight:700;letter-spacing:-.02em;margin:80px 0 10px;scroll-margin-top:20px}
+main.report h2 .no{color:var(--accent);font:600 12px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em;margin-right:12px;vertical-align:4px}
+main.report > h3{font-size:16px;margin:32px 0 8px}
+main.report p,main.report li{max-width:72ch}
+.lead{color:var(--muted);margin:0 0 20px}
+q{quotes:"「" "」"}
+main.report code{font:12.5px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--text);background:var(--panel-2);padding:1px 5px;border-radius:4px;word-break:break-word}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.skill{color:var(--accent);font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+body.light .skill{color:var(--orange)}
+.tbl{overflow-x:auto;margin:14px 0;padding:4px;border-radius:11px;background:var(--panel-2)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:top;max-width:52ch}
+th{background:var(--panel-3);color:var(--muted);font:500 11px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.04em;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td.q{color:var(--muted)}
+.ok{color:var(--mint);font-weight:600}.bad{color:var(--danger);font-weight:600}.warn{color:var(--yellow);font-weight:600}
+body.light .warn{color:#a1650c}
+.callout{background:var(--mint-soft);color:var(--text);border-radius:12px;padding:14px 18px;margin:18px 0;font-size:14px}
+.callout b{color:var(--mint)}
+main.report footer{margin-top:72px;color:var(--muted);font:12px ui-monospace,SFMono-Regular,Menlo,monospace}
+.fig{background:var(--panel);border-radius:16px;padding:24px;margin:18px 0}
+.cap{font:500 11px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--muted);margin-bottom:14px;letter-spacing:.04em}
+
+/* before / after */
+.ba{display:grid;grid-template-columns:1fr 40px 1.35fr;gap:16px;align-items:center}
+.ba .arrow{color:var(--accent);font-size:22px;text-align:center}
+.side h3{margin:0 0 12px;font:600 12px ui-monospace,SFMono-Regular,Menlo,monospace}
+.side.before h3{color:var(--danger)}.side.after h3{color:var(--mint)}
+.line{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.line .sep{color:var(--muted);font-size:12px}
+.sq{display:inline-grid;place-items:center;min-width:34px;height:34px;padding:0 6px;border-radius:8px;background:var(--panel-3);font:600 12px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--text)}
+.sq.hi{background:var(--accent-soft);color:var(--accent)}
+.sq.mint{background:var(--mint-soft);color:var(--mint)}
+.sq.blue{background:var(--blue-soft);color:var(--blue)}
+.sq.dim{opacity:.45}
+.note{font-size:13px;color:var(--muted);margin-top:10px}
+.lanes{display:grid;gap:10px}
+.lane{display:grid;grid-template-columns:92px 1fr;gap:10px;align-items:center;background:var(--panel-2);border-radius:11px;padding:10px 12px}
+.lane b{font:600 12px ui-monospace,SFMono-Regular,Menlo,monospace}
+.lane span{font-size:13px;color:var(--muted)}
+
+/* progress */
+.steps{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:6px;margin:20px 0 6px}
+.step{position:relative;padding-top:22px;font-size:12px;line-height:1.45;color:var(--muted)}
+.step::before{content:"";position:absolute;top:0;left:0;width:14px;height:14px;border-radius:50%;background:var(--panel-3)}
+.step::after{content:"";position:absolute;top:6px;left:18px;right:-2px;height:2px;background:var(--panel-3)}
+.step:last-child::after{display:none}
+.step.done{color:var(--text)}.step.done::before{background:var(--mint)}.step.done::after{background:var(--mint-border)}
+.step b{display:block;font:600 11px ui-monospace,SFMono-Regular,Menlo,monospace}
+
+/* timeline */
+.tl{position:relative;display:grid;gap:14px;padding-left:28px;background:linear-gradient(var(--border),var(--border)) 8px 0/2px 100% no-repeat}
+.ev{position:relative;display:grid;grid-template-columns:150px 1fr;gap:18px;background:var(--panel);border-radius:16px;padding:18px 20px}
+.ev::before{content:"";position:absolute;left:-26px;top:24px;width:14px;height:14px;border-radius:50%;background:var(--accent)}
+.ev.par::before{background:var(--blue)}
+.ev .when b{display:block;font:700 18px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--accent)}
+.ev.par .when b{color:var(--blue)}
+.ev .when span{display:block;font:12px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--muted)}
+.ev h3{margin:0 0 8px;font-size:15px}
+.chain{display:grid;grid-template-columns:1fr 22px 1fr 22px 1fr;gap:8px;align-items:stretch}
+.chain > i{display:grid;place-items:center;color:var(--accent);font-style:normal}
+.cell{background:var(--panel-2);border-radius:11px;padding:10px 12px;font-size:13px;line-height:1.6}
+.cell em{display:block;font:normal 600 11px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.05em;color:var(--muted);margin-bottom:4px}
+.cell.keep{background:var(--mint-soft)}.cell.keep em{color:var(--mint)}
+.cell.q{color:var(--muted)}
+
+/* usage bars */
+.bars{display:grid;gap:9px}
+.bar{display:grid;grid-template-columns:150px 1fr 150px;gap:12px;align-items:center;font-size:13px}
+.bar .lbl{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.bar .track{height:22px;background:var(--panel-2);border-radius:6px;overflow:hidden}
+.bar .fill{height:100%;border-radius:6px;display:flex;align-items:center;padding-left:8px;font:600 11px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--on-color)}
+.fill.call{background:var(--mint)}.fill.absorb{background:var(--yellow)}.fill.no{background:var(--danger);color:var(--on-accent)}
+.bar .dec{font-size:12px}
+.legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:14px;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+
+/* split diagram */
+.split{display:grid;grid-template-columns:1fr 120px 1fr;gap:14px;align-items:stretch}
+.col{background:var(--panel-2);border-radius:11px;padding:14px}
+.col h3{margin:0 0 10px;font:600 13px ui-monospace,SFMono-Regular,Menlo,monospace}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:12px ui-monospace,SFMono-Regular,Menlo,monospace;padding:4px 8px;border-radius:6px;background:var(--panel-3)}
+.chip.a{background:var(--accent-soft);color:var(--accent)}
+.chip.m{background:var(--mint-soft);color:var(--mint)}
+.chip.x{text-decoration:line-through;color:var(--muted)}
+.mid{display:grid;align-content:center;gap:8px;text-align:center;font-size:12px;color:var(--muted)}
+.mid b{color:var(--accent);font:600 12px ui-monospace,SFMono-Regular,Menlo,monospace}
+
+/* mode tree */
+.tree{display:grid;grid-template-columns:170px 1fr;gap:0 20px;align-items:center}
+.root{background:var(--accent-soft);border-radius:11px;padding:14px;text-align:center}
+.root b{display:block;color:var(--accent);font:700 14px ui-monospace,SFMono-Regular,Menlo,monospace}
+.root span{font-size:12px;color:var(--muted)}
+.branches{display:grid;gap:12px;position:relative;padding-left:22px;background:linear-gradient(var(--accent-border),var(--accent-border)) 0 18px/2px calc(100% - 36px) no-repeat}
+.br{position:relative;background:var(--panel-2);border-radius:11px;padding:12px 14px}
+.br::before{content:"";position:absolute;left:-22px;top:22px;width:22px;height:2px;background:var(--accent-border)}
+.br .when{font-size:12.5px;color:var(--muted);margin-bottom:8px}
+.br .when b{color:var(--text);font-size:14px;margin-right:8px}
+
+/* review stack */
+.stack{display:grid;gap:8px}
+.layer{display:grid;grid-template-columns:130px 1fr 190px 150px;gap:12px;align-items:center;border-radius:11px;padding:12px 14px;background:var(--panel-2);font-size:13px}
+.layer .k{font:600 12px ui-monospace,SFMono-Regular,Menlo,monospace}
+.layer.l1{background:var(--accent-soft)}.layer.l1 .k{color:var(--accent)}
+.layer.l2{background:var(--mint-soft)}.layer.l2 .k{color:var(--mint)}
+.layer.l3{background:var(--blue-soft)}.layer.l3 .k{color:var(--blue)}
+.layer .who{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+.layer .t{color:var(--muted);font-size:12px}
+.order{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:16px;font-size:13px}
+.order .sq{height:30px}
+
+/* row mapping */
+.map{display:grid;gap:8px}
+.mrow{display:grid;grid-template-columns:130px 26px 1fr;gap:10px;align-items:center}
+.mrow .from{background:var(--panel-3);border-radius:8px;padding:6px 10px;font:12px ui-monospace,SFMono-Regular,Menlo,monospace}
+.mrow i{color:var(--muted);font-style:normal;text-align:center}
+.mrow .to{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12.5px;color:var(--muted)}
+
+/* skill map */
+.smap{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+.sstep{background:var(--panel-2);border-radius:11px;padding:12px 10px;min-height:150px;font-size:12px;line-height:1.55;color:var(--muted)}
+.sstep b{display:block;font:700 16px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--text);margin-bottom:6px}
+.sstep.ch{background:var(--accent-soft)}.sstep.ch b{color:var(--accent)}
+.plus{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px}
+.plus .sstep{min-height:0}
+
+/* git graph */
+.git{overflow-x:auto}
+.git svg{display:block;min-width:720px;width:100%;height:auto}
+.git text{font:12px ui-monospace,SFMono-Regular,Menlo,monospace;fill:var(--muted)}
+.git .h{fill:var(--text);font-weight:600}
+
+/* handoff */
+.hand{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hcard{background:var(--panel-2);border-radius:11px;padding:12px 14px;font-size:13px}
+.hcard .tag{font:600 11px ui-monospace,SFMono-Regular,Menlo,monospace;margin-bottom:6px;display:block}
+
+@media (max-width:1100px){.layer{grid-template-columns:110px 1fr}.layer .who,.layer .t{grid-column:2}.smap{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:900px){
+  .wrap{grid-template-columns:minmax(0,1fr);gap:0;padding:28px 16px 72px}aside{position:static;margin-bottom:28px}
+  .ba,.split,.tree{grid-template-columns:1fr}.ba .arrow{transform:rotate(90deg)}
+  .ev{grid-template-columns:1fr;gap:8px}.chain{grid-template-columns:1fr}.chain > i{transform:rotate(90deg)}
+  .bar{grid-template-columns:100px 1fr}.bar .dec{grid-column:2}
+  .steps{grid-template-columns:repeat(3,minmax(0,1fr));row-gap:14px}
+  .smap{grid-template-columns:repeat(2,minmax(0,1fr))}.plus{grid-template-columns:1fr}
+  .hand{grid-template-columns:1fr}.fig{padding:16px}
+  .branches{padding-left:16px}.br::before{left:-16px;width:16px}
+}
+</style>
+</head>
+<body class="document-view">
+<header class="document-view__header">
+  <a href="../site/index.html">foojiayin / dev-skills · docs/reports</a>
+  <button class="theme-toggle" type="button" aria-label="切換至 Catppuccin Latte" title="切換至 Catppuccin Latte">◐</button>
+</header>
+<div class="wrap">
+<aside>
+  <b>EXPLORER · 本報告</b>
+  <a href="#sum">摘要</a>
+  <a href="#evo">0 演進</a>
+  <a href="#rule">1 分工原則</a>
+  <a href="#mode">2 三種模式</a>
+  <a href="#review">3 Review 分層</a>
+  <a href="#cmd">4 指令對照</a>
+  <a href="#change">5 改動清單</a>
+  <a href="#verify">6 驗證結果</a>
+  <a href="#commit">7 Commit</a>
+  <a href="#todo">8 待辦與衝突</a>
+  <a href="#src">資料來源</a>
+</aside>
+
+<main class="report">
+<header>
+  <p class="section-kicker">REPORT · DESIGN SKILL</p>
+  <h1>design skill 演進與 impeccable 整合</h1>
+  <p>2026-11-04 · 涵蓋 10/14 → 11/04 共 8 個 session 的討論與實作</p>
+  <p>目前版本：commit <code>279c746</code>（PR #1 <code>feat/design-style-vocabulary</code>，尚未 merge）</p>
+</header>
+
+<!-- SUMMARY -->
+<h2 id="sum">摘要</h2>
+<div class="fig">
+  <div class="ba">
+    <div class="side before">
+      <h3>現在 ❌ 一種流程</h3>
+      <div class="line"><span class="sq">①</span><span class="sep">→</span><span class="sq">②</span><span class="sep">→</span><span class="sq">③</span><span class="sep">→</span><span class="sq">④</span><span class="sep">→</span><span class="sq">⑤</span><span class="sep">→</span><span class="sq">⑥</span><span class="sep">→</span><span class="sq">⑦</span></div>
+      <p class="note">每次都從整頁方向開始；但多數 session 風格已定，來回都在單一區塊與統一元件。impeccable 只有 hook 在跑，live 要 server、慢。</p>
+    </div>
+    <div class="arrow">→</div>
+    <div class="side after">
+      <h3>改後 ✓ ① 判斷三種模式</h3>
+      <div class="lanes">
+        <div class="lane"><b>方向</b><span><span class="line"><span class="sq hi">②</span><span class="sq hi">③</span><span class="sq hi">④</span><span class="sq hi">⑤</span><span class="sq hi">⑥</span><span class="sep">→</span><span class="sq mint">⑦</span></span></span></div>
+        <div class="lane"><b>區塊</b><span><span class="line"><span class="sq blue">A–D 靜態並排</span><span class="sep">→</span><span class="sq">選</span><span class="sep">→</span><span class="sq mint">⑦</span></span></span></div>
+        <div class="lane"><b>統一</b><span><span class="line"><span class="sq mint">extract</span><span class="sep">→</span><span class="sq mint">document</span></span></span></div>
+      </div>
+      <p class="note"><span class="sq mint" style="height:20px;min-width:20px"></span> = 交給 impeccable 指令直接改 code</p>
+    </div>
+  </div>
+</div>
+<div class="steps">
+  <div class="step done"><b>10/14</b>explore 誕生</div>
+  <div class="step done"><b>10/23</b>survey＋session 分析</div>
+  <div class="step done"><b>10/29</b>改名 design</div>
+  <div class="step done"><b>11/03</b>風格詞彙校準</div>
+  <div class="step done"><b>11/03</b>impeccable 規劃</div>
+  <div class="step done"><b>11/04</b>實作＋推 PR #1</div>
+  <div class="step"><b>☐</b>PR #1 merge</div>
+  <div class="step"><b>☐</b>sync-org-forks</div>
+  <div class="step"><b>☐</b>對齊 brief.md</div>
+</div>
+
+<!-- 0 EVOLUTION -->
+<h2 id="evo"><span class="no">0</span>演進：每一版為什麼改</h2>
+<p class="lead">每一輪都是上一輪在真實專案卡住後修的。每張卡：卡住的地方 → 改了什麼 → <span class="ok">留到今天的規則</span>。</p>
+<div class="tl">
+  <div class="ev">
+    <div class="when"><b>10/14</b><span>8c2d213b</span><span>官網原型 V1–V7</span></div>
+    <div><h3>3 版只換風格，排版一樣</h3>
+      <div class="chain">
+        <div class="cell q"><em>卡住</em><q>你打算每個版本排版一樣，只是風格不同嗎？</q></div><i>→</i>
+        <div class="cell"><em>改了</em>新增 <span class="skill">/explore</span>（13 行）：先定差異軸、每版截圖、同一預覽連結</div><i>→</i>
+        <div class="cell keep"><em>留到今天</em>沒選的進 <code>_archive/</code> 不刪；合併成新版本</div>
+      </div></div>
+  </div>
+  <div class="ev">
+    <div class="when"><b>10/23</b><span>4375beb0</span><span>survey 30 個來源</span></div>
+    <div><h3>「第一版最好、後面越來越平庸」</h3>
+      <div class="chain">
+        <div class="cell q"><em>發現</em>沒有來源直接處理「後面變差」；獨立 context 生成反而更相似（Troshin 2025）。共同指向：方向事先寫死、同一品質門檻、去掉排序偏好</div><i>→</i>
+        <div class="cell"><em>改了</em>explore 六步草案；借 Dow 2010 平行原型、Tohidi 2006 並排、Jansson 1991 fixation、gstack 換標題測試</div><i>→</i>
+        <div class="cell keep"><em>留到今天</em>方向開工前定死；各版互不看；隨機順序；fresh reviewer；換標題測試</div>
+      </div></div>
+  </div>
+  <div class="ev">
+    <div class="when"><b>10/23</b><span>4375beb0</span><span>回看 7 個 session</span></div>
+    <div><h3>留下的都錨定真實素材</h3>
+      <div class="chain">
+        <div class="cell q"><em>發現</em>留下：V1、V6 合併版、V7 照報名表、B 照現有程式碼；砍掉：V3 月台、V5 商店街（自創主題）。<q>UI 有點醜</q> 頭號原因是字型沒載入</div><i>→</i>
+        <div class="cell"><em>改了</em>每版錨定真實素材、開工前收齊、放現況還原、先查 bug</div><i>→</i>
+        <div class="cell keep"><em>留到今天</em>① 收齊素材存進專案；只說醜先查 bug；展示頁放現況還原</div>
+      </div></div>
+  </div>
+  <div class="ev">
+    <div class="when"><b>10/29</b><span>改名 design</span><span>Codex 首次試用</span></div>
+    <div><h3>聰頭AI 提案卡在 5 個地方</h3>
+      <div class="chain">
+        <div class="cell q"><em>卡住</em>CSS 線框 → <q>超爛</q>；AI 想不出風格名，使用者自己說 dark glassmorphism、自己找圖；玻璃與極簡同版面換色；文藝命名</div><i>→</i>
+        <div class="cell"><em>改了</em>explore → design 六步；<code>review-checklist.md</code> 五關＋差異度；品味檔</div><i>→</i>
+        <div class="cell keep"><em>留到今天</em><q>給圖是因為 AI 做不好；以後 AI 自己找</q></div>
+      </div></div>
+  </div>
+  <div class="ev">
+    <div class="when"><b>10/30</b><span>8b6cac38</span><span>256df2a</span></div>
+    <div><h3>簡報、explore 不要預設 Artifact</h3>
+      <div class="chain">
+        <div class="cell q"><em>起因</em><q>為什麼要做簡報或是explore的時候你都會用artifact</q></div><i>→</i>
+        <div class="cell"><em>改了</em>預設給本機路徑；Remote Control 或使用者要求才 publish（11/04 才 commit）</div><i>→</i>
+        <div class="cell keep"><em>留到今天</em>SKILL.md 開頭段</div>
+      </div></div>
+  </div>
+  <div class="ev">
+    <div class="when"><b>11/03</b><span>4375beb0</span><span>b972dbb</span></div>
+    <div><h3>補回當初討論過、第一版刪掉的</h3>
+      <div class="chain">
+        <div class="cell q"><em>原因</em>10/29 的卡點全是 10/23 討論過但沒寫進去的：詞彙層、Style Tile、試作校準、參考庫</div><i>→</i>
+        <div class="cell"><em>改了</em>AI 從參考庫找公認風格名＋自己截圖；每版 style guide；③ 試作校準；對客頁極簡</div><i>→</i>
+        <div class="cell keep"><em>留到今天</em>步驟 ②③；<q>reference 裡只記錄 style</q></div>
+      </div></div>
+  </div>
+  <div class="ev">
+    <div class="when"><b>11/03</b><span>24de07ec</span><span>impeccable 規劃</span></div>
+    <div><h3>design 應該和 impeccable 搭配，不是取代</h3>
+      <div class="chain">
+        <div class="cell q"><em>起因</em><q>這個skill應該跟impeccable搭配，去補他不足的部分和取代他比較慢的部分，而不是完全替代他</q></div><i>→</i>
+        <div class="cell"><em>規劃</em>三模式、review 三層、指令對照表、編輯位置、刪品味檔</div><i>→</i>
+        <div class="cell keep"><em>留到今天</em>§1–§4 全部</div>
+      </div></div>
+  </div>
+  <div class="ev">
+    <div class="when"><b>11/04</b><span>ebd15042</span><span>279c746</span></div>
+    <div><h3>照計劃實作</h3>
+      <div class="chain">
+        <div class="cell q"><em>先驗</em>detect 對 <code>file://</code> 可跑、免 server；<code>bolder</code> 文件明寫只 refine 已成形的世界</div><i>→</i>
+        <div class="cell"><em>改了</em>SKILL.md、新 <code>references/impeccable.md</code>、checklist 4 列</div><i>→</i>
+        <div class="cell keep"><em>結果</em>推上 PR #1（§5–§7）</div>
+      </div></div>
+  </div>
+  <div class="ev par">
+    <div class="when"><b>平行</b><span>d9a99d25</span><span>code-review 重設計</span></div>
+    <div><h3>wrap-up 改跑 quick-review、新增 /align</h3>
+      <div class="chain">
+        <div class="cell q"><em>起因</em><span class="skill">/code-review</span> 9/24 後沒跑過，wrap-up 跳過 16–17 次；需求對齊、UI 對齊都是人看畫面才發現</div><i>→</i>
+        <div class="cell"><em>計劃</em><code>reactive-pondering-sketch.md</code>：quick-review、<span class="skill">/align</span>、<code>shared/review/commons.md</code></div><i>→</i>
+        <div class="cell keep"><em>交給本 session</em>design 側四件事，見 §8</div>
+      </div></div>
+  </div>
+</div>
+
+<!-- 1 RULES -->
+<h2 id="rule"><span class="no">1</span>分工原則</h2>
+<p class="lead">使用者定的兩條規則：① <q>如果impaccable skill更好 -> 就讓 design 直接在那個步驟呼叫他們</q>　② <q>各有優勢，design原本的做法更好 -> 把impeccable的流程或是prompt中說得更清楚的地方吸收進來</q></p>
+<div class="fig">
+  <div class="cap">過去使用次數（session log 統計）→ 決定</div>
+  <div class="bars">
+    <div class="bar"><span class="lbl">detect</span><div class="track"><div class="fill call" style="width:100%">~35</div></div><span class="dec ok">① 直接呼叫</span></div>
+    <div class="bar"><span class="lbl">live 系列</span><div class="track"><div class="fill no" style="width:71%">~25</div></div><span class="dec bad">不用（要 server）</span></div>
+    <div class="bar"><span class="lbl">context／init</span><div class="track"><div class="fill call" style="width:23%">~8</div></div><span class="dec ok">沿用</span></div>
+    <div class="bar"><span class="lbl">generate</span><div class="track"><div class="fill absorb" style="width:4%"></div></div><span class="dec warn">1 · ② 吸收</span></div>
+    <div class="bar"><span class="lbl">serve-question</span><div class="track"><div class="fill no" style="width:4%"></div></div><span class="dec bad">1 · 不用</span></div>
+    <div class="bar"><span class="lbl">bolder…等 14 個</span><div class="track"></div><span class="dec ok">0 · ① 直接呼叫</span></div>
+  </div>
+  <div class="legend"><span><i style="background:var(--mint)"></i>規則① 直接呼叫</span><span><i style="background:var(--yellow)"></i>規則② 吸收寫法</span><span><i style="background:var(--danger)"></i>不用（慢）</span></div>
+</div>
+<div class="fig">
+  <div class="cap">誰負責什麼</div>
+  <div class="split">
+    <div class="col"><h3 class="skill">design</h3><div class="chips">
+      <span class="chip a">選方向</span><span class="chip a">多版本</span><span class="chip a">靜態 HTML</span><span class="chip a">區塊 A–D 選項頁</span><span class="chip a">checklist 審查</span><span class="chip a">並排展示</span></div></div>
+    <div class="mid"><b>選定後 →</b>使用者一句話<br>對照表<br>指令</div>
+    <div class="col"><h3 class="skill">impeccable</h3><div class="chips">
+      <span class="chip m">detect</span><span class="chip m">critique</span><span class="chip m">bolder</span><span class="chip m">quieter</span><span class="chip m">distill</span><span class="chip m">layout</span><span class="chip m">typeset</span><span class="chip m">colorize</span><span class="chip m">animate</span><span class="chip m">clarify</span><span class="chip m">adapt</span><span class="chip m">optimize</span><span class="chip m">overdrive</span><span class="chip m">extract</span><span class="chip m">polish</span><span class="chip m">harden</span><span class="chip m">document</span>
+      <span class="chip x">new-work</span><span class="chip x">live</span><span class="chip x">generate</span><span class="chip x">serve-question</span></div></div>
+  </div>
+</div>
+<div class="tbl"><table>
+<tr><th>impeccable</th><th>為什麼這樣決定</th></tr>
+<tr><td><code>live</code></td><td class="q">要 dev server＋poll；使用者說過 <q>reconnect</q> <q>verify好了話就先關掉server啊，現在整台電腦很慢</q>。改成「直接改 code＋不 auto-reload 的 port」</td></tr>
+<tr><td>new-work／<code>serve-question</code></td><td>new-work 規定新視覺世界必須跑 <code>concept-seed</code> 骰子＋decision page，跳過算 contract violation → 方向階段不能交給 impeccable</td></tr>
+<tr><td><code>critique</code></td><td>806 行、強制兩個隔離 subagent，成本高 → 只跑使用者傾向的那版</td></tr>
+<tr><td>refine 指令</td><td>從沒被叫過；reference 都沒有 server 依賴（grep 確認）。價值是「先診斷再改」的紀律</td></tr>
+</table></div>
+<h3>規則② 吸收了哪些寫法</h3>
+<div class="tbl"><table>
+<tr><th>impeccable 的寫法</th><th>吸收到 design 哪裡</th></tr>
+<tr><td>critique：<q>Detector output is deterministic, but it still anchors judgment.</q></td><td>⑤ 審查者先依 checklist 判，不看 detect；判完才合併</td></tr>
+<tr><td>overdrive：先提 2–3 方向；一頁一個高峰</td><td>區塊模式的選項頁 = overdrive 的提案步驟</td></tr>
+<tr><td>generate：方向詞對照</td><td>區塊模式每個選項用 impeccable 的方向詞命名</td></tr>
+<tr><td><code>craft-floor.md</code>：品質底線與禁用清單</td><td>③ 校準要過它；④ 每個 builder 拿到路徑</td></tr>
+</table></div>
+
+<!-- 2 MODES -->
+<h2 id="mode"><span class="no">2</span>三種模式與編輯位置</h2>
+<p class="lead">使用者問：<q>像之前我們back and forth 討論各個區塊細節這些主要是 step 7嗎</q>。回看官網 V1 改版（<code>37de2c34</code>）、App 改版原型（<code>bdc9e7df</code>）、UI-Library 統一（<code>d971b2b3</code>），來回分三類，各對應一個入口：</p>
+<div class="fig">
+  <div class="tree">
+    <div class="root"><b>① 收集</b><span>讀 PRODUCT.md／DESIGN.md<br>判斷模式</span></div>
+    <div class="branches">
+      <div class="br"><div class="when"><b>方向模式</b>沒有視覺權威、要整頁新方向</div>
+        <div class="line"><span class="sq hi">② 方向頁</span><span class="sep">→</span><span class="sq hi">③ 校準</span><span class="sep">→</span><span class="sq hi">④ 平行</span><span class="sep">→</span><span class="sq hi">⑤ 審</span><span class="sep">→</span><span class="sq hi">⑥ 展示</span><span class="sep">→</span><span class="sq mint">⑦ 收斂</span></div></div>
+      <div class="br"><div class="when"><b>區塊模式</b>A 單一區塊多方案：<q>信封圖案不太好看，能多 explore 幾個方案嗎</q></div>
+        <div class="line"><span class="sq blue">3–4 案 A–D・真實 CSS</span><span class="sep">→</span><span class="sq hi">審（只看該區塊）</span><span class="sep">→</span><span class="sq">選</span><span class="sep">→</span><span class="sq">移植進 code</span><span class="sep">→</span><span class="sq mint">⑦</span></div></div>
+      <div class="br"><div class="when"><b>⑦ 調整</b>B 已選區塊：<q>radio 的顏色不是很適整體色</q> <q>layout 好像有些地方空空的</q></div>
+        <div class="line"><span class="sq mint">critique</span><span class="sep">→</span><span class="sq mint">一句話 → 指令改 code</span><span class="sep">→</span><span class="sq mint">polish</span><span class="sep">→</span><span class="sq mint">harden</span><span class="sep">→</span><span class="sq mint">document</span></div></div>
+      <div class="br"><div class="when"><b>統一模式</b>C 統一成系統：<q>所有按鈕都圓圓的</q> <q>dialog 大部分都統一成 variant=center</q></div>
+        <div class="line"><span class="sq mint">extract</span><span class="sep">→</span><span class="sq mint">document（DESIGN.md）</span></div></div>
+    </div>
+  </div>
+</div>
+<h3>在哪裡改（使用者問 <q>how do you suggest</q>）</h3>
+<div class="fig">
+  <div class="split">
+    <div class="col"><h3>要並排比較</h3><p class="note" style="margin:0">靜態 HTML 選項頁，<b>引入專案真實 CSS／tokens</b>，選定後移植進 code。<br>取代 <code>generate</code>／<code>live</code>：免 server；用真實 CSS 才不會模仿出另一套。</p></div>
+    <div class="mid"><b>還沒有 code？</b>全部留在<br><code>docs/design/</code><br>HTML</div>
+    <div class="col"><h3>不需比較</h3><p class="note" style="margin:0">impeccable 指令直接改 code；git 當 rollback；給一個不 auto-reload 的 port（先 <code>lsof</code>）。<br>來源：UI Library session 兩次 <q>給我另一個不reload的port，我自己refresh</q></p></div>
+  </div>
+</div>
+
+<!-- 3 REVIEW -->
+<h2 id="review"><span class="no">3</span>Review 分層</h2>
+<p class="lead">使用者問：<q>review checklist 要確保設計符合之前討論出的結論和要求，而 detect 負責 general 的設計水準，我說得對嗎？</q>——大致對，但原 checklist 混了專案專屬與通用；detect 只涵蓋通用中「機械」那層，判斷層屬於 critique。</p>
+<div class="fig">
+  <div class="cap">三層＋程式碼（由上往下執行）</div>
+  <div class="stack">
+    <div class="layer l1"><span class="k">專案專屬</span><span>流程、品牌、高峰時刻、版本差異度</span><span class="who">review-checklist.md</span><span class="t">每版・先判</span></div>
+    <div class="layer l2"><span class="k">通用・機械</span><span>對比、禁用 pattern、間距字級</span><span class="who">detect 桌機＋390px</span><span class="t">每版・判完才看</span></div>
+    <div class="layer l3"><span class="k">通用・判斷</span><span>Nielsen、層級、認知負荷</span><span class="who">critique</span><span class="t">⑦ 只跑傾向的那版</span></div>
+    <div class="layer"><span class="k">程式碼</span><span>diff 的 bug、架構</span><span class="who">/code-review</span><span class="t">wrap-up</span></div>
+  </div>
+  <div class="order"><span class="mono" style="color:var(--muted)">⑤ 順序</span><span class="sq hi">flow</span><span class="sep">→</span><span class="sq hi">brand</span><span class="sep">→</span><span class="sq hi">peak moment</span><span class="sep">→</span><span class="sq hi">distinctness</span><span class="sep">→</span><span class="sq mint">detect</span><span class="sep">→</span><span class="sq">合併、修 fail</span></div>
+</div>
+<div class="fig">
+  <div class="cap">10/29 checklist 六列 → 11/04 去哪了</div>
+  <div class="map">
+    <div class="mrow"><span class="from">Flow</span><i>→</i><span class="to"><span class="chip a">保留</span>專案專屬，detect／critique 不知道會議講了什麼</span></div>
+    <div class="mrow"><span class="from">Usability</span><i>→</i><span class="to"><span class="chip m">critique</span>有 0–4 逐條評分＋兩個隔離審查者，比一行深</span></div>
+    <div class="mrow"><span class="from">Accessibility</span><i>→</i><span class="to"><span class="chip m">detect</span>機械可量，每版桌機＋390px</span></div>
+    <div class="mrow"><span class="from">Brand</span><i>→</i><span class="to"><span class="chip a">保留</span>品牌規則只在 brief.md</span></div>
+    <div class="mrow"><span class="from">Visual</span><i>→</i><span class="to"><span class="chip m">detect／critique</span>＋<span class="chip a">Peak moment</span>獨立一列（每版自己命名）</span></div>
+    <div class="mrow"><span class="from">Distinctness</span><i>→</i><span class="to"><span class="chip a">保留</span>多版本專屬，impeccable 沒有</span></div>
+  </div>
+</div>
+<p><b>接受的取捨：</b>使用者第一眼看到的版本沒經過 critique——第一眼判的是方向不是細節，替會被丟掉的版本跑 806 行的 critique 不值得（10/23 分析：<q>design checker 的警告先記下，等選定版本再修</q>）。</p>
+<h3>與 code-review 的重疊（使用者問 <q>review 的部分是否會跟 code-review skill 起衝突</q>）</h3>
+<div class="tbl"><table>
+<tr><th>重疊</th><th>design 側</th><th>code-review 側</th><th>處理</th></tr>
+<tr><td>UI 元件重複</td><td><code>extract</code></td><td>quality-architecture</td><td>d9a99d25 計劃：套 extract 準則（同意圖 3+ 次才合併）；有 DESIGN.md 時 UI drift 不報</td></tr>
+<tr><td>需求對齊</td><td>⑤ Flow 列（brief.md）</td><td>plan-adherence → 新 <span class="skill">/align</span></td><td>兩者都留；需求來源格式待對齊（§8）</td></tr>
+<tr><td>效能</td><td><code>optimize</code>（渲染、動畫）</td><td>performance（資料、後端）</td><td>範圍不同，不衝突</td></tr>
+</table></div>
+
+<!-- 4 COMMANDS -->
+<h2 id="cmd"><span class="no">4</span>impeccable 指令對照</h2>
+<p class="lead">第一版對照被糾正：<q>錯了，你先讀這些command怎麼用，再對應類似的案例</q>。讀完 overdrive、adapt、extract 全文與其他 refine 指令開頭後重做：</p>
+<div class="tbl"><table>
+<tr><th>使用者說</th><th>指令</th><th>關鍵規則</th></tr>
+<tr><td class="q"><q>信封太 flat…參考radio</q> <q>選擇器還是很醜，參考今日路線的寫法</q></td><td><span class="skill">bolder</span></td><td>只用系統已有招式、只動目標；方向未定時說「bolder」= 重抽方向</td></tr>
+<tr><td class="q"><q>空空的不是很balance</q> <q>行前 / day 2 要再分開一點</q></td><td><span class="skill">layout</span></td><td>squint test、分組、節奏、密度</td></tr>
+<tr><td class="q"><q>不要金漸層 pill</q> <q>橫向小火車不要琥珀框</q> <q>今日題目不需要卡片</q></td><td><span class="skill">quieter／distill</span></td><td>降強度／刪不該在的元素（卡片是偷懶容器）</td></tr>
+<tr><td class="q"><q>CTA…要有呼吸感</q> <q>改成鬧鐘搖晃</q> <q>要有stack的感覺</q></td><td><span class="skill">animate</span></td><td>動態說明狀態；一個主時刻</td></tr>
+<tr><td class="q"><q>車牌翻過來也是車票的顏色，不要變成紫色</q></td><td><span class="skill">colorize</span></td><td>保留品牌色</td></tr>
+<tr><td class="q"><q>標題serif中文字體</q> <q>這句很廢，拿掉</q> <q>優化performance，不要卡頓</q></td><td><span class="skill">typeset／clarify／optimize</span></td><td>字體角色／文案／效能</td></tr>
+<tr><td class="q"><q>cut2 的車票…手機等比例縮小</q> <q>橫向小火車不需要跟直式一樣！</q></td><td><span class="skill">adapt</span></td><td><q>Adaptation is rethinking, not scaling</q>；觸控、拇指區、內容優先序</td></tr>
+<tr><td class="q"><q>小火車跟著scroll跑…固定在底下當頁面滑動進度條</q>；夜市 3D → <q>操作複雜，能做成2d平面嗎</q></td><td><span class="skill">overdrive</span></td><td>scroll-driven、View Transitions、WebGL；<b>先提 2–3 方向</b>；一頁一個高峰；不能掩蓋基本功</td></tr>
+<tr><td class="q">UI Library 整個 session（text／link variant、broadcast／pinned、dialog、SOS 面板）</td><td><span class="skill">extract</span></td><td>3+ 次同意圖才抽；沒有設計系統先問放哪；長得像但用途不同要分開；遷移所有使用處</td></tr>
+<tr><td class="q"><q>能多 explore 幾個方案嗎</q></td><td><span class="skill">generate</span> ✗</td><td>依賴 live server → 改由區塊模式處理</td></tr>
+</table></div>
+<div class="fig">
+  <div class="cap">讀完指令文件後修正的三個說法</div>
+  <div class="split">
+    <div class="col"><h3 class="bad">原本以為</h3><ul style="margin:0;padding-left:18px;font-size:13px;color:var(--muted)"><li>overdrive 每個方案都套</li><li>爆版、畫面被遮 → adapt</li><li>指令會幫忙決定方向</li></ul></div>
+    <div class="mid"><b>→</b></div>
+    <div class="col"><h3 class="ok">讀完後</h3><ul style="margin:0;padding-left:18px;font-size:13px"><li>overdrive 一頁只一個高峰</li><li>爆版是 bug，直接修</li><li>多數回饋已含方向；指令的價值是「先診斷再改」</li></ul></div>
+  </div>
+</div>
+<p><b>實作時加的驗證：</b><code>bolder.md</code> 開頭明寫 <q>An open direction round owns the word first… This command refines a surface whose world already shipped.</q>——design 只在選定後才叫 bolder，所以不會掉進 new-work（讀文件確認，未實跑）。</p>
+
+<!-- 5 CHANGES -->
+<h2 id="change"><span class="no">5</span>改動清單</h2>
+<div class="fig">
+  <div class="cap">SKILL.md 的七步，<span style="color:var(--accent)">有改的</span>標橘</div>
+  <div class="smap">
+    <div class="sstep ch"><b>①</b>讀 PRODUCT／DESIGN.md；判斷三種模式</div>
+    <div class="sstep ch"><b>②</b>刪品味檔</div>
+    <div class="sstep ch"><b>③</b>過 craft-floor；把路徑給 ④</div>
+    <div class="sstep"><b>④</b>（不變）平行，互不看</div>
+    <div class="sstep ch"><b>⑤</b>checklist 先判 → detect 桌機＋390px；critique 移 ⑦</div>
+    <div class="sstep"><b>⑥</b>（不變）隨機順序＋現況</div>
+    <div class="sstep ch"><b>⑦</b>critique → 指令改 code → polish／harden／document；刪品味檔</div>
+  </div>
+  <div class="plus">
+    <div class="sstep ch"><b>＋開頭</b>分工句；不走 new-work／live／generate／serve-question</div>
+    <div class="sstep ch"><b>＋區塊／統一模式</b>兩段新文字</div>
+    <div class="sstep ch"><b>＋結尾</b>邊界：程式碼品質留給 /code-review</div>
+  </div>
+</div>
+<div class="tbl"><table>
+<tr><th>檔案</th><th>狀態</th><th>內容</th></tr>
+<tr><td><code>SKILL.md</code></td><td class="ok">✓</td><td>上圖所有橘色格；description 加 <q>這個區塊多做幾個方案</q> <q>統一元件</q> <q>UI library</q></td></tr>
+<tr><td><code>references/impeccable.md</code>（新）</td><td class="ok">✓</td><td>呼叫方式、detect 路徑解析（Claude／Codex、取最新版）、使用者說法 → 指令 → 關鍵規則（13 列）</td></tr>
+<tr><td><code>references/review-checklist.md</code></td><td class="ok">✓</td><td>只留 Flow、Brand、Peak moment、Distinctness；開頭一句指向 detect／critique</td></tr>
+<tr><td>（可選）真實區塊試跑</td><td class="warn">☐</td><td>未做</td></tr>
+</table></div>
+<h3>實作時的決定與偏離</h3>
+<ul>
+<li>指令規則<b>摘要</b>進 <code>impeccable.md</code>，不連結原檔——impeccable 安裝路徑帶版本號（<code>4.3.1</code>），連結會過期。</li>
+<li>checklist 的 Visual 改名 Peak moment；通用視覺品質改由 detect／critique 負責。</li>
+<li>detect 一律用 URL 掃描（<code>file://</code> 絕對路徑）：直接掃檔案不 render，同一頁 28 條 vs URL 95 條。結果在 stderr，<code>--quiet</code> 只給數量。</li>
+<li>① 寫成「brief.md 只留本輪驗收流程與品牌規則」—— <span class="warn">與 d9a99d25 計劃不一致，見 §8</span>。</li>
+</ul>
+
+<!-- 6 VERIFY -->
+<h2 id="verify"><span class="no">6</span>驗證結果</h2>
+<div class="tbl"><table>
+<tr><th>檢查</th><th>結果</th><th>怎麼驗</th></tr>
+<tr><td>標記都在</td><td class="ok">✓</td><td>grep：<code>impeccable.md</code> 連結 3 處、<code>viewport 390x844</code>、<code>Block mode</code>；<code>design-taste</code> 0 筆</td></tr>
+<tr><td>detect 免 server、可掃手機寬</td><td class="ok">✓</td><td><code>detect --viewport 390x844 file:///…/docs/site/index.html</code> → 95 anti-patterns（規劃時標為未驗證）</td></tr>
+<tr><td>Claude 與 Codex 兩邊的 detect</td><td class="ok">✓</td><td>兩個安裝路徑對 <code>docs/site/v2/index.html</code> 都跑出結果</td></tr>
+<tr><td>bolder 不掉進 new-work</td><td class="warn">◐</td><td>讀 <code>bolder.md</code> 開頭確認；未實際呼叫</td></tr>
+<tr><td>安裝快取一致</td><td class="ok">✓</td><td>Claude 快取 <code>diff</code> 與 repo 相同；Codex 連結到 repo</td></tr>
+<tr><td>新版在真實專案跑過</td><td class="bad">✗</td><td>未跑</td></tr>
+</table></div>
+
+<!-- 7 COMMIT -->
+<h2 id="commit"><span class="no">7</span>Commit</h2>
+<div class="fig git">
+<svg viewBox="0 0 760 150" role="img" aria-label="commit 圖：origin/main 5bb1df7 之後，PR #1 分支有 b972dbb、855d72c、256df2a、279c746">
+  <line x1="40" y1="40" x2="140" y2="40" stroke="var(--border)" stroke-width="3"/>
+  <path d="M140 40 C 170 40, 170 100, 200 100" fill="none" stroke="var(--accent-border)" stroke-width="3"/>
+  <line x1="200" y1="100" x2="700" y2="100" stroke="var(--accent-border)" stroke-width="3"/>
+  <circle cx="140" cy="40" r="9" fill="var(--muted)"/>
+  <text x="96" y="22" class="h">5bb1df7</text><text x="96" y="66">origin/main</text>
+  <circle cx="240" cy="100" r="9" fill="var(--panel-3)" stroke="var(--accent)" stroke-width="2"/>
+  <text x="208" y="80" class="h">b972dbb</text><text x="200" y="130">風格詞彙</text>
+  <circle cx="390" cy="100" r="9" fill="var(--panel-3)" stroke="var(--accent)" stroke-width="2"/>
+  <text x="358" y="80" class="h">855d72c</text><text x="364" y="130">improve</text>
+  <circle cx="530" cy="100" r="9" fill="var(--panel-3)" stroke="var(--accent)" stroke-width="2"/>
+  <text x="498" y="80" class="h">256df2a</text><text x="478" y="130">第 8 行（8b6cac38）</text>
+  <circle cx="680" cy="100" r="11" fill="var(--accent)"/>
+  <text x="648" y="80" class="h">279c746</text><text x="652" y="130">本次整合</text>
+  <text x="260" y="40" style="fill:var(--accent)">PR #1 feat/design-style-vocabulary（已 push，未 merge）</text>
+</svg>
+</div>
+<ul>
+<li>commit 只含 <code>skills/design/</code> 三檔；其他 session 在工作區的改動（README、headless-shots、rename-session、upload-meeting）沒碰。</li>
+<li>第 8 行原本卡在工作區：4375beb0 不是作者、不代 commit；使用者讓作者 8b6cac38 自己 commit 成 <code>256df2a</code> 後才動手。</li>
+<li>依使用者指示疊在 PR #1 上，不另開分支。</li>
+</ul>
+
+<!-- 8 TODO -->
+<h2 id="todo"><span class="no">8</span>待辦與衝突</h2>
+<p class="lead">code-review 重設計（d9a99d25）計劃的「延後」節，把 design 側四件事交給本 session：</p>
+<div class="fig">
+  <div class="hand">
+    <div class="hcard"><span class="tag bad">衝突</span><b>brief.md 只放設計素材</b><br><span class="note">本次寫成「brief.md 只留本輪驗收流程與品牌規則」</span></div>
+    <div class="hcard"><span class="tag bad">衝突</span><b>驗收流程進 plan</b><br><span class="note">驗收流程仍寫在 brief.md</span></div>
+    <div class="hcard"><span class="tag warn">等 /align</span><b>⑤ Flow 列用 /align start</b><br><span class="note">Flow 列仍讀 brief.md；/align 尚未建</span></div>
+    <div class="hcard"><span class="tag ok">✓</span><b>邊界句</b><br><span class="note">已加；若 wrap-up 改跑 quick-review，措辭要跟著改</span></div>
+  </div>
+</div>
+<h3>其他待辦</h3>
+<div class="tbl"><table>
+<tr><th>事項</th><th>等誰／什麼</th><th>來源</th></tr>
+<tr><td>PR #1 merge → <span class="skill">/sync-org-forks</span>（兩個 fork 落後 main 10+ commit，一次同步）</td><td>使用者 merge</td><td>本次</td></tr>
+<tr><td>區塊模式選項頁的檔名慣例</td><td>試跑時決定</td><td>本次</td></tr>
+<tr><td>拿真實區塊試跑區塊模式（例：meetmeoffline 信封）</td><td>下一個 UI 任務</td><td>規劃計劃</td></tr>
+<tr><td>規劃報告在 <code>~/agent-skills/docs/reports/</code>（非 git repo），要不要搬進 dev-skills</td><td>使用者</td><td>規劃計劃</td></tr>
+<tr><td>詞彙層第二層：motion-prompt 168 個手法名的收法</td><td>使用者決定</td><td>11/03 報告</td></tr>
+<tr><td><code>styles/images/</code> 6 張圖來源與授權不明（會同步到 org fork）</td><td>使用者決定</td><td>10/29 報告</td></tr>
+<tr><td>StyleKit、UI Style Guide、designprompts.dev 未查證</td><td>—</td><td>11/03 報告</td></tr>
+<tr><td><code>pdftoppm</code> 缺（<code>brew install poppler</code>）</td><td>使用者</td><td>10/23 分析</td></tr>
+</table></div>
+
+<h2 id="src">資料來源</h2>
+<div class="tbl"><table>
+<tr><th>日期</th><th>文件</th><th>session</th></tr>
+<tr><td>10/23</td><td><code>dev-skills/docs/reports/2026-10-23-improve-explore-steps截圖-sync-report-404.md</code></td><td><code>8c2d213b</code></td></tr>
+<tr><td>10/23</td><td><code>~/agent-skills/docs/reports/2026-10-23-design-variants-decline-survey.md</code>（＋原始資料夾）</td><td><code>4375beb0</code></td></tr>
+<tr><td>10/23</td><td><code>~/agent-skills/docs/reports/2026-10-23-ui-design-sessions-analysis.md</code></td><td><code>4375beb0</code></td></tr>
+<tr><td>10/29</td><td><code>dev-skills/docs/reports/2026-10-29-explore改名design-與codex試用回顧.md</code></td><td><code>4375beb0</code></td></tr>
+<tr><td>11/03</td><td><code>dev-skills/docs/reports/2026-11-03-design-風格詞彙與style-guide校準.md</code></td><td><code>4375beb0</code></td></tr>
+<tr><td>11/03</td><td><code>~/agent-skills/docs/reports/2026-11-03-design-skill與impeccable整合規劃.md</code>＋session log</td><td><code>24de07ec</code></td></tr>
+<tr><td>11/03</td><td><code>~/.claude/plans/reactive-pondering-sketch.md</code>（code-review 重設計計劃）</td><td><code>d9a99d25</code></td></tr>
+<tr><td>11/04</td><td>commit <code>279c746</code></td><td><code>ebd15042</code></td></tr>
+</table></div>
+
+<footer>產出：session ebd15042 · 2026-11-04 · 樣式沿用 docs/site/styles.css</footer>
+</main>
+</div>
+<script>
+const t=document.querySelector(".theme-toggle");
+t.addEventListener("click",()=>{document.body.classList.toggle("light");const n=document.body.classList.contains("light")?"原版深色":"Catppuccin Latte";t.setAttribute("aria-label","切換至 "+n);t.title="切換至 "+n;});
+</script>
+</body>
+</html>
