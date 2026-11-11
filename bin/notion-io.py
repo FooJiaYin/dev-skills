@@ -13,7 +13,7 @@ Token (first hit): --token-name / `Token: keychain <name>` in the nearest AGENTS
 integration must be shared with every DB / page it touches (page ⋯ → Connections).
 Exit codes: 0 ok · 1 some writes failed · 2 validation failed · 3 no token (use the MCP fallback).
 """
-import argparse, copy, datetime, json, os, re, subprocess, sys, time, urllib.error, urllib.request
+import argparse, copy, datetime, hashlib, json, os, re, subprocess, sys, time, urllib.error, urllib.request
 
 API = "https://api.notion.com/v1"
 VERSION = "2025-09-03"
@@ -36,7 +36,10 @@ def walk_up(name, start="."):
 
 
 def keychain(name):
-    r = subprocess.run(["security", "find-generic-password", "-s", name, "-w"], capture_output=True, text=True)
+    try:
+        r = subprocess.run(["security", "find-generic-password", "-s", name, "-w"], capture_output=True, text=True)
+    except OSError:  # no macOS Keychain → fall through to $NOTION_TOKEN / .env
+        return ""
     return r.stdout.strip()
 
 
@@ -57,10 +60,13 @@ def find_token(name=None, start="."):
 
 
 class NotionError(Exception):
-    pass
+    ambiguous = False  # a write that may have been applied anyway — check before resending
 
 
 def req(method, path, body=None):
+    """GETs retry on 429/5xx/network errors; writes retry only on 429 (never applied). Any other
+    write failure after sending may have landed, so it raises with `ambiguous` instead of resending."""
+    write = method != "GET"
     for attempt in range(6):
         wait = 0.34 - (time.time() - _last[0])  # ~3 req/s
         if wait > 0:
@@ -73,7 +79,7 @@ def req(method, path, body=None):
             with urllib.request.urlopen(r, timeout=60) as resp:
                 return json.load(resp)
         except urllib.error.HTTPError as e:
-            if e.code in (429, 500, 502, 503, 504) and attempt < 5:
+            if attempt < 5 and (e.code == 429 or (not write and e.code in (500, 502, 503, 504))):
                 time.sleep(float(e.headers.get("Retry-After") or 2 ** attempt))
                 continue
             try:
@@ -81,17 +87,25 @@ def req(method, path, body=None):
             except Exception:
                 msg = ""
             hint = " (integration not shared with this page/DB, or wrong workspace token)" if e.code in (401, 403, 404) else ""
-            raise NotionError(f"{method} {path}: HTTP {e.code} {msg}{hint}")
-        except urllib.error.URLError as e:
-            if attempt < 5:
+            err = NotionError(f"{method} {path}: HTTP {e.code} {msg}{hint}")
+            err.ambiguous = write and e.code >= 500
+            raise err
+        except (urllib.error.URLError, OSError) as e:  # incl. read timeouts
+            if attempt < 5 and not write:
                 time.sleep(2 ** attempt)
                 continue
-            raise NotionError(f"{method} {path}: {e}")
+            err = NotionError(f"{method} {path}: {e}" + (" — may have been applied; check before rerunning" if write else ""))
+            err.ambiguous = write
+            raise err
 
 
 def nid(s):
-    """Notion id from a URL / collection:// / bare id → dashed uuid."""
-    m = HEX.findall(s or "")
+    """Notion id from a URL / collection:// / bare id → dashed uuid. URLs: the path only —
+    `?v=<view id>` and `#<block id>` are not the object."""
+    s = s or ""
+    if re.match(r"https?://", s):
+        s = re.split(r"[?#]", s)[0]
+    m = HEX.findall(s)
     if not m:
         raise NotionError(f"no Notion id in {s!r}")
     h = m[-1].replace("-", "").lower()
@@ -167,7 +181,17 @@ def rich(s, ann=None):
             out += rich(m.group("it"), dict(ann, italic=True))
     if pos < len(s):
         out += _text(s[pos:], ann)
-    return out[:100]
+    return out  # may exceed Notion's 100 items: append() splits blocks, fit() guards fields
+
+
+def fit(rt, what):
+    """A field that can't be split (property, table cell): keep ≤100 items, else fail loudly."""
+    if len(rt) <= 100:
+        return rt
+    rt = rt[:99] + _text(plain(rt[99:]), {})
+    if len(rt) > 100:
+        raise NotionError(f"{what}: too much text for one Notion field")
+    return rt
 
 
 def block(kind, text="", **extra):
@@ -240,7 +264,7 @@ def md_blocks(md, headings=True):
             w = max(len(c) for c in cells)
             t = block("table", table_width=w, has_column_header=bool(header), has_row_header=False)
             kids(t).extend({"object": "block", "type": "table_row",
-                            "table_row": {"cells": [rich(c) for c in r + [""] * (w - len(r))]}} for r in cells)
+                            "table_row": {"cells": [fit(rich(c), "table cell") for c in r + [""] * (w - len(r))]}} for r in cells)
             out.append(t)
             continue
         if s.startswith(">"):
@@ -284,14 +308,36 @@ def _leaf(b):
     return not b[b["type"]].get("children")
 
 
+def split_long(blocks):
+    """A block's rich_text holds ≤100 items: overflow continues in following sibling blocks."""
+    out = []
+    for b in blocks:
+        t = b["type"]
+        rt = b[t].get("rich_text") or []
+        if len(rt) <= 100:
+            out.append(b)
+            continue
+        b = copy.deepcopy(b)
+        b[t]["rich_text"] = rt[:100]
+        out.append(b)
+        t2 = t if t in ("paragraph", "quote", "code") else "paragraph"
+        for i in range(100, len(rt), 100):
+            nb = {"object": "block", "type": t2, t2: {"rich_text": rt[i:i + 100]}}
+            if t2 == "code":
+                nb[t2]["language"] = b[t].get("language", "plain text")
+            out.append(nb)
+    return out
+
+
 def append(parent, blocks, after=None):
     """Append blocks (any depth). Leaf children ride inline; deeper trees are appended per level."""
     created = []
+    blocks = split_long(blocks)
     for n in range(0, len(blocks), 100):
         chunk, later = [], []
         for b in blocks[n:n + 100]:
             b = copy.deepcopy(b)
-            ch = b[b["type"]].pop("children", [])
+            ch = split_long(b[b["type"]].pop("children", []))
             if ch and all(_leaf(c) for c in ch):
                 b[b["type"]]["children"], ch = ch[:100], ch[100:]
             elif b["type"] == "table":
@@ -336,10 +382,8 @@ def prop_value(name, schema, v, refs):
     if name not in schema:
         raise NotionError(f"unknown property {name!r} (have: {', '.join(schema)})")
     t = schema[name]["type"]
-    if t == "title":
-        return {"title": rich(v)}
-    if t == "rich_text":
-        return {"rich_text": rich(v)}
+    if t in ("title", "rich_text"):
+        return {t: fit(rich(v), name)}
     if t in ("select", "status"):
         if v is None:
             return {t: None}
@@ -402,6 +446,7 @@ class Source:
         self.path = os.path.join(base, spec["file"]) if spec.get("file") else None
         self.page = spec.get("page")
         self.label = spec.get("label", "會議記錄")
+        self.transcript = os.path.join(base, spec["transcript"]) if spec.get("transcript") else None
         self.lines = open(self.path).read().split("\n") if self.path else []
         self.heads = [(n, len(m.group(1)), m.group(2).strip()) for n, l in enumerate(self.lines)
                       for m in [re.match(r"^(#{1,6})\s+(.*)$", l)] if m]
@@ -442,6 +487,8 @@ class Source:
         """→ (title, markdown, first_line, last_line) for one context pointer."""
         if "lines" in item:
             a, b = (int(x) for x in str(item["lines"]).split("-"))
+            if not 1 <= a <= b <= len(self.lines):
+                raise NotionError(f"{self.key}: lines {item['lines']} outside 1-{len(self.lines)} or reversed")
             return None, "\n".join(self.lines[a - 1:b]), a, b
         lo, hi = self.section(item["ref"])
         title = self.lines[lo].lstrip("#").strip()
@@ -536,24 +583,53 @@ def set_frontmatter(path, url):
     open(path, "w").write("\n".join(lines))
 
 
+def create_meeting(path, db, title, props=None, on_page=None):
+    """Create the page, record it (frontmatter + on_page) BEFORE writing the body, so a failed
+    body append leaves a known partial page instead of a duplicate on rerun."""
+    ds, schema = data_source(db)
+    title_prop = next(k for k, v in schema.items() if v["type"] == "title")
+    p = {title_prop: {"title": fit(rich(title), title_prop)}}
+    for k, v in (props or {}).items():
+        p[k] = prop_value(k, schema, v, nid)
+    res = req("POST", "/pages", {"parent": {"type": "data_source_id", "data_source_id": ds}, "properties": p})
+    set_frontmatter(path, res["url"])
+    if on_page:
+        on_page(res["url"])
+    append(res["id"], md_blocks("\n".join(strip_frontmatter(open(path).read().split("\n")))))
+    return res["url"]
+
+
+def add_transcript(page, transcript, log=print):
+    pid = nid(page)
+    toggle = transcript_toggle(open(transcript).read())
+    have = next((b for b in children(pid) if b["type"] == "heading_2" and plain(b["heading_2"]["rich_text"]) == "逐字稿"), None)
+    if have:
+        n, want = len(children(have["id"])), len(kids(toggle))
+        if n < want:
+            raise NotionError(f"{page}: 逐字稿 toggle is incomplete ({n}/{want} paragraphs) — delete it and rerun")
+        log(f"skip: {page} already has a complete 逐字稿 toggle")
+        return
+    append(pid, [toggle])
+
+
+def relation_ids(pid, prop):
+    """All ids of a relation property — a page GET returns at most 25 (`has_more`)."""
+    if not prop.get("has_more"):
+        return [x["id"] for x in prop.get("relation", [])]
+    out, cur = [], None
+    while True:
+        r = req("GET", f"/pages/{pid}/properties/{prop['id']}?page_size=100" + (f"&start_cursor={cur}" if cur else ""))
+        out += [x["relation"]["id"] for x in r.get("results", [])]
+        if not r.get("has_more"):
+            return out
+        cur = r["next_cursor"]
+
+
 def upload_meeting(path, db, title, props=None, transcript=None, page=None, log=print):
-    if page:
-        pid = nid(page)
-        if any(b["type"] == "heading_2" and plain(b["heading_2"]["rich_text"]) == "逐字稿" for b in children(pid)):
-            log(f"skip: {page} already has a 逐字稿 toggle")
-            return page
-    else:
-        ds, schema = data_source(db)
-        title_prop = next(k for k, v in schema.items() if v["type"] == "title")
-        p = {title_prop: {"title": rich(title)}}
-        for k, v in (props or {}).items():
-            p[k] = prop_value(k, schema, v, nid)
-        res = req("POST", "/pages", {"parent": {"type": "data_source_id", "data_source_id": ds}, "properties": p})
-        pid, page = res["id"], res["url"]
-        append(pid, md_blocks("\n".join(strip_frontmatter(open(path).read().split("\n")))))
-        set_frontmatter(path, page)
+    if not page:
+        page = create_meeting(path, db, title, props)
     if transcript:
-        append(pid, [transcript_toggle(open(transcript).read())])
+        add_transcript(page, transcript, log)
     log(f"uploaded: {page}")
     return page
 
@@ -569,14 +645,19 @@ def load(path):
     return spec, sources
 
 
-def order(tasks):
-    """Creates that reference '#KEY' run after KEY."""
-    done, out, pending = set(), [], list(tasks)
+def deps(t, defaults):
+    """'#KEY' items inside list (relation) values — not '#123' in a title."""
+    props = dict(defaults or {}, **t.get("props", {}))
+    return {x[1:] for v in props.values() if isinstance(v, list) for x in v if isinstance(x, str) and x.startswith("#")}
+
+
+def order(tasks, defaults=None, known=()):
+    """Creates that reference '#KEY' run after KEY; `known` = keys that need no create (LINK rows)."""
+    done, out, pending = set(known), [], list(tasks)
     while pending:
         progressed = False
         for t in list(pending):
-            deps = set(re.findall(r"#([\w.-]+)", json.dumps(t.get("props", {}))))
-            if deps <= done | {x["key"] for x in tasks if x.get("action") != "create"}:
+            if deps(t, defaults) <= done:
                 out.append(t); done.add(t["key"]); pending.remove(t); progressed = True
         if not progressed:
             raise NotionError("circular #KEY references: " + ", ".join(t["key"] for t in pending))
@@ -613,15 +694,19 @@ def check(spec, sources, schema=None):
                 errs.append(f"{k}: mark needs {src.key}.page or {src.key}.upload")
             elif src.lines and not any(mk["text"] in l for l in src.lines):
                 errs.append(f"{k}: mark text not found in {src.path}: {mk['text'][:40]}")
-        if schema is not None and t.get("action") == "create":
-            props = dict(spec.get("defaults", {}), **t.get("props", {}))
+        if schema is not None:
+            props = dict(spec.get("defaults", {}), **t.get("props", {})) if t.get("action") == "create" else t.get("props", {})
             for name, v in props.items():
                 try:
                     prop_value(name, schema, v, lambda x: "00000000-0000-0000-0000-000000000000")
                 except NotionError as e:
                     errs.append(f"{k}: {e}")
+    for t in spec["tasks"]:
+        for d in deps(t, spec.get("defaults") if t.get("action") == "create" else None) - set(keys):
+            errs.append(f"{t.get('key')}: #{d} is not a task key")
     try:
-        order([t for t in spec["tasks"] if t.get("action") == "create"])
+        order([t for t in spec["tasks"] if t.get("action") == "create"], spec.get("defaults"),
+              [t["key"] for t in spec["tasks"] if t.get("action") == "link"])
     except NotionError as e:
         errs.append(str(e))
     return errs
@@ -645,33 +730,75 @@ def apply(spec, sources, path, dry):
     save = lambda: dry or json.dump(res, open(rpath, "w"), ensure_ascii=False, indent=1)
     fails = []
 
-    # 1. sources that still need a Notion page
+    # 1. sources that still need a Notion page: page → body → transcript, each stage recorded
     for s in sources.values():
-        s.page = res["sources"].get(s.key) or s.page
+        r = res["sources"].get(s.key) or {}
+        s.page = r.get("url") or s.page
         up = s.spec.get("upload")
-        if not s.page and up:
-            if dry:
-                print(f"[dry] would upload {s.path}"); s.page = "00000000000000000000000000000000"; continue
-            s.page = upload_meeting(s.path, up["db"], up["title"], up.get("props"), s.spec.get("transcript"))
-            res["sources"][s.key] = s.page; save()
+        if not up:
+            continue
+        if r.get("status") in ("pending", "partial") or r.get("transcript") == "started":
+            fails.append(f"source {s.key}: unfinished upload from an earlier run ({r.get('url') or 'page may exist in ' + up['db']}) "
+                         f"— check it, then delete its entry in {rpath} to redo")
+            continue
+        try:
+            if not s.page:
+                if dry:
+                    print(f"[dry] would upload {s.path}"); s.page = "00000000000000000000000000000000"; continue
+                def record(url, s=s):
+                    s.page = url
+                    res["sources"][s.key] = {"url": url, "status": "partial"}; save()
+                res["sources"][s.key] = {"status": "pending"}; save()
+                create_meeting(s.path, up["db"], up["title"], up.get("props"), on_page=record)
+                res["sources"][s.key]["status"] = "created"; save()
+                print(f"uploaded {s.key}: {s.page}")
+            r = res["sources"].get(s.key)
+            if r and s.transcript and r.get("transcript") != "done" and not dry:
+                r["transcript"] = "started"; save()
+                add_transcript(s.page, s.transcript)
+                r["transcript"] = "done"; save()
+        except NotionError as e:
+            if res["sources"].get(s.key, {}).get("status") == "pending" and not e.ambiguous:
+                del res["sources"][s.key]; save()  # nothing was created
+            fails.append(f"source {s.key}: {e}")
 
     ds, schema = data_source(spec["roadmap"])
     title_prop = next(k for k, v in schema.items() if v["type"] == "title")
 
+    links = {t["key"]: t["page"] for t in spec["tasks"] if t["action"] == "link"}
+
     def refs(x):
         if x.startswith("#"):
-            return nid(res["tasks"][x[1:]]["id"])
+            k = x[1:]
+            if k in links:
+                return nid(links[k])
+            if k not in res["tasks"]:
+                raise NotionError(f"#{k} was not created")
+            return nid(res["tasks"][k]["id"])
         if x.startswith("@"):
             return nid(sources[x[1:]].page)
         return nid(x)
 
+    def fp(t):
+        d = dict(t, defaults=spec.get("defaults")) if t["action"] == "create" else t
+        return hashlib.sha1(json.dumps(d, sort_keys=True, ensure_ascii=False).encode()).hexdigest()[:12]
+
+    def changed(k, t, prev):
+        if prev.get("fp") and prev["fp"] != fp(t):
+            fails.append(f"{k}: definition changed since it was written ({prev.get('url')}) — fix the page by hand, "
+                         f"or delete its entry in {rpath} to write it again")
+
     # 2. creates
-    for t in order([t for t in spec["tasks"] if t["action"] == "create"]):
+    for t in order([t for t in spec["tasks"] if t["action"] == "create"], spec.get("defaults"), links):
         k, prev = t["key"], res["tasks"].get(t["key"], {})
         if prev.get("status") == "created":
+            changed(k, t, prev)
             continue
         if prev.get("status") == "partial":
             fails.append(f"{k}: partial page {prev['url']} from an earlier run — check it, then delete its entry in {rpath} to recreate")
+            continue
+        if prev.get("status") == "pending":
+            fails.append(f"{k}: an earlier create may have landed — search the Roadmap for it, then delete its entry in {rpath} to recreate")
             continue
         props = dict(spec.get("defaults", {}), **t.get("props", {}))
         try:
@@ -686,36 +813,62 @@ def apply(spec, sources, path, dry):
                 print(f"[dry] create {k}: {props.get(title_prop)} · {len(blocks)} blocks")
                 res["tasks"][k] = {"id": "00000000000000000000000000000000", "status": "created"}
                 continue
+            res["tasks"][k] = {"status": "pending", "fp": fp(t)}; save()
             page = req("POST", "/pages", {"parent": {"type": "data_source_id", "data_source_id": ds}, "properties": sent})
-            res["tasks"][k] = {"id": page["id"], "url": page["url"], "status": "partial", "sent": {n: prop_expect(v) for n, v in sent.items()}}
+            res["tasks"][k] = {"id": page["id"], "url": page["url"], "status": "partial", "fp": fp(t),
+                               "sent": {n: prop_expect(v) for n, v in sent.items()}}
             save()
             append(page["id"], blocks)
             res["tasks"][k]["status"] = "created"; save()
             print(f"created {k}: {page['url']}")
         except NotionError as e:
+            if res["tasks"].get(k, {}).get("status") == "pending" and not e.ambiguous:
+                del res["tasks"][k]; save()  # nothing was created
             fails.append(f"{k}: {e}")
 
-    # 3. link appends — only under the existing `# Context`
+    # 3. link rows: relations (merged into what's there) + context appended only under `# Context`
     for t in [t for t in spec["tasks"] if t["action"] == "link"]:
-        k = t["key"]
-        if res["tasks"].get(k, {}).get("status") == "linked":
+        k, prev = t["key"], res["tasks"].get(t["key"], {})
+        if prev.get("status") == "linked":
+            changed(k, t, prev)
+            continue
+        if prev.get("status") == "appending":
+            fails.append(f"{k}: an earlier context append to {t['page']} stopped partway — check # Context, "
+                         f"then set its status to \"linked\" (or delete the entry) in {rpath}")
+            continue
+        if prev.get("fp") and prev["fp"] != fp(t):
+            changed(k, t, prev)
             continue
         try:
             pid = nid(t["page"])
-            blocks = body_blocks(t.get("context", []), sources, "Context")
-            top = children(pid) if not dry else []
-            ctx = next((n for n, b in enumerate(top) if b["type"] == "heading_1" and plain(b["heading_1"]["rich_text"]).strip() == "Context"), None)
+            blocks = body_blocks(t.get("context", []), sources, "Context") if t.get("context") else []
             if dry:
-                print(f"[dry] link {k}: append {len(blocks) - 1} blocks under # Context"); continue
-            if ctx is None:
-                append(pid, blocks)
-                where = "page end (no # Context heading)"
-            else:
-                end = next((n for n in range(ctx + 1, len(top)) if top[n]["type"] == "heading_1"), len(top))
-                append(pid, blocks[1:], after=top[end - 1]["id"])
-                where = "# Context"
-            res["tasks"][k] = {"id": pid, "url": t["page"], "status": "linked"}; save()
-            print(f"linked {k}: appended under {where}")
+                print(f"[dry] link {k}: props {list(t.get('props', {}))} · append {max(len(blocks) - 1, 0)} blocks under # Context"); continue
+            if prev.get("status") != "props" and t.get("props"):
+                have = req("GET", f"/pages/{pid}")["properties"]
+                sent = {}
+                for name, v in t["props"].items():
+                    pv = prop_value(name, schema, v, refs)
+                    if "relation" in pv:  # add, never drop existing relations
+                        old = [{"id": x} for x in relation_ids(pid, have[name])] if name in have else []
+                        pv["relation"] = old + [x for x in pv["relation"] if x["id"].replace("-", "") not in {o["id"].replace("-", "") for o in old}]
+                    sent[name] = pv
+                req("PATCH", f"/pages/{pid}", {"properties": sent})
+                res["tasks"][k] = {"id": pid, "url": t["page"], "status": "props", "fp": fp(t)}; save()
+            where = "no context"
+            if blocks:
+                top = children(pid)
+                ctx = next((n for n, b in enumerate(top) if b["type"] == "heading_1" and plain(b["heading_1"]["rich_text"]).strip() == "Context"), None)
+                res["tasks"][k] = {"id": pid, "url": t["page"], "status": "appending", "fp": fp(t)}; save()
+                if ctx is None:
+                    append(pid, blocks)
+                    where = "page end (no # Context heading)"
+                else:
+                    end = next((n for n in range(ctx + 1, len(top)) if top[n]["type"] == "heading_1"), len(top))
+                    append(pid, blocks[1:], after=top[end - 1]["id"])
+                    where = "# Context"
+            res["tasks"][k] = {"id": pid, "url": t["page"], "status": "linked", "fp": fp(t)}; save()
+            print(f"linked {k}: {', '.join(t.get('props', {})) or 'no props'}; context → {where}")
         except NotionError as e:
             fails.append(f"{k}: {e}")
 
@@ -727,7 +880,8 @@ def apply(spec, sources, path, dry):
             if tid and res["tasks"][t["key"]]["status"] in ("created", "linked"):
                 by_src.setdefault(mk["src"], []).append((t["key"], mk["text"], tid, res["tasks"][t["key"]].get("url", "")))
     for sk, marks in by_src.items():
-        todo = [m for m in marks if not res["marks"].get(f"{m[0]}|{m[1]}")]
+        mkey = lambda key, text: f"{sk}|{key}|{text}"
+        todo = [m for m in marks if not res["marks"].get(mkey(m[0], m[1]))]
         if not todo:
             continue
         if dry:
@@ -753,28 +907,30 @@ def apply(spec, sources, path, dry):
             b, ci = hits[0]
             rt = b["table_row"]["cells"][ci] if ci is not None else b[b["type"]]["rich_text"]
             if any(x.get("type") == "mention" and x["mention"].get("page", {}).get("id", "").replace("-", "") == tid.replace("-", "") for x in rt):
-                res["marks"][f"{key}|{text}"] = "done"; continue
-            edits.setdefault((b["id"], ci), (b, []))[1].append((key, text, tid, url))
-        for (bid, ci), (b, items) in edits.items():
-            rt = b["table_row"]["cells"][ci] if ci is not None else b[b["type"]]["rich_text"]
-            new = [clean_rt(x) for x in rt]
-            for _, _, tid, _ in items:
-                new += [{"type": "text", "text": {"content": " "}}, {"type": "mention", "mention": {"type": "page", "page": {"id": tid}}}]
+                res["marks"][mkey(key, text)] = "done"; continue
+            # one PATCH per block: every cell of a table row edited together
+            edits.setdefault(b["id"], (b, {}))[1].setdefault(ci, []).append((key, text, tid, url))
+        for bid, (b, cells_items) in edits.items():
+            def marked(rt, items):
+                new = [clean_rt(x) for x in rt]
+                for _, _, tid, _ in items:
+                    new += [{"type": "text", "text": {"content": " "}}, {"type": "mention", "mention": {"type": "page", "page": {"id": tid}}}]
+                return new
+            items = [it for its in cells_items.values() for it in its]
             try:
-                if ci is not None:
-                    cells = [[clean_rt(x) for x in c] for c in b["table_row"]["cells"]]
-                    cells[ci] = new
+                if b["type"] == "table_row":
+                    cells = [marked(c, cells_items.get(n, [])) for n, c in enumerate(b["table_row"]["cells"])]
                     req("PATCH", f"/blocks/{bid}", {"table_row": {"cells": cells}})
                 else:
-                    req("PATCH", f"/blocks/{bid}", {b["type"]: {"rich_text": new}})
+                    req("PATCH", f"/blocks/{bid}", {b["type"]: {"rich_text": marked(b[b["type"]]["rich_text"], cells_items[None])}})
                 for key, text, tid, url in items:
-                    res["marks"][f"{key}|{text}"] = "done"
-                    if src.path:
-                        mark_local(src.path, text, url or f"https://www.notion.so/{tid.replace('-', '')}")
+                    res["marks"][mkey(key, text)] = "done"
+                    if src.path and not mark_local(src.path, text, url or f"https://www.notion.so/{tid.replace('-', '')}"):
+                        fails.append(f"mark {key}: Notion marked, but {src.path} not — text missing or not unique there; add the mention by hand")
                 save()
             except NotionError as e:
                 fails.append(f"mark {items[0][0]}: {e}")
-        print(f"marked {sum(1 for m in todo if res['marks'].get(f'{m[0]}|{m[1]}'))}/{len(todo)} in {sk}")
+        print(f"marked {sum(1 for m in todo if res['marks'].get(mkey(m[0], m[1])))}/{len(todo)} in {sk}")
 
     # 5. read back every created page and compare the properties we sent
     if not dry:
@@ -783,7 +939,8 @@ def apply(spec, sources, path, dry):
                 continue
             try:
                 got = req("GET", f"/pages/{r['id']}")["properties"]
-                bad = [f"{n}: sent {v!r} got {prop_read(got[n])!r}" for n, v in r["sent"].items() if n in got and prop_read(got[n]) != v]
+                bad = [f"{n}: sent {v!r} got " + (repr(prop_read(got[n])) if n in got else "no such property")
+                       for n, v in r["sent"].items() if n not in got or prop_read(got[n]) != v]
                 if bad:
                     fails.append(f"read-back {k}: " + "; ".join(bad))
                 else:
@@ -818,9 +975,11 @@ def mark_local(path, text, url):
     s = open(path).read()
     tag = f' <mention-page url="{url}"/>'
     i = s.find(text)
-    if i < 0 or s.count(text) != 1 or s[i + len(text):].startswith(tag):
-        return
-    open(path, "w").write(s[:i + len(text)] + tag + s[i + len(text):])
+    if i < 0 or s.count(text) != 1:
+        return False
+    if not s[i + len(text):].startswith(tag):
+        open(path, "w").write(s[:i + len(text)] + tag + s[i + len(text):])
+    return True
 
 
 # ---------- cli ----------

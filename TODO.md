@@ -9,7 +9,7 @@
 - [ ] PR／CI tier（`pr-review` skill＋workflow yml）延後；引擎三選一：claude-code-action／codex-action／Anthropic hosted（來源：plan 延後，2026-11-04）
 - [ ] `docs/site` 裡的 code-review 描述沒跟著改（來源：plan 延後，2026-11-04）
 - [ ] 合併回 main 後跑 `/sync-org-forks`（來源：plan 延後，2026-11-04）
-- [ ] `bin/notion-io.py` 的寫入路徑還沒實跑：`apply`（建立、`after` 插入 # Context、table_row 加註、讀回比對）、`upload-meeting`、guest Assignee 不被改成 OAuth 帳號、`Time: null` 保持空白，都只驗了離線解析與唯讀 schema。用拋棄式測試頁跑一次（來源：notion-io plan Verification #4–5，2026-11-11）
+- [ ] `bin/notion-io.py` 的寫入路徑還沒實跑：`apply`（建立、`after` 插入 # Context、table_row 加註、讀回比對）、`upload-meeting`、guest Assignee 不被改成 OAuth 帳號、`Time: null` 保持空白，都只驗了離線解析、唯讀 schema 與 mock API（加註、LINK relation 合併、讀回、續跑；2026-11-12）。用拋棄式測試頁跑一次，順便量總耗時對照原本的 23 分鐘（來源：notion-io plan Verification #4–5、#7，2026-11-11）
 - [ ] `sync-report` append、`fetch-task` pull 改走 `notion-io.py`（來源：notion-io plan 延後，2026-11-11）
 - [ ] Notion 託管圖片連結約 1 小時失效：腳本讀頁面時順便下載（來源：notion-io plan 延後，2026-11-11）
 

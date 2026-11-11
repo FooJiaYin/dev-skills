@@ -105,6 +105,8 @@ These skills bridge between local code/docs and a shared Notion workspace (Roadm
 
 **Authority model:** Only `/sync-report` and `/create-tasks` write to Notion. `/fetch-task`, `/setup-notion`, `/meeting-notes` are read-only against Notion (setup writes to local config only). `/upload-meeting` writes one Meetings DB page.
 
+**Notion writes via API (optional):** with a Notion integration token (the Keychain item named by `Token:` in `## Notion`, else Keychain `notion-token`, `$NOTION_TOKEN`, or `.env`), `/create-tasks` and `/upload-meeting` write through `bin/notion-io.py` instead of MCP, so task bodies and transcripts never pass through the model. No token → MCP as before.
+
 **How to use:**
 
 - **First time in this repo?** Run `/setup-notion` once. It writes Roadmap + Meetings DB URLs into `AGENTS.md` and gitignores `docs/tasks/`. Skipped silently on re-run.

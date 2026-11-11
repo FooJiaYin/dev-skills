@@ -270,7 +270,9 @@ Regenerate the plan markdown reflecting all comments in one revision. Re-enter p
 **Script path first.** From the current plan bytes write `docs/tasks/_plan-<…>.json` per [tasks-json.md](tasks-json.md): properties + pointers only (`ref` / `from` / `until` into the local meeting files), never pasted bodies. Then:
 1. `<dev-skills-root>/bin/notion-io.py validate <json>` → fix the JSON until 0 errors (`--show KEY` prints what a task's pointers resolve to; check large or cut sections).
 2. `notion-io.py apply <json>` with `run_in_background` → it uploads a source with `upload` set (notes + 逐字稿 toggle), creates (guest Assignee and `Time: null` in the same call), appends LINK context under `# Context`, marks commitments in Notion + the local .md, and reads back every property.
-3. Read only its summary and `_plan-<…>.result.json`; repair each `✗` line (re-run `apply` — it skips what's done), backfill `✅〔notion:<id>〕`, continue at §10.
+3. Read only its summary and `_plan-<…>.result.json`; repair each `✗` line (re-run `apply` — it skips what's done), backfill `✅〔notion:<id>〕`, then run §9.6 (leftovers → `TODO.md`) and continue at §10.
+
+LINK rows carry the relation that §9.3 would set (`"props": {"Discussions": ["@<src>"]}`); the script adds it to the existing relations, never replaces them.
 
 Exit code 3 (no token) → tell the user once how to add one (`security add-generic-password -U -a "$USER" -s notion-token -w`, integration shared with the Roadmap + Meetings DBs), then run the same JSON through MCP with the rules below.
 
