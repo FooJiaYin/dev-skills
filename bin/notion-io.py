@@ -818,6 +818,10 @@ def apply(spec, sources, path, dry):
             res["tasks"][k] = {"id": page["id"], "url": page["url"], "status": "partial", "fp": fp(t),
                                "sent": {n: prop_expect(v) for n, v in sent.items()}}
             save()
+            # the create call can default people/date to the bot user / today — set them again explicitly
+            fix = {n: v for n, v in sent.items() if schema[n]["type"] in ("people", "date")}
+            if fix:
+                req("PATCH", f"/pages/{page['id']}", {"properties": fix})
             append(page["id"], blocks)
             res["tasks"][k]["status"] = "created"; save()
             print(f"created {k}: {page['url']}")
@@ -842,8 +846,13 @@ def apply(spec, sources, path, dry):
         try:
             pid = nid(t["page"])
             blocks = body_blocks(t.get("context", []), sources, "Context") if t.get("context") else []
+            upd = t.get("update")  # implemented task: excerpt goes to a dated `# <date> Update` at page end
+            if blocks and upd:
+                blocks[0] = block("heading_1", [{"type": "mention", "mention": {"type": "date", "date": {"start": upd}}},
+                                                {"type": "text", "text": {"content": " Update"}}])
             if dry:
-                print(f"[dry] link {k}: props {list(t.get('props', {}))} · append {max(len(blocks) - 1, 0)} blocks under # Context"); continue
+                print(f"[dry] link {k}: props {list(t.get('props', {}))} · append {max(len(blocks) - 1, 0)} blocks under "
+                      + (f"# {upd} Update" if upd else "# Context")); continue
             if prev.get("status") != "props" and t.get("props"):
                 have = req("GET", f"/pages/{pid}")["properties"]
                 sent = {}
@@ -860,7 +869,10 @@ def apply(spec, sources, path, dry):
                 top = children(pid)
                 ctx = next((n for n, b in enumerate(top) if b["type"] == "heading_1" and plain(b["heading_1"]["rich_text"]).strip() == "Context"), None)
                 res["tasks"][k] = {"id": pid, "url": t["page"], "status": "appending", "fp": fp(t)}; save()
-                if ctx is None:
+                if upd:
+                    append(pid, blocks)
+                    where = f"Update {upd}"
+                elif ctx is None:
                     append(pid, blocks)
                     where = "page end (no # Context heading)"
                 else:

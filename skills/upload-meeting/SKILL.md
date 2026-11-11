@@ -14,7 +14,7 @@ Read `AGENTS.md` (preferred) / `CLAUDE.md`. Locate the `## Notion` section. Extr
 If the Meetings DB URL is missing → dispatch `/setup-notion`, then re-read `AGENTS.md` from scratch and continue. Do not assume setup succeeded — re-validate.
 
 If `Meetings title format` is missing → `AskUserQuestion` with common formats:
-- `<mention-date start="<date>"/> <topic>` (matches the `@今天 週會` template style — works for single dates and ranges via `start`/`end` attributes)
+- `<date start="<date>" /> <topic>` (`<mention-date …/>` is saved as literal text; matches the `@今天 週會` template style — works for single dates and ranges via `start`/`end` attributes)
 - `<topic>` alone (no date in title; date lives only in the date property)
 - Custom (user provides their own template, using `<date>`, `<start>`, `<end>`, `<topic>` as substitution tokens)
 
@@ -67,7 +67,7 @@ The §5-2 block builder consumes the resolved transcript from this step. Do not 
 
 ## 5. Create the meeting page
 
-**Local file + Notion token → script.** After §4 / §4b, run (`run_in_background`; the body and transcript never pass through you): `<dev-skills-root>/bin/notion-io.py upload-meeting <note.md> --db <Meetings DB URL> --title "<title>" --props '{"<date prop>": "YYYY-MM-DD", "<participants prop>": ["<uuid>", …], "<project prop>": ["<id>"]}' [--transcript <file>]`. The title may contain `<mention-date start="YYYY-MM-DD"/>`. Guests can go straight into people properties. It creates the page, writes the body, adds the 逐字稿 toggle, and writes §6's frontmatter. For an existing page missing the toggle, use `--page <url> --transcript <file>`. Exit 3 (no token) or pasted/Docs input → the MCP path below.
+**Local file + Notion token → script.** After §4 / §4b, run (`run_in_background`; the body and transcript never pass through you): `<dev-skills-root>/bin/notion-io.py upload-meeting <note.md> --db <Meetings DB URL> --title "<title>" --props '{"<date prop>": "YYYY-MM-DD", "<participants prop>": ["<uuid>", …], "<project prop>": ["<id>"]}' [--transcript <file>]`. The title may contain `<date start="YYYY-MM-DD" />`. Guests can go straight into people properties. It creates the page, writes the body, adds the 逐字稿 toggle, and writes §6's frontmatter. For an existing page missing the toggle, use `--page <url> --transcript <file>`. Exit 3 (no token) or pasted/Docs input → the MCP path below.
 
 One `notion-create-pages` call. 
 

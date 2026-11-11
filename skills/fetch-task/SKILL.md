@@ -47,7 +47,8 @@ If config is missing → dispatch `/setup-notion`, then re-read and continue.
 
 #### 3b. Compute local path
 
-`docs/tasks/<slug>.md` where:
+`docs/tasks/<YYYY-MM-DD>-<slug>.md` where:
+- `<YYYY-MM-DD>` = the task's Notion **created** date in local time (stable, so a refresh never renames the file). Before writing, look for an existing file with the same `-<hash6>.md` ending (with or without a date) and refresh that one instead of creating a second copy.
 - `<slug>` = task Name, lowercased, path-unsafe chars replaced with `-`, collapsed runs of `-`, truncated to ~60 chars.
 - Appended with `-<hash6>` where `<hash6>` is the **last** 6 hex chars of the Notion page ID (UUID's hyphens stripped). This protects against name collisions and rename-after-fetch. Use the trailing chars, **not** the leading ones — pages created in the same batch share a long leading prefix, so leading-6 collides (e.g. two sibling tasks both → `-37fb0e`), defeating the tiebreak.
 - Create `docs/tasks/` directory if missing.

@@ -10,7 +10,7 @@ Written by the model after the user approves `_plan-*.md` (§9), saved next to i
                "page": "<meeting page URL — omit if the file has notion.page frontmatter>",
                "label": "會議記錄",
                "transcript": "docs/meetings/2026-11-04-<slug>-transcript.txt",
-               "upload": { "db": "<Meetings DB URL>", "title": "<mention-date start=\"2026-11-04\"/> <topic>",
+               "upload": { "db": "<Meetings DB URL>", "title": "<date start=\"2026-11-04\" /> <topic>",
                            "props": { "Participants": ["<uuid>"] } } }
   },
   "defaults": { "Project": ["<page id>"], "Complexity": 3, "Status": "Not Started" },
@@ -34,6 +34,7 @@ Written by the model after the user approves `_plan-*.md` (§9), saved next to i
 
 - **`props`** — Notion property names as in the schema; `defaults` merge under every create. On a `link` row, relation values are added to what the page already has (give the source relation, e.g. `Discussions: ["@m1104"]`, so the meeting's Tasks relation mirrors it); `#KEY` relations are read only from list values. Values: title/text → string (inline md + `<mention-*>` ok) · select/status → exact option name · multi_select → list · people → list of user uuids (guests too — the API doesn't coerce them) · relation → list of ids/URLs, `#KEY` = a task created in this run, `@SRC` = a source page · date → `"YYYY-MM-DD"`, `{"start","end"}`, or `null` to keep it blank.
 - **Pointers** (`context`, `plan`) — `ref` is a heading path by number or text (`六.8` = `## 六、…` › `### 8. …`); optional `from` / `until` cut at the first line containing that text; `lines: "286-288"` (file line numbers) is the escape hatch; `text` is literal markdown for short notes; `"as": "code"` keeps chat text (LINE `-----`, `1.`) literal. Consecutive pointers to one source render as `## <source mention>` + `### <label> §refs` + the sections (heading as bold, `---` between).
+- **`update`** (link rows) — `"update": "YYYY-MM-DD"` (source meeting date) when the target is already implemented (Testing / In Review / Completed 🙌): `context` goes to a new `# <date> Update` at the page end instead of under `# Context`.
 - **`mark`** — append a mention of the task after that text in the source page (and the local .md). The text must be unique in the page.
 - **`upload`** — when the source has no page yet, the script creates it first (notes + `逐字稿` toggle from `transcript`) and writes `notion.page` into the .md.
 - Results go to `_plan-*.result.json` (key → id, url, status). Re-running `apply` skips anything already done; a row edited after it was written, or a page left `partial`, is reported as `✗`, not rewritten.
