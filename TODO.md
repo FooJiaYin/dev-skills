@@ -9,6 +9,9 @@
 - [ ] PR／CI tier（`pr-review` skill＋workflow yml）延後；引擎三選一：claude-code-action／codex-action／Anthropic hosted（來源：plan 延後，2026-11-04）
 - [ ] `docs/site` 裡的 code-review 描述沒跟著改（來源：plan 延後，2026-11-04）
 - [ ] 合併回 main 後跑 `/sync-org-forks`（來源：plan 延後，2026-11-04）
+- [ ] `bin/notion-io.py` 的寫入路徑還沒實跑：`apply`（建立、`after` 插入 # Context、table_row 加註、讀回比對）、`upload-meeting`、guest Assignee 不被改成 OAuth 帳號、`Time: null` 保持空白，都只驗了離線解析與唯讀 schema。用拋棄式測試頁跑一次（來源：notion-io plan Verification #4–5，2026-11-11）
+- [ ] `sync-report` append、`fetch-task` pull 改走 `notion-io.py`（來源：notion-io plan 延後，2026-11-11）
+- [ ] Notion 託管圖片連結約 1 小時失效：腳本讀頁面時順便下載（來源：notion-io plan 延後，2026-11-11）
 
 ## 待客戶確認
 
@@ -19,3 +22,4 @@
 
 - [ ] 把 code-review 重設計的決定轉貼給 design session `ebd15042`（brief.md 只放設計素材、驗收流程進 plan、⑤ Flow 列用 `/align start`、quick-review 不用 impeccable）（來源：本 session 討論，2026-11-04）
 - [ ] `brew install gitleaks`（來源：本 session 決定，2026-11-04）
+- [ ] sparktoy 的 Notion integration：建 integration、分享 Tasks DB 與會議記錄 DB、`security add-generic-password -U -a "$USER" -s notion-token-sparktoy -w`，並在 sparktoy `AGENTS.md` 的 `## Notion` 加 `Token: keychain notion-token-sparktoy`（來源：notion-io plan Verification #1，2026-11-11）

@@ -83,12 +83,15 @@ Canonical section shape (insert verbatim; team roster only when collected):
 Roadmap (tasks): <roadmap-url>
 Meetings: <meetings-url>
 Meetings title format: <MM月DD日> | <topic>
+Token: keychain notion-token-<workspace>
 
 ### Team
 
 - Alice <alice@gmail.com> — notion-user-id-1 (member)
 - David <david@gmail.com> — notion-user-id-2 (guest)
 ```
+
+`Token:` is optional — the Keychain item holding this workspace's integration token, used by `bin/notion-io.py` (`/create-tasks`, `/upload-meeting`) to write through the API instead of MCP. Write it only when the user has one; without the line the script tries Keychain `notion-token`, `$NOTION_TOKEN`, then `.env`.
 
 **`.gitignore`:**
 - If `docs/tasks/` is not covered, append a line `docs/tasks/`. If `.gitignore` doesn't exist, create it with that one line.

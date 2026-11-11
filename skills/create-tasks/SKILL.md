@@ -267,6 +267,15 @@ Regenerate the plan markdown reflecting all comments in one revision. Re-enter p
 
 **Re-`Read` the WHOLE plan file immediately before writing — the user may have hand-edited it during/after approval.** Long iteration means rows get merged, renamed, removed, or re-classified after you last saw them. Build the create-set from the **current** plan bytes, not your earlier in-context copy, and create only the CREATE rows still present. Creating from a stale copy ships **orphaned Notion tasks** (rows the user already deleted) that then need manual cleanup. After creating, backfill each new page id inline onto its plan row (`✅〔notion:<id>〕`) so plan ↔ Notion stay reconciled.
 
+**Script path first.** From the current plan bytes write `docs/tasks/_plan-<…>.json` per [tasks-json.md](tasks-json.md): properties + pointers only (`ref` / `from` / `until` into the local meeting files), never pasted bodies. Then:
+1. `<dev-skills-root>/bin/notion-io.py validate <json>` → fix the JSON until 0 errors (`--show KEY` prints what a task's pointers resolve to; check large or cut sections).
+2. `notion-io.py apply <json>` with `run_in_background` → it uploads a source with `upload` set (notes + 逐字稿 toggle), creates (guest Assignee and `Time: null` in the same call), appends LINK context under `# Context`, marks commitments in Notion + the local .md, and reads back every property.
+3. Read only its summary and `_plan-<…>.result.json`; repair each `✗` line (re-run `apply` — it skips what's done), backfill `✅〔notion:<id>〕`, continue at §10.
+
+Exit code 3 (no token) → tell the user once how to add one (`security add-generic-password -U -a "$USER" -s notion-token -w`, integration shared with the Roadmap + Meetings DBs), then run the same JSON through MCP with the rules below.
+
+**MCP fallback** — everything from here to the end of §9.
+
 **Parallel body construction (when N ≥ 10 CREATE rows).** Many bodies were left as one-line summaries in the plan per §7 lazy preview. Before firing `notion-create-pages` in §9.1, materialize them: split CREATE rows into ~2 chunks by index and spawn 2 Plan subagents in parallel, each receiving its chunk + the meeting body + the body template from §9.1. Each agent returns `{ task_index, body_markdown }[]`. Main thread merges in order. For `N < 10`, the main thread materializes inline — fan-out overhead exceeds savings.
 
 **Parallel MCP writes.** The main agent owns planning and extraction; the `notion-create-pages` / `notion-update-page` calls themselves can be fanned out. When the sources are several large local files (any file >10KB, or >50KB total), **spawn subagents that read their own files and issue their own MCP calls** — do not pull file bodies through the main thread just to echo them back into a create call. Give each agent its exact property rows and tell it to write, report ids, and stop (no verification loops); the main thread does the §9 read-back.
