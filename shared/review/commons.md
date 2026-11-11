@@ -40,3 +40,4 @@ A project may add `docs/review-standard.md`; it is read after this file and wins
 
 <!-- /improve appends rules here: one line each, with source and date. -->
 - A failed, empty, interrupted or missing step result never resolves to success / clean; it resolves to incomplete or error. (quick-review self-review, 2026-11-04)
+- Files uploaded to an external platform (import templates, CSV) must not carry human-only guidance/example rows inside the platform's data range; the data start row must match where the platform actually starts reading, and a test must assert the exported file contains no guidance text. (sparktoy WACA import failure, 2026-11-11)
