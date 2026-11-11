@@ -12,3 +12,4 @@
 ## Skills
 1. When writing a skill from a plan or discussion, list every agreed item as in-skill or deferred (with where it's tracked) before calling it done.
 2. Adding or renaming a skill: update the README skill table and the `<skill-name>` install list in the same commit.
+3. "Deploy" here (e.g. `/wrap-up` §9) = reinstall the plugin: `claude plugin marketplace update dev-skills && claude plugin update dev-skills@dev-skills`, then restart sessions. The marketplace is this directory, so the install copies the **working tree**, other sessions' uncommitted edits included. Say so when confirming.
