@@ -51,6 +51,7 @@ Four phases — **start-of-day sync**, **planning**, **wrap-up**, and **session 
 |---|---|---|
 | [sync](skills/sync/SKILL.md) | start-of-day | Safety net for git-illiterate collaborators. Fetches, auto-merges upstream (current branch + `origin/main` + teammate branches updated in last 24h), pushes. Dirty tree → defers to `/wrap-up` Quick. Any merge conflict aborts cleanly. |
 | [discuss](skills/discuss/SKILL.md) | planning | Senior design/architecture advisor that drives a collaborative back-and-forth before any plan is written. Auto-invoked during plan mode. |
+| [design](skills/design/SKILL.md) | planning | Visual / UI design in three modes — **Direction** (named styles with real references → one calibrated screen → parallel static versions → review → pick and combine), **Block** (3–4 static options for one block using the project's real CSS), **System** (unify components via impeccable `extract` → `document`). After a pick, refinement goes to impeccable commands; never impeccable's new-work, live, generate or serve-question (server-based, slow). Output is a local HTML file. |
 | [verify](skills/verify/SKILL.md) | wrap-up | Executes the implementation plan's Test plan / Verification section. **Runner, not author** — does not write new tests. |
 | [update-docs](skills/update-docs/SKILL.md) | wrap-up | Detection-driven docs updater. Scans the project's doc layout, classifies the diff, and proposes per-file edits. |
 | [quick-review](skills/quick-review/SKILL.md) | wrap-up | Lightweight review run at the end of every session. `codex review` on this session's diff, then a second pass with the shared review commons (`shared/review/commons.md`). Writes `REVIEW.md`. |
@@ -237,7 +238,7 @@ gh skill install FooJiaYin/dev-skills <skill-name> --agent gemini-cli --scope us
 gh skill install FooJiaYin/dev-skills <skill-name>                         # defaults to github-copilot, project scope
 ```
 
-`<skill-name>` is one of: `align`, `code-review`, `create-tasks`, `discuss`, `fetch-task`, `find-session`, `meeting-notes`, `quick-review`, `rename-session`, `report`, `setup-notion`, `spec`, `spec-review`, `sync`, `sync-report`, `update-docs`, `upload-meeting`, `verify`, `wrap-up`. See [`gh skill install`](https://cli.github.com/manual/gh_skill_install) for the full list of supported agents and flags.
+`<skill-name>` is one of: `align`, `code-review`, `create-tasks`, `design`, `discuss`, `fetch-task`, `find-session`, `meeting-notes`, `quick-review`, `rename-session`, `report`, `setup-notion`, `spec`, `spec-review`, `sync`, `sync-report`, `update-docs`, `upload-meeting`, `verify`, `wrap-up`. See [`gh skill install`](https://cli.github.com/manual/gh_skill_install) for the full list of supported agents and flags.
 
 ### Manual
 
