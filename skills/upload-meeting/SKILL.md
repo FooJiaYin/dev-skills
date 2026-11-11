@@ -1,6 +1,6 @@
 ---
 name: upload-meeting
-description: Upload a markdown meeting note to the configured Notion Meetings DB. Accepts a local .md file path, a Google Docs URL, or pasted markdown text. Prompts for Title / Date / Participants when missing, creates the page via `notion-create-pages`, and prints the new page URL. Body shape uses Notion's native `<meeting-notes>` block (with `<transcript>` populated when available) at the top, followed by the synthesized 整理過的會議記錄 as the page body. Transcript source priority (see §4b): (1) `資料來源` / `Source` / `Transcript` reference in the meeting body, (2) sibling `<basename>-transcript.*` sidecar (per `/meeting-notes` convention), (3) recent conversation-history mention or paste, (4) explicit `AskUserQuestion` when ambiguous — never silently treat as "none." After successful upload of a local file, annotates it with `notion.page` frontmatter for idempotency. If the input itself looks like a raw transcript rather than synthesized notes, recommends running `/meeting-notes` first. Use when the user says "/upload-meeting", "upload this meeting to Notion", "push meeting note to Notion", or when dispatched from `/meeting-notes` (post-save chain) or `/create-tasks` (non-Notion preflight, meetings-DB branch only).
+description: Upload a markdown meeting note to the configured Notion Meetings DB. Accepts a local .md file path, a Google Docs URL, or pasted markdown text. Prompts for Title / Date / Participants when missing, creates the page via `notion-create-pages`, and prints the new page URL. Body is the synthesized 整理過的會議記錄, with the transcript (when available) in a collapsed 逐字稿 toggle at the end. Transcript source priority (see §4b): (1) `資料來源` / `Source` / `Transcript` reference in the meeting body, (2) sibling `<basename>-transcript.*` sidecar (per `/meeting-notes` convention), (3) recent conversation-history mention or paste, (4) explicit `AskUserQuestion` when ambiguous — never silently treat as "none." After successful upload of a local file, annotates it with `notion.page` frontmatter for idempotency. If the input itself looks like a raw transcript rather than synthesized notes, recommends running `/meeting-notes` first. Use when the user says "/upload-meeting", "upload this meeting to Notion", "push meeting note to Notion", or when dispatched from `/meeting-notes` (post-save chain) or `/create-tasks` (non-Notion preflight, meetings-DB branch only).
 ---
 
 # upload-meeting — meeting markdown → Notion Meetings DB
@@ -30,11 +30,10 @@ Three accepted shapes (priority order):
 
 If none of the above is present, ask via `AskUserQuestion`: paste markdown / local path / Google Docs URL.
 
-**Idempotency check (local-file only).** If the file has `notion.page` frontmatter, fetch that page first to check whether it already has a `<meeting-notes>` block, then `AskUserQuestion` with the appropriate options:
+**Idempotency check (local-file only).** If the file has `notion.page` frontmatter, fetch that page, then `AskUserQuestion`:
 
-- **Page has no `<meeting-notes>` block AND §4b resolved a transcript** — offer (1) **Retrofit transcript** (recommended; `update_content` inserts a fresh `<meeting-notes>` block — server allows this), (2) Open existing page as-is, (3) Upload as new page (§6 overwrites), (4) Cancel.
-- **Page has an existing `<meeting-notes>` block** — `<transcript>` slot is server-locked (see Hard constraints). Offer (1) Open existing page (recommended), (2) Upload as new page (§6 overwrites; re-wiring task cross-links to the new URL is the caller's problem, e.g. `/create-tasks` annotations), (3) Cancel.
-- **Page already has the transcript content matching the resolved one** — just open existing page.
+- **Page lacks a 逐字稿 toggle AND §4b resolved a transcript** — offer (1) **Append transcript** (recommended; §5-2 toggle via `insert_content`), (2) Open existing page as-is, (3) Upload as new page (§6 overwrites), (4) Cancel.
+- **Otherwise** — offer (1) Open existing page (recommended), (2) Upload as new page (§6 overwrites; re-wiring task cross-links is the caller's problem, e.g. `/create-tasks`), (3) Cancel.
 
 ## 3. Transcript guard
 
@@ -88,25 +87,17 @@ One `notion-create-pages` call.
 
 ### 5-2. Transcript block (when §4b resolved one)
 
-If §4b resolved a transcript, add Notion's native `<meeting-notes>` block here, then synthesized notes below. Canonical syntax (verify against `notion://docs/enhanced-markdown-spec` via `ReadMcpResourceTool` if unsure):
+Notion's markdown spec makes the `<meeting-notes>` transcript section read-only — never add it to new pages. Instead, append the transcript **after** the synthesized notes as a collapsed toggle:
 
   ```
-  <meeting-notes>
-  	<composed title as plain rich text — first child of meeting-notes>
-  	<notes>
-  	</notes>
-  	<transcript>
-  		[raw transcript verbatim, each line tab-indented one level deeper than <transcript>]
-  	</transcript>
-  </meeting-notes>
+  <toggle heading="h2">
+  逐字稿
+
+  [raw transcript verbatim]
+  </toggle>
   ```
 
-  Rules (each is load-bearing; getting any wrong silently drops content):
-  - **Title is plain rich text**, not a `<title-line: …>` tag. The `<title-line:>` syntax does not exist — Notion stores it as escaped literal text and the parser bails on subsequent siblings, dropping `<transcript>`.
-  - **All content inside `<notes>` / `<transcript>` must be tab-indented at least one level deeper than the parent tag** (Notion-flavored markdown requirement). Heading and bullet markers inside the slots still parse correctly when tab-indented.
-  - **`<notes>` stays empty** by design — synthesized notes go below the block in the page body. Filling `<notes>` is technically allowed but breaks the convention with workspace pages that don't use `<meeting-notes>` at all.
-
-If no transcript is found, skip the `<meeting-notes>` block entirely and just put synthesized notes in the page body. **Never emit an empty `<transcript>` slot hoping to fill it later** — see Hard constraint on transcript write-once below.
+Long transcripts: create the page with the notes first, then append the toggle via `notion-update-page` `insert_content` (position end). No transcript → omit the toggle.
 
 ### 5-3. Body
 
@@ -145,10 +136,6 @@ This mirrors `/fetch-task`'s `notion.page` convention. §2's idempotency check r
 - **Single page per invocation.** No batch upload — callers loop if they need multiple.
 - **Local-file annotation is best-effort and idempotent.** Frontmatter is written only after a successful upload. Re-runs detect existing `notion.page` and prompt before creating a duplicate. Skip silently for non-file inputs.
 - **Transcript source resolution lives in §4b.** Priority: (1) body source-reference line (`資料來源` / `Source` / `Transcript`) > (2) sidecar file `<basename>-transcript.*` > (3) conversation-history mention or paste > (4) explicit `AskUserQuestion`. Never silently default to "no transcript" — the user must confirm. Conversation-history match must be surfaced in chat so the user can correct a wrong paste before upload.
-- **`<transcript>` is write-once per `<meeting-notes>` block.** Server rejects modifications to an **existing** `<transcript>` slot (`update_content` / `replace_content`) with `"Editing transcripts via AI is disabled to preserve the original conversation. Users can manually edit the transcript."` **However: inserting a brand-new `<meeting-notes>` block via `update_content` IS allowed** on pages that don't yet have one — verified empirically. Implication for §2 idempotency:
-    - **Page without `<meeting-notes>` block** → late-arriving transcript can be retrofitted via `update_content` (prepend a fresh `<meeting-notes>` block).
-    - **Page with existing `<meeting-notes>` block** → server-locked. Retrofit requires re-upload as a new page (manual UI edit is also possible inside Notion).
-  Surface this distinction in §2's idempotency prompt when an existing page is detected and a transcript is now available.
-- **Body uses Notion's native `<meeting-notes>` block, not a generic toggle.** Shape verified via `notion-fetch` with `include_transcript: true`. The block carries the transcript only; synthesized notes go below it as the page's main body.
+- **Never write a `<meeting-notes>` transcript section.** The spec marks it read-only; the transcript goes in the §5-2 toggle at page end.
 - **Property names are schema-driven, not hardcoded.** Always fetch the Meetings DB schema first and map metadata by property type (`date`, `people`/`person`/`relation`). Workspace variations (`日期` vs `Date`, `與會者` vs `Attendees`) must work without code changes.
 - **MCP write responses echo input, not persisted state.** After `notion-create-pages`, `notion-fetch` the created page and spot-check: (1) the Date property (`is_datetime: 0` quirk — see §5-1), (2) body content for transcription errors, (3) Participants and Project relations. Treating the create response as proof-of-write has caused silent data corruption.
