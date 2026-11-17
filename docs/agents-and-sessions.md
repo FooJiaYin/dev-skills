@@ -6,6 +6,8 @@
 
 - 防睡由 hook（`dev-skills/bin/keep-awake.py`）處理：派 agent 時自動 caffeinate 2 小時，Remote Control 時撐到 session 結束。**不要自己開或 kill caffeinate，絕不 `pkill`／`killall caffeinate`**（會殺掉使用者和其他 session 的）。
 - **Fan-out 前 `ls` 確認每個共用輸入（指示檔、資料檔）都在**；共用指示檔不要放在會被重建腳本清空的資料夾（seen：重建腳本 `rm *.md` 連指示檔一起刪，17 個 agent 空跑）。
+- **派會跑測試、build 或起服務的 agent 之前，先看這台機器的記憶體**（`sysctl -n hw.memsize vm.swapusage`、`uptime`），依此定平行上限；swap 已經用掉好幾 GB 就先減少平行數或請使用者關掉其他程式，不要硬派。吃資源的驗證（Docker 映像 build、整套整合測試）排在其他 agent 不跑測試的時候，或交給 CI。brief 裡寫明「測試一次只跑一個指令、不要同時跑兩個」。（Seen：8 GB 的機器同時派 4–6 個跑整合測試的 agent 再加一個本機映像 build，swap 用到 12 GB，同一支測試從 2 分鐘變 11 分鐘、資料庫當掉一次，使用者問了兩次「怎麼那麼久」。）
+- **跑很久的指令，輸出先存成檔再篩選**（`cmd > log 2>&1; grep … log`），不要直接接 `| grep … | head`：`head` 先吃滿就看不到結尾的結果，等於白跑。（Seen：一支 10 分鐘的測試接了 `grep … | head -8`，摘要行被前面 8 行雜訊擠掉，結果未知只能重來。）
 - **要 agent 產出長檔時，prompt 一律寫明「分段寫入：先 Write 前段，之後每段用 Edit 追加；每欄精簡在一行」**。一次 Write 整份長輸出會 API 逾時，或 20–40 分鐘無動靜看似卡死。判斷卡住要看輸入規模與同批其他 agent 的耗時，不要只看時間（seen：誤判卡住而重派，原 agent 隨後正常交件）。
 - **Subagent 模型：不要用 Fable。** 抽取、分類、歸納用 `sonnet`；需要判斷與綜合的撰寫用 `opus`。先派 1–2 個試跑確認品質再全量派出。
 - **Fan-out prompt 寫明「不要再派 agent，自己依序做完」。** 子 agent 回報「未完成」時，先用 `ListAgents` 看它派出的子 agent 是否還在跑，再決定接續或重派（seen：兩組交回未完成，其子 agent 其實還在跑，叫它重做差點雙寫同一批檔）。回報進度一律 `ls` 輸出檔來數，不憑記憶。
