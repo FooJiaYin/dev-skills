@@ -32,6 +32,7 @@ Run `git diff --stat <this session's commits> | tail -1` — find them by messag
 ## 4. Generate report
 
 - Invoke `/report` (the `report` skill) to capture what was done — conversation, file changes, actions — into `docs/reports/YYYY-MM-DD-[title].md`.
+- **One report per task.** Before invoking `/report`, map this session's commits to Notion tasks (`docs/tasks/*.md` with `notion.page`, or tickets named in the session). More than one task → one report per task (`<date>-<task title>-<id6>.md`, its own `notion.page` frontmatter, a shared `-artifacts/` folder) — never one combined report. Work with no task → `AskUserQuestion`: open a task, or keep an unsynced report. (Seen: a session that chose "fix first, add tasks later" wrote one combined report for seven items; it could not be synced and had to be split and re-ticketed afterwards.)
 - Carry `/verify` evidence into the report: name the checks and manual scenarios, include representative inputs and observed results, and record anything intentionally not exercised. A bare “tests passed” is insufficient for non-trivial feature work.
 - Skip if the change is trivial (typo, single-line fix) or the user opts out.
 - `TODO.md` was already written by `/align end` (step 3) — don't re-write it here; the report's `# Unsolved Issues` points to it.
@@ -76,6 +77,7 @@ Sweep session-created files before commit. Scan untracked files (`git status --s
 - Write the commit message focused on **why**, not what. Follow the repo's existing commit style (check `git log` for tone). If the preferred commit styles are mentioned in the docs, such as `AGENTS.md`, `README.md`, or `docs/*.md`, follow those.
 - Commit.
 - **Push popup** (header: "Push?") with three options: **Open PR** (`git push` + `gh pr create`), **Push direct** (`git push` to tracked branch), **Stop** (commit stays local).
+- **Open PR while a required check is still running or not done** (real-role save check, E2E, deploy check) → `gh pr create --draft`, say in the body what is pending, and run `gh pr ready` only after it passes. (Seen: a PR whose body said "verification pending" was merged by another session before the check finished.)
 - ASK FIRST via `AskUserQuestion` before any push, force-push, or destructive git operation — never inline-ask for these.
 
 ## 8. Sync report to Notion

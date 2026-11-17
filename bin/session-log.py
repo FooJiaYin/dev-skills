@@ -16,6 +16,7 @@ Hook subcommands (read hook JSON on stdin, print nothing unless noted):
   warn       PreToolUse(Write|Edit|MultiEdit|NotebookEdit)  another session wrote this file
              recently (its log has a [write] for the path) -> additionalContext warning
   index      SessionStart(startup|clear|fork)  the project's 5 most recent logs, 5 lines each
+             (reprint + index first print a ⚠ line if this session id is live in another claude process)
 CLI:
   note "text"                          append [note] for the current session
   show [session-id]                    print the log
@@ -1046,6 +1047,63 @@ def cmd_backfill(arg: str | None) -> None:
     print(f"backfilled {n} sessions")
 
 
+# ------------------------------------------------- duplicate-window detection
+# One record per running claude process: <LIVE_DIR>/<pid>.json = {sid, start}. Keyed by
+# process, not session, because one process can switch session id (/clear, in-app /resume).
+# A process is identified by pid + start time so a reused pid never matches.
+LIVE_DIR = PROJECTS_ROOT / ".session-live"
+
+
+def _proc(pid: int) -> tuple[int, str, str] | None:
+    """(ppid, lstart, comm) of a live process, or None."""
+    try:
+        out = subprocess.run(["ps", "-o", "ppid=,lstart=,comm=", "-p", str(pid)],
+                             capture_output=True, text=True, timeout=1).stdout.split(None, 6)
+        return (int(out[0]), " ".join(out[1:6]), out[6].strip()) if len(out) == 7 else None
+    except (OSError, ValueError, subprocess.SubprocessError):
+        return None
+
+
+def _claude_proc() -> tuple[int, str] | None:
+    """(pid, start) of the claude process running this hook: nearest ancestor named claude."""
+    pid = os.getppid()
+    for _ in range(5):
+        info = _proc(pid)
+        if not info:
+            return None
+        if os.path.basename(info[2]) == "claude":
+            return pid, info[1]
+        pid = info[0]
+        if pid <= 1:
+            return None
+    return None
+
+
+def dup_window_warning(sid: str, me: tuple[int, str] | None, live_dir: Path = LIVE_DIR) -> str:
+    """Record `me` as running `sid`; return a warning if another live claude process runs `sid`."""
+    if not sid or not me:
+        return ""
+    live_dir.mkdir(parents=True, exist_ok=True)
+    others = []
+    for f in live_dir.glob("*.json"):
+        try:
+            pid, rec = int(f.stem), json.loads(f.read_text())
+        except (OSError, ValueError):
+            continue
+        if pid == me[0]:
+            continue
+        info = _proc(pid)
+        if not info or info[1] != rec.get("start"):
+            f.unlink(missing_ok=True)  # dead or pid reused: stale
+        elif rec.get("sid") == sid:
+            others.append(pid)
+    (live_dir / f"{me[0]}.json").write_text(json.dumps({"sid": sid, "start": me[1]}))
+    if not others:
+        return ""
+    return (f"⚠ 這個 session（{sid[:8]}）已經在另一個視窗開著（pid {', '.join(map(str, others))}）："
+            "兩邊會寫同一份紀錄，提問可能卡在另一邊。只留一個視窗。（回話第一句先把這行告訴使用者）")
+
+
 def main(argv: list[str]) -> None:
     if len(argv) < 2:
         sys.exit(__doc__)
@@ -1075,6 +1133,13 @@ def main(argv: list[str]) -> None:
         hook = json.load(sys.stdin)
     except ValueError:
         return
+    if sub in ("reprint", "index"):  # SessionStart: warn first (fits the 300-char margin reprint leaves)
+        try:
+            w = dup_window_warning(hook.get("session_id") or "", _claude_proc())
+        except Exception:
+            w = ""
+        if w:
+            print(w, flush=True)
     try:
         {"snapshot": cmd_snapshot, "record": cmd_record, "said": cmd_said,
          "reprint": cmd_reprint, "warn": cmd_warn, "index": cmd_index}[sub](hook)
