@@ -109,6 +109,7 @@ No uncommitted changes → skip silently.
 - **Never overwrite Status without explicit confirmation.**
 - **Body append is verbatim copy-paste.** Never rewrite, summarize, rephrase, or reformat any section. The only allowed omission is an identical leading top-level section already present on the target (normally a fetched task's managed `# Context`).
 - **Frontmatter stripped before sending to Notion.**
+- **Section order on the task: `# Context` → `Resource` → `# Plan` → … → `# Updates` → … → `Reference` (last).** `# Resource` = the material the task works from (files are uploaded with `notion-create-file-upload`); `# Reference` = what the work points to (PRs, docs consulted). Add neither when empty.
 - **`[n]` branch puts report body directly into task body** (no `# Context`) and skips step 8.
 
 ## Notes

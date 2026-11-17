@@ -37,6 +37,8 @@ If several candidates fit, pick by the task / topic of this session; ask only wh
 - <item> — in task <name> | → TODO.md — <stage>: "<short quote>"
 ```
 
+**Picking up a handoff file or an existing branch is also a `start`.** Check every handoff item and every already-built piece against the meeting's Action Items before continuing — the handoff is a summary, not the baseline. An item marked "waiting for external material" is split per sub-item: name what each one waits for, and do the ones that wait for nothing. _(2026-11-18: a ticket parked as "waiting for the sales template" had two of four items that needed nothing; an inherited branch covered manual **cost** overrides while the Action Item said manual **price** overrides.)_
+
 **Light start** (`/create-tasks`): only meeting notes → tasks; every commitment ends as a task, an explicit skip with a reason, or a TODO.md item.
 
 ## 3. `end`
