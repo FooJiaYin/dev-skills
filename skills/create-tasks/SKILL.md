@@ -265,6 +265,8 @@ Regenerate the plan markdown reflecting all comments in one revision. Re-enter p
 
 ### 9. Execute (only after plan-mode approval)
 
+**Hand all of §9 to one subagent** (JSON → validate → apply → repair `✗` → backfill `✅` → §9.6 TODO.md); the main thread keeps only the result.json summary and the `✗` list, then runs §10.
+
 **Re-`Read` the WHOLE plan file immediately before writing — the user may have hand-edited it during/after approval.** Long iteration means rows get merged, renamed, removed, or re-classified after you last saw them. Build the create-set from the **current** plan bytes, not your earlier in-context copy, and create only the CREATE rows still present. Creating from a stale copy ships **orphaned Notion tasks** (rows the user already deleted) that then need manual cleanup. After creating, backfill each new page id inline onto its plan row (`✅〔notion:<id>〕`) so plan ↔ Notion stay reconciled.
 
 **Script path first.** From the current plan bytes write `docs/tasks/_plan-<…>.json` per [tasks-json.md](tasks-json.md): properties + pointers only (`ref` / `from` / `until` into the local meeting files), never pasted bodies. Then:

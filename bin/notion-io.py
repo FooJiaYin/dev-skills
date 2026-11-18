@@ -816,7 +816,8 @@ def apply(spec, sources, path, dry):
             res["tasks"][k] = {"status": "pending", "fp": fp(t)}; save()
             page = req("POST", "/pages", {"parent": {"type": "data_source_id", "data_source_id": ds}, "properties": sent})
             res["tasks"][k] = {"id": page["id"], "url": page["url"], "status": "partial", "fp": fp(t),
-                               "sent": {n: prop_expect(v) for n, v in sent.items()}}
+                               "sent": {n: prop_expect(v) for n, v in sent.items()},
+                               "sent_raw": {n: v for n, v in sent.items() if schema[n]["type"] in ("people", "date")}}
             save()
             # the create call can default people/date to the bot user / today — set them again explicitly
             fix = {n: v for n, v in sent.items() if schema[n]["type"] in ("people", "date")}
@@ -951,6 +952,11 @@ def apply(spec, sources, path, dry):
                 continue
             try:
                 got = req("GET", f"/pages/{r['id']}")["properties"]
+                off = [n for n, v in r["sent"].items() if n in got and prop_read(got[n]) != v and n in r.get("sent_raw", {})]
+                if off:  # Notion re-defaults these after create (guest → bot, blank date → today): wait, re-send, re-read once
+                    time.sleep(2)
+                    req("PATCH", f"/pages/{r['id']}", {"properties": {n: r["sent_raw"][n] for n in off}})
+                    got = req("GET", f"/pages/{r['id']}")["properties"]
                 bad = [f"{n}: sent {v!r} got " + (repr(prop_read(got[n])) if n in got else "no such property")
                        for n, v in r["sent"].items() if n not in got or prop_read(got[n]) != v]
                 if bad:
