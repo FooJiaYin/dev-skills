@@ -90,6 +90,8 @@ If detected, `AskUserQuestion`: `Apply <url>` / `Skip`.
 
 **`update_content` anchors: Notion stores inline code as `<code>…</code>`, not backticks** (bold as `<b>`). An `old_str` copied from the local markdown that contains `` ` `` never matches. Anchor on a plain-text fragment, or copy the exact bytes from a `notion-fetch`.
 
+**Notion auto-links bare filenames that look like domains** (`AGENTS.md`, `TODO.md` outside backticks become `[AGENTS.md](http://AGENTS.md)`). After the append, grep the fetched body for `](http://<name>.<ext>)` and unwrap them with one `update_content`.
+
 > **Property-name foot-gun:** the `userDefined:` prefix is ONLY for properties literally named `id` or `url` (case-insensitive). Property *types* that hold URLs — `Github Link`, `Slack Link`, `Spec URL`, etc. — use their plain name. A wrongly-prefixed property is silently ignored: the API returns `{page_id}` with no error, but the field stays empty. After writing properties, re-fetch and verify each field changed before claiming success.
 
 **9. Frontmatter write-back.** Update local report: set/refresh `notion.page` (in case 5 picked/created) and `notion.last_synced = <now>`. Body unchanged. Minimal in-place edit.
