@@ -14,6 +14,7 @@
 - **WebSearch 整個 session（主對話＋所有子 agent）共用 200 次，文件未記載、無設定可調；WebFetch 不受限。** 研究型 fan-out 前先估「系統數 × 約 20 次」，超過就分到不同 session 跑，或在 prompt 直接給文件網址讓 agent 用 WebFetch。
 - **派實作 agent 前，把任務 `# Context`／會議裡每一條具體的 UI 要求（放哪裡、長怎樣、用語）逐字抄進 prompt 當驗收條件；交回時逐條核對（用 `/align end`），沒做到的直接告訴我。** 只寫邏輯不寫位置，agent 會放在它覺得方便的地方。（Seen：會議寫「參數介面將類似現有稅費係數欄位」，prompt 只寫換算規則，利潤率被塞進每個公式的「編輯」步驟表，我問「為什麼沒看到利潤input？在哪裡」才發現。）
 - **agent 要寫呼叫外部 CLI 的程式時，brief 裡貼上已驗證的指令與 `--help` 片段**；沒驗證過的旗標組合在整合時實跑一次，不要讓 agent 猜。（Seen：quick-review 的 `run.py` 假設 `codex exec review --uncommitted` 可帶 prompt，實跑才發現不行。）
+- **brief 要 agent 跑某個 skill 時，寫 brief 之前先自己讀過那個 skill**，brief 裡的限制不得和 skill 的規定衝突；要偏離先問使用者。（Seen：為了「不要在共用 dev 上 commit」，brief 寫了「截圖不上傳」，蓋掉 sync-report 規定的圖片上傳，四張票只有文字，使用者問「為何」才補傳 60 張圖。）
 - **brief 一律要求邊做邊落地**：每完成一步就寫出來——程式碼每個修正各自 commit、結果逐步附加到 repo 裡的檔案（不是最後一次寫整份），並維護一份進度檔（做完哪一步、下一步是什麼），讓 session 重啟後接得回來。（Seen：一個 session 重啟四次，瀏覽器測試、review 修正、角色驗證的 agent 都被殺，前三次產物只在 scratchpad 或還沒寫出，全部重跑；改成逐步 commit＋進度檔後才接得回來。）
 - **要 agent 做瀏覽器實測或存測試資料時，前置由主對話做完再派。** auto mode 會擋 subagent 起 dev server、對共用本機 DB 存檔、複製檔案進 `node_modules`，而且是做到一半才擋。派之前：① 確認 worktree 的 `node_modules` 齊全（從主 checkout `cp -cR` 後 `ls` 一個晚裝的套件）；② 主對話自己把 dev server 起好（被擋就請使用者切 default mode 或自己跑），brief 寫明 port；③ brief 逐項寫明**可以寫哪些測試資料**（哪幾件商品、能不能新增），不要一句「不准寫 DB」之後又要它存檔實測。（Seen：三個 agent 分別卡在補套件、存測試商品、起 dev server，review 修正後的角色存檔實測兩度沒做成，PR 只能停在 draft。）
 
