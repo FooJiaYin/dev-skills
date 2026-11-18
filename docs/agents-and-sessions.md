@@ -30,3 +30,4 @@
 ## 開新 session
 
 - **可以自己開新的本機 session**，不要回答做不到：把交接內容寫成 `docs/tasks/_handoff-<日期>-<主題>.md`，然後 `osascript` 叫 Terminal 執行 `cd <專案> && claude "$(cat '<交接檔>')"`（PATH 要含 `~/.local/bin`、nvm、Homebrew），開完用 `ListAgents` 確認新 session 出現。（Seen：使用者說「open new session and send msg to it」，先回做不到，被說「other session can do it, why you can't」。）
+- **交接檔裡的待決定項，接手後開工前就問。** 接手 session 讀完交接檔，把標成「待確認／拿不準就寫 TODO」的項目先用 `AskUserQuestion` 問掉，同時做不受影響的部分；不要留到 wrap-up 才問。寫交接檔的一方也寫明 wrap-up 用 Quick 還是 Full。（Seen：交接寫「台幣成本人工覆寫要不要給按鈕，拿不準就寫 TODO」，接手 session 做完、實測完才問，使用者選要做，多一輪實作與實測。）
