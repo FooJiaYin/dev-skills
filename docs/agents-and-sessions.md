@@ -31,4 +31,5 @@
 ## 開新 session
 
 - **可以自己開新的本機 session**，不要回答做不到：把交接內容寫成 `docs/tasks/_handoff-<日期>-<主題>.md`，然後 `osascript` 叫 Terminal 執行 `cd <專案> && claude "$(cat '<交接檔>')"`（PATH 要含 `~/.local/bin`、nvm、Homebrew），開完用 `ListAgents` 確認新 session 出現。（Seen：使用者說「open new session and send msg to it」，先回做不到，被說「other session can do it, why you can't」。）
+- **開新 session 時就命名、指定 id**：`claude -n "<YYYY-MM-DD>-<主題>" --session-id "$(uuidgen | tr A-Z a-z)" "$(cat '<交接檔>')"`，把 id 和名稱記在交接檔與回報裡，事後不用猜誰是誰（`-n` 會顯示在提示框、`/resume` 清單與終端機標題）。ListAgents 只顯示 `<專案>-xx`，跟 `-n` 名稱是否連動未驗證；要發訊息時，交接檔開場加一句「開工前用 SendMessage 告訴 `<我的 ListAgents 名稱>` 你的 ListAgents 名稱」來對上。（Seen：商品圖片、報價單、9–10 月匯入三個 session 分不出誰是誰，同一則訊息發給兩個，其中一個回「不是我」。）
 - **交接檔裡的待決定項，接手後開工前就問。** 接手 session 讀完交接檔，把標成「待確認／拿不準就寫 TODO」的項目先用 `AskUserQuestion` 問掉，同時做不受影響的部分；不要留到 wrap-up 才問。寫交接檔的一方也寫明 wrap-up 用 Quick 還是 Full。（Seen：交接寫「台幣成本人工覆寫要不要給按鈕，拿不準就寫 TODO」，接手 session 做完、實測完才問，使用者選要做，多一輪實作與實測。）
