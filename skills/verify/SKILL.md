@@ -14,7 +14,7 @@ This skill runs the verification checks defined in the implementation plan. It i
   - A planning doc the user explicitly pointed to in this conversation
   - A `docs/plans/` or similar folder in the project
 - If multiple candidates exist and it's ambiguous, ask the user which plan to verify against. Don't guess.
-- If no plan exists, or the plan has no **Test plan** / **Verification** section, **stop and ask the user** — don't invent checks.
+- If no plan exists, or the plan has no **Test plan** / **Verification** section, **stop and ask the user** — don't invent checks. If this session already ran checks, list them (command / scenario → result) in that question and offer: use those as the record, or add checks from the task's acceptance criteria.
 
 ## 2. Read the Test plan section
 
