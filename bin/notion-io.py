@@ -5,13 +5,16 @@
     notion-io.py apply    <tasks.json> [--dry-run]      run it; resumes from <tasks>.result.json
     notion-io.py upload-meeting <note.md> --db <meetings DB/data source> --title T
                  [--props JSON] [--transcript FILE] [--page EXISTING]   (--page: append transcript only)
+    notion-io.py sync-report <report.md> [--page TASK] [--status S] [--github URL] [--time START [END]]
+                 [--skip H1]... [--force] [--dry-run [--offline]] [--blocks-out FILE]   append a report to its task
 
 tasks.json format: skills/create-tasks/tasks-json.md.
 
 Token (first hit): --token-name / `Token: keychain <name>` in the nearest AGENTS.md → Keychain
 `notion-token` → $NOTION_TOKEN → NOTION_TOKEN= in the nearest .env. One token = one workspace; the
 integration must be shared with every DB / page it touches (page ⋯ → Connections).
-Exit codes: 0 ok · 1 some writes failed · 2 validation failed · 3 no token (use the MCP fallback).
+Exit codes: 0 ok · 1 some writes failed · 2 validation failed · 3 no token (use the MCP fallback) ·
+4 sync-report needs a user decision (message says which).
 """
 import argparse, copy, datetime, hashlib, json, os, re, subprocess, sys, time, urllib.error, urllib.request
 
@@ -215,9 +218,13 @@ LIST = re.compile(r"^(\s*)([-*+]|\d+[.)])\s+(\[[ xX]\]\s+)?(.*)$")
 SEP = re.compile(r"^\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$")
 
 
-def md_blocks(md, headings=True):
+IMG = re.compile(r'^!\[(?P<alt>[^\]]*)\]\((?P<src>[^)\s]+)(?:\s+"[^"]*")?\)$')
+
+
+def md_blocks(md, headings=True, image=None):
     """Markdown → Notion blocks. headings=False turns every heading into a bold paragraph
-    (used for sections copied under a task's `### 會議記錄` heading)."""
+    (used for sections copied under a task's `### 會議記錄` heading). image(src, alt) → block
+    turns a line that is only `![alt](src)` into an image block; without it the line stays text."""
     lines = md.split("\n")
     out, stack, para, i = [], [], [], 0
 
@@ -253,6 +260,10 @@ def md_blocks(md, headings=True):
             continue
         if re.match(r"^(-{3,}|\*{3,}|_{3,})$", s):
             flush(); stack.clear(); out.append(block("divider")); i += 1
+            continue
+        im = image and IMG.match(s)
+        if im:
+            flush(); stack.clear(); out.append(image(im.group("src"), im.group("alt"))); i += 1
             continue
         if s.startswith("|"):
             flush(); stack.clear()
@@ -1000,6 +1011,223 @@ def mark_local(path, text, url):
     return True
 
 
+# ---------- report sync ----------
+
+class Stop(NotionError):
+    """Not a Notion failure: the agent must decide or fix something first (exit 2 = input, 4 = ask the user)."""
+    def __init__(self, msg, code=2):
+        super().__init__(msg)
+        self.code = code
+
+
+def upload_file(path):
+    """File Upload API, single part (≤20 MB) → upload id. Attach it within an hour."""
+    import mimetypes, uuid
+    name, size = os.path.basename(path), os.path.getsize(path)
+    if size > 20 * 1024 * 1024:
+        raise Stop(f"{path}: {size} bytes is over the 20 MB single-part limit")
+    ctype = mimetypes.guess_type(name)[0] or "application/octet-stream"
+    up = req("POST", "/file_uploads", {"filename": name, "content_type": ctype})
+    b = uuid.uuid4().hex
+    data = (f'--{b}\r\nContent-Disposition: form-data; name="file"; filename="{name}"\r\n'
+            f"Content-Type: {ctype}\r\n\r\n").encode() + open(path, "rb").read() + f"\r\n--{b}--\r\n".encode()
+    for attempt in range(4):
+        time.sleep(max(0, 0.34 - (time.time() - _last[0]))); _last[0] = time.time()
+        r = urllib.request.Request(f"{API}/file_uploads/{up['id']}/send", method="POST", data=data,
+                                   headers={"Authorization": "Bearer " + TOKEN, "Notion-Version": VERSION,
+                                            "Content-Type": f"multipart/form-data; boundary={b}"})
+        try:
+            with urllib.request.urlopen(r, timeout=120) as resp:
+                json.load(resp)
+            return up["id"]
+        except urllib.error.HTTPError as e:
+            if e.code == 429 and attempt < 3:
+                time.sleep(float(e.headers.get("Retry-After") or 2)); continue
+            raise NotionError(f"upload {name}: HTTP {e.code} {e.read()[:200]!r}")
+        except (urllib.error.URLError, OSError) as e:
+            raise NotionError(f"upload {name}: {e}")  # an unattached upload just expires — safe to redo
+
+
+def h1_sections(lines):
+    """Top-level `# ` sections (code-fence aware) → [[title, lines incl. the heading]]; text before the first H1 → title None."""
+    out, fence = [[None, []]], False
+    for l in lines:
+        if l.strip().startswith("```"):
+            fence = not fence
+        m = not fence and re.match(r"^#\s+(.*)$", l)
+        if m:
+            out.append([m.group(1).strip(), []])
+        out[-1][1].append(l)
+    return [s for s in out if s[0] is not None or any(x.strip() for x in s[1])]
+
+
+def norm(s):
+    """Comparable text of local (Notion-flavoured) markdown: words only — no markup, URLs, mentions or images."""
+    s = re.sub(r"<(mention(?:-[\w-]+)?|date)\b[^>]*?(?:/>|>.*?</\1>)", "", s, flags=re.S)
+    s = re.sub(r"^\s*```.*$", "", s, flags=re.M)
+    s = re.sub(r"<[^>]+>", "", s)  # before list markers: `<b>2. x</b>` is a numbered item on Notion
+    s = re.sub(r"^\s*([-*+]|\d+[.)])\s+(\[[ xX]\]\s+)?", "", s, flags=re.M)
+    s = re.sub(r"!\[[^\]]*\]\([^)]*\)", "", s)
+    s = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", s)
+    return re.sub(r"[\W_]+", "", s).lower()
+
+
+def page_sections(pid):
+    """Task body → {norm(H1 title): norm(text under it)}; key None = blocks before the first H1."""
+    secs, cur = {}, None
+    top = pid.replace("-", "")
+    for b in walk(pid):
+        d = b.get(b["type"], {})
+        if b["type"] == "heading_1" and b["parent"].get("page_id", "").replace("-", "") == top:
+            cur = norm(plain(d.get("rich_text", [])))
+            secs.setdefault(cur, "")
+            continue
+        rts = [d.get("rich_text") or []] + (d.get("cells") or [])
+        secs[cur] = secs.get(cur, "") + "".join(norm("".join(t.get("plain_text", "") for t in rt if t["type"] != "mention")) for rt in rts)
+    return secs
+
+
+def stray_images(blocks):
+    """`![…](…)` left as text (inside a table cell / list item); code spans and code blocks don't count."""
+    for b in blocks:
+        if b["type"] == "code":
+            continue
+        d = b[b["type"]]
+        for rt in [d.get("rich_text") or []] + d.get("cells", []):
+            t = "".join(x.get("text", {}).get("content", "") for x in rt if not x.get("annotations", {}).get("code"))
+            if re.search(r"!\[[^\]]*\]\([^)\s]+", t):
+                yield t[:70]
+        yield from stray_images(d.get("children", []))
+
+
+def sync_report(path, page=None, status=None, github=None, gprop=None, when=None, force=False, dry=False, offline=False, dump=None, drop=()):
+    import urllib.parse
+    lines = open(path).read().split("\n")
+    fm = "\n".join(lines[1:lines.index("---", 1)]) if lines and lines[0] == "---" and "---" in lines[1:] else ""
+    m = re.search(r"^\s+page:\s*(\S+)", fm, re.M)
+    page = page or (m and m.group(1))
+    if not page:
+        raise Stop("no --page and no notion.page in the report frontmatter")
+    pid = nid(page)
+    body = [l for l in strip_frontmatter(lines) if not re.match(r"^\s*<!--.*-->\s*$", l)]
+    spath = re.sub(r"\.md$", "", path) + ".sync.json"
+    st = json.load(open(spath)) if os.path.exists(spath) else {}
+    save = lambda: dry or json.dump(st, open(spath, "w"), ensure_ascii=False, indent=1)
+
+    # 1. drop leading sections the task already has verbatim (normally the fetched # Context)
+    keep, skipped, notes = h1_sections(body), [], []
+    while keep and keep[0][0] and norm(keep[0][0]) in {norm(x) for x in drop or ()}:  # --skip: user said leave it out
+        skipped.append(keep.pop(0)[0])
+    if not offline and st.get("body") != "done":
+        have = page_sections(pid)
+        while keep and keep[0][0] and norm(keep[0][0]) in have:
+            t, ls = keep[0]
+            if norm("\n".join(ls[1:])) != have[norm(t)]:
+                if force or st.get("body") == "appending":
+                    break
+                raise Stop((f"the task already has {', '.join('# ' + s for s in skipped)} from this report — it looks synced "
+                            f"already (delta re-sync is not supported yet). " if skipped and skipped != ["Context"] else "")
+                           + f"`# {t}` is on the task but differs from the report — ask the user: `--skip \"{t}\"` "
+                           f"leaves it out (e.g. the task's copy is newer), --force appends from `# {t}` on", 4)
+            skipped.append(t); keep.pop(0)
+        notes += [f"the task already has `# {t}` — this appends a second one; replace/merge the old one (step 8b rule)"
+                  for t, _ in keep if t and norm(t) in have]
+    if st.get("body") == "appending" and not force:
+        raise Stop(f"an earlier append stopped partway — check the task body, then rerun with --force "
+                   f"(appends everything again) or fix it by hand and set \"body\": \"done\" in {spath}", 4)
+
+    # 2. markdown → blocks; a line that is only ![alt](file) becomes an image block
+    base, images = os.path.dirname(os.path.abspath(path)), []
+
+    def image(src, alt):
+        cap = fit(rich(alt), "caption") if alt else []
+        if re.match(r"https?://", src):
+            return {"object": "block", "type": "image", "image": {"type": "external", "external": {"url": src}, "caption": cap}}
+        f = os.path.normpath(os.path.join(base, urllib.parse.unquote(src)))
+        images.append(f)
+        return {"object": "block", "type": "image", "image": {"type": "file_upload", "file_upload": {"_path": f}, "caption": cap}}
+
+    blocks = md_blocks("\n".join(l for _, ls in keep for l in ls), image=image)
+    bad = list(stray_images(blocks)) + [f"missing file {f}" for f in images if not os.path.isfile(f)]
+    if bad:
+        raise Stop("images must be on a line of their own, not inside a table or list item (see /report):\n  "
+                   + "\n  ".join(bad))
+
+    # 3. properties: validate everything before the first write
+    sent = {}
+    if status or github or when:
+        pg = req("GET", f"/pages/{pid}")
+        par = pg["parent"]
+        _, schema = data_source(par.get("data_source_id") or par.get("database_id"))
+        by_type = lambda t, pref: pref if schema.get(pref, {}).get("type") == t else next((k for k, v in schema.items() if v["type"] == t), None)
+        if status:
+            sent[by_type("status", "Status")] = status
+        if when:
+            sent[by_type("date", "Time")] = {"start": when[0], "end": when[1]} if len(when) > 1 else {"start": when[0], "end": None}
+        if github:
+            urls = [k for k, v in schema.items() if v["type"] == "url"]
+            g = gprop or next((k for w in ("github", "pr", "commit") for k in urls if w in k.lower()), None)
+            if not g:
+                notes.append("no GitHub URL property on this database — Github Link skipped")
+            elif prop_read(pg["properties"][g]):
+                notes.append(f"{g} already set — kept it (never overwritten)")
+            else:
+                sent[g] = github
+        if None in sent:
+            raise Stop("the database has no status/date property for --status/--time")
+        try:
+            sent = {n: prop_value(n, schema, v, nid) for n, v in sent.items()}
+        except NotionError as e:
+            raise Stop(str(e))
+
+    kinds = {}
+    for b in blocks:
+        kinds[b["type"]] = kinds.get(b["type"], 0) + 1
+    print(f"{'[dry] ' if dry else ''}{path} → {page}\n  skip (already on task): {', '.join('# ' + s for s in skipped) or 'none'}"
+          f"\n  append: {len(blocks)} blocks ({', '.join(f'{k} {v}' for k, v in kinds.items())}), {len(images)} image upload(s)"
+          f"\n  props: {', '.join(sent) or 'none'}" + "".join("\n  " + n for n in notes))
+    if dump:
+        json.dump(blocks, open(dump, "w"), ensure_ascii=False, indent=1)
+    if dry:
+        return 0
+
+    # 4. writes — each stage recorded in <report>.sync.json, so a rerun resumes instead of duplicating
+    if st.get("body") != "done" and blocks:
+        ups = st.setdefault("uploads", {})
+        for f in dict.fromkeys(images):
+            if f not in ups or time.time() - ups[f]["at"] > 3000:  # unattached uploads expire after 1 h
+                ups[f] = {"id": upload_file(f), "at": time.time()}; save()
+
+        def fill(bs):
+            for b in bs:
+                fu = b.get("image", {}).get("file_upload")
+                if fu and "_path" in fu:
+                    fu["id"] = ups[fu.pop("_path")]["id"]
+                fill(b[b["type"]].get("children", []))
+        fill(blocks)
+        st["body"] = "appending"; save()
+        append(pid, blocks)
+    st["body"] = "done"; save()
+
+    if sent and st.get("props") != "done":
+        req("PATCH", f"/pages/{pid}", {"properties": sent})
+        for attempt in range(2):  # Notion can return 200 and still not persist — read back
+            got = req("GET", f"/pages/{pid}")["properties"]
+            off = {n: v for n, v in sent.items() if prop_read(got[n]) != prop_expect(v)}
+            if not off:
+                break
+            if attempt == 0:
+                time.sleep(2); req("PATCH", f"/pages/{pid}", {"properties": off})
+        if off:
+            raise NotionError("properties did not stick: " + "; ".join(f"{n}: sent {prop_expect(v)!r} got {prop_read(got[n])!r}" for n, v in off.items()))
+        st["props"] = "done"; save()
+
+    set_frontmatter(path, page)
+    os.remove(spath)
+    print(f"synced: {len(blocks)} blocks, {len(images)} image(s), props {', '.join(sent) or 'none'}")
+    return 0
+
+
 # ---------- cli ----------
 
 def main():
@@ -1007,17 +1235,22 @@ def main():
     p = argparse.ArgumentParser(description=__doc__.split("\n")[0], epilog="Agents: run `apply` with run_in_background "
                                 "(large bodies/transcripts take minutes). Read only the printed summary and the "
                                 ".result.json — never echo page bodies back into the conversation.")
-    p.add_argument("cmd", choices=["validate", "apply", "upload-meeting"])
+    p.add_argument("cmd", choices=["validate", "apply", "upload-meeting", "sync-report"])
     p.add_argument("file")
     p.add_argument("--show", help="validate: print the resolved sections for this task key")
     p.add_argument("--dry-run", action="store_true")
     p.add_argument("--offline", action="store_true", help="validate without fetching the schema")
     p.add_argument("--token-name", help="Keychain service name holding the integration token")
     p.add_argument("--db"); p.add_argument("--title"); p.add_argument("--props"); p.add_argument("--transcript"); p.add_argument("--page")
+    p.add_argument("--status"); p.add_argument("--github"); p.add_argument("--github-prop")
+    p.add_argument("--time", nargs="+", metavar="DATE", help="sync-report: Time start [end]")
+    p.add_argument("--force", action="store_true", help="sync-report: append even if the task looks synced already")
+    p.add_argument("--blocks-out", help="sync-report: write the converted blocks as JSON here")
+    p.add_argument("--skip", action="append", metavar="H1", help="sync-report: leave out this leading section (repeatable)")
     a = p.parse_args()
     start = os.path.dirname(os.path.abspath(a.file))
     TOKEN = find_token(a.token_name, start)
-    need_net = not (a.cmd == "validate" and (a.offline or a.show))
+    need_net = not ((a.cmd == "validate" and (a.offline or a.show)) or (a.cmd == "sync-report" and a.offline and a.dry_run))
     if need_net and not TOKEN:
         print("no Notion token (Keychain notion-token / $NOTION_TOKEN / .env) → use the MCP fallback.\n"
               "save one: security add-generic-password -U -a \"$USER\" -s notion-token -w", file=sys.stderr)
@@ -1026,6 +1259,11 @@ def main():
         if a.cmd == "upload-meeting":
             upload_meeting(a.file, a.db, a.title, json.loads(a.props) if a.props else None, a.transcript, a.page)
             return
+        if a.cmd == "sync-report":
+            if a.offline and not a.dry_run:
+                raise Stop("--offline only with --dry-run")
+            sys.exit(sync_report(a.file, a.page, a.status, a.github, a.github_prop, a.time, a.force,
+                                 a.dry_run, a.offline, a.blocks_out, a.skip))
         spec, sources = load(a.file)
         if a.cmd == "validate":
             if a.show:
@@ -1043,6 +1281,8 @@ def main():
         if errs:
             print("\n".join("  ✗ " + e for e in errs) + "\nrun validate first"); sys.exit(2)
         sys.exit(apply(spec, sources, a.file, a.dry_run))
+    except Stop as e:
+        print(f"stop: {e}", file=sys.stderr); sys.exit(e.code)
     except NotionError as e:
         print(f"error: {e}", file=sys.stderr); sys.exit(1)
 

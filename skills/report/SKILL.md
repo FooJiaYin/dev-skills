@@ -46,7 +46,7 @@ Before resolving the target file or choosing a template, decide whether to write
 
 For multiple reports: §0 (target file) and the template choice apply per report. Plan integration and session rename happen after all reports are written. When per-task reports are delegated to subagents, each agent invokes `/report` (and `/sync-report`) through the Skill tool — a brief that paraphrases the steps drops some (seen: `attach-plan.sh` skipped in all 8).
 
-**Screenshots belong in the report.** Verification screenshots (browser checks, headless shots) are copied into `docs/reports/<report>-artifacts/screenshots/` and referenced under `## 畫面` at the end of `# Verification` — not left in the scratchpad, which is wiped on restart. `/sync-report` uploads them to the Notion task.
+**Screenshots belong in the report.** Verification screenshots (browser checks, headless shots) are copied into `docs/reports/<report>-artifacts/screenshots/` and referenced under `## 畫面` at the end of `# Verification` — not left in the scratchpad, which is wiped on restart. `/sync-report` uploads them to the Notion task. One screenshot per line, as `![caption](path)` on its own line (caption text in the alt), never inside a table or list item — Notion can't hold images there and the sync rejects it.
 
 ## 0. Resolve Target File (lifecycle-aware)
 

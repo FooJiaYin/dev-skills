@@ -10,7 +10,10 @@
 - [ ] `docs/site` 裡的 code-review 描述沒跟著改（來源：plan 延後，2026-11-04）
 - [ ] 合併回 main 後跑 `/sync-org-forks`（來源：plan 延後，2026-11-04）
 - [ ] `bin/notion-io.py` 的寫入路徑還沒實跑：`apply`（建立、`after` 插入 # Context、table_row 加註、讀回比對）、`upload-meeting`、guest Assignee 不被改成 OAuth 帳號、`Time: null` 保持空白，都只驗了離線解析、唯讀 schema 與 mock API（加註、LINK relation 合併、讀回、續跑；2026-11-12）。用拋棄式測試頁跑一次，順便量總耗時對照原本的 23 分鐘（來源：notion-io plan Verification #4–5、#7，2026-11-11）
-- [ ] `sync-report` append、`fetch-task` pull 改走 `notion-io.py`（來源：notion-io plan 延後，2026-11-11）
+- [ ] `fetch-task` pull 改走 `notion-io.py`（來源：notion-io plan 延後，2026-11-11）
+- [ ] `notion-io.py sync-report` 的寫入路徑沒實跑：圖片上傳（`/file_uploads` create＋send，中文檔名）、append 到頁尾、屬性寫入＋讀回、`.sync.json` 續傳、寫回 `last_synced`。只驗了離線轉換與對真 task 的唯讀 dry-run（使用者選只跑 dry-run）。用拋棄式測試頁跑一次（來源：sync-report 改用 script，2026-11-19）
+- [ ] `sync-report` 之後的版本：重新同步只補差異、取代 task 上舊的 `# Unsolved Issues`、HTML artifact 嵌入、一份報告分給多張 task 時只貼對應段落（現在走 MCP 8b）（來源：sync-report 改用 script 延後，2026-11-19）
+- [ ] dev-skills 自己沒有 Notion token 可找（Keychain 無 `notion-token`、往上無 `.env`）；在 dropout 以外的 repo 跑 `/sync-report` 會走 MCP 備案（來源：sync-report 改用 script，2026-11-19）
 - [ ] Notion 託管圖片連結約 1 小時失效：腳本讀頁面時順便下載（來源：notion-io plan 延後，2026-11-11）
 
 ## 待客戶確認
