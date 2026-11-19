@@ -60,6 +60,7 @@ Regardless of source, you need:
 - **Time** — `HH:MM` start time if available.
 - **Duration** — explicit if provided (Plaud header), otherwise approximate from last timestamp.
 - **Attendees** — distinct speaker labels. **Map `Speaker N` → real names whenever the transcript identifies them.** People introduce each other, get addressed by name, or sign off — sweep before defaulting to `Speaker N`. **Watch for homophone variants from transcription errors** — the same person may appear under multiple spellings (Chinese homophones, near-homophones, or auto-transcription artifacts). Pick the most-frequent spelling as canonical and collapse the rest.
+- **Shared documents** — 逐字稿提到分享畫面或「傳到群組」的文件（時程表、簡報、規格）時，寫那一節前先問使用者要連結並讀它；以文件為準，口述跟文件不同處只註一句。
 
 ## 3.5 Reconcile transcript noise
 
@@ -137,7 +138,7 @@ Use the following section structure. Section names are fixed; **drop a section e
 
 ## 5. Writing guidelines
 
-**Before writing**: skim [`references/example.md`](references/example.md) to calibrate granularity, section structure, bold-label usage, and Action Items grouping. The example shows the shape — adapt it to the actual meeting; don't copy verbatim.
+**Before writing**: skim [`references/2000-01-01-example.md`](references/2000-01-01-example.md) to calibrate granularity, section structure, bold-label usage, and Action Items grouping. The example shows the shape — adapt it to the actual meeting; don't copy verbatim.
 
 - **議題分組要分章**（§3、§4…），不要把所有議題塞在同一章下。
 - **未確認的事不要編造**：如果逐字稿沒指明截止日 / 沒指明某人姓名（只有 `Speaker 2`），照實寫 `[TBD]` 或 `Speaker 2（姓名未明）`。
@@ -149,9 +150,10 @@ Use the following section structure. Section names are fixed; **drop a section e
 - **顆粒度要夠細，不要遺漏討論脈絡**。壓縮的是**說話的冗餘**（重複、口語贅字、純閒聊），內容要完全展開。原則：
   - **條列式為主**。預設用 bullets / 巢狀 bullets 呈現，需要展開就用子 bullet。段落只在 bullet 真的塞不下時用。
   - 每個被認真討論的點都該獨立成一條 bullet（或子 bullet），不要被合併掉，除非內容真的高度重複。
-  - 推理鏈要保留：「現狀 → 為什麼有這個想法 → 對方怎麼回應 → 為什麼這樣決定」這條線不能斷
+  - 推理鏈要保留：「現狀 → 為什麼有這個想法 → 有哪些選項 → 為什麼這樣決定」這條線不能斷
   - 具體例子、數字、案例（如「Google Cloud 一天噴 7000 元」「29 家店重做」「4 美元/月」「Sonnet 一週 vs Opus 三週」）要留住——它們是判斷依據，不是裝飾
   - 一場 2 小時的會議，整理出來的議題分組通常會有 4–8 個子題、3–8 條 bullet。這是合理顆粒度的參考值
+- **以議題為主體，不是以發言者為主體**：不寫「A 問 → B 答」的對話鏈，整理成要點。參考範例。
 - **Surface disagreements, not just decisions.** 兩人推不同方向、最後達成共識，**兩邊立場與共識的原因都要寫**。議題討論完有洞見要 highlight，收斂成幾個重點共識
   - 多項並列比較 → 表格
 - **「已形成的共識」與「尚未定案」必須分開**，不要藏在議題段裡裝作半個決定。讀者要能一眼看出哪些決定了、哪些還在懸而未決。
@@ -168,6 +170,7 @@ Use the following section structure. Section names are fixed; **drop a section e
    - 唯一可不補的是純閒聊（見 §5「預設全部寫進去」規則）。
 
 2. **TODO掃描**：每一個待辦事項都要對應到 Action Items。
+2.5 **形式掃描**：整份記錄是依議題整理，還是讀起來像逐輪對話（「X 問」「Y：」開頭的 bullet 一長串）？後者照 §5「以議題為主體」改寫。
 3. **對照 repo 的 TODO.md**：會議裡已經回答、已經驗證、已經不用做的項目，照全域「TODO.md 跟著進度更新」的規則刪掉或改寫。答案帶出新工作就新增一條。收尾時列出改了哪幾條。
 
 ## 6. Offer Notion upload (optional)
