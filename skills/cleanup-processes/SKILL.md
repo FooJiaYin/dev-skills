@@ -28,6 +28,7 @@ If it prints the "探測失敗" warning, an empty table does not mean there is n
 - Session: `kill -TERM <pid>`; resume with `claude --resume <sessionId>` (VS Code: reopen the tab).
 - Server / browser: `kill -TERM <pid>` (the browser's root pid); after a few seconds `kill -0 <pid>`, and only if it is still there `kill -KILL <pid>`. Never by name.
 - colima: `colima stop`; to lower its cap, `colima start --memory <GB>`.
+- If the permission mode blocks a `kill` (auto mode does), don't retry with another spelling: give the user the exact line to run (`! kill <pids>`) or ask them to switch to default mode. (Seen: three orphan servers stayed up because the kill was denied.)
 - Confirm before reporting "closed": `kill -0 <pid>` fails, `lsof -i :<port>` is empty.
 - Measure swap again and report a before / after table.
 
