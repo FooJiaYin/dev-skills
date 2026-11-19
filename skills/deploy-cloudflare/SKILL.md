@@ -7,6 +7,7 @@ description: Deploy a site to Cloudflare Pages and cut its production domain ove
 
 ## Credentials
 - **Preferred: Account API Token per CF account** (Pages Edit + DNS Edit + Zone Read, no TTL or 90-day rotation), stored in macOS Keychain — read with `T=$(security find-generic-password -s cf-api-token-<account> -w)`, export as `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` for wrangler. Never echo tokens; print length only. Have the user save it with `security add-generic-password -U -a "$USER" -s <name> -w` (interactive prompt, nothing in shell history).
+- **Which token, where:** the org's AGENTS.md Cloudflare section names its token and fallback location — read it before saying no token exists.
 - Fallback: **wrangler OAuth** (`npx wrangler login`): Pages/Workers only, **no DNS**, expires ~1h — `./cfapi.sh METHOD PATH [JSON]` refreshes via `wrangler whoami`.
 - Domains can sit in different CF accounts — list `/zones` first and note each zone's account; account tokens don't span accounts.
 - Mail keys: full-access key is admin-only (local Keychain); production gets a sending-only, single-domain key.
