@@ -118,6 +118,7 @@ These skills bridge between local code/docs and a shared Notion workspace (Roadm
 
 | Skill | Purpose |
 |---|---|
+| [cleanup-processes](skills/cleanup-processes/SKILL.md) | When the Mac is slow: a read-only check script groups what is eating memory, lists Claude sessions and listening ports, and splits candidates into close / ask / keep; close by pid, then report swap before/after. |
 | [find-session](skills/find-session/SKILL.md) | Search Claude Code or Codex sessions by topic or file-change evidence; `--open` refreshes/opens the log. Searches both by default; `--host` filters the source. |
 | [headless-shots](skills/headless-shots/SKILL.md) | Screenshot or drive a locally running web app via headless Chrome + CDP with a minted login cookie — fallback when the Playwright MCP browser is locked; write-path checks verified against the DB. |
 
@@ -240,7 +241,7 @@ gh skill install FooJiaYin/dev-skills <skill-name> --agent gemini-cli --scope us
 gh skill install FooJiaYin/dev-skills <skill-name>                         # defaults to github-copilot, project scope
 ```
 
-`<skill-name>` is one of: `align`, `code-review`, `create-tasks`, `design`, `discuss`, `fetch-task`, `find-session`, `meeting-notes`, `quick-review`, `rename-session`, `report`, `setup-notion`, `spec`, `spec-review`, `sync`, `sync-report`, `update-docs`, `upload-meeting`, `verify`, `wrap-up`. See [`gh skill install`](https://cli.github.com/manual/gh_skill_install) for the full list of supported agents and flags.
+`<skill-name>` is one of: `align`, `cleanup-processes`, `code-review`, `create-tasks`, `design`, `discuss`, `fetch-task`, `find-session`, `meeting-notes`, `quick-review`, `rename-session`, `report`, `setup-notion`, `spec`, `spec-review`, `sync`, `sync-report`, `update-docs`, `upload-meeting`, `verify`, `wrap-up`. See [`gh skill install`](https://cli.github.com/manual/gh_skill_install) for the full list of supported agents and flags.
 
 ### Manual
 

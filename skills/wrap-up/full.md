@@ -46,6 +46,8 @@ Run `git diff --stat <this session's commits> | tail -1` — find them by messag
 
 Sweep session-created files before commit. Scan untracked files (`git status --short` `??` entries) + known temp paths; skip in non-git repos. Classify each candidate, then ask three `AskUserQuestion` prompts (all `multiSelect: true`) **in order: Move → Gitignore → Delete**. Skip step if all buckets empty.
 
+**Processes too (even when the file buckets are empty):** close the servers, browsers and containers this session started — run the `cleanup-processes` check and close the ones that belong to this session; for any you leave running for the user to look at, give its URL and how to stop it in the report. The `cleanup-processes` script only supports macOS + Claude Code; elsewhere, check by hand as its SKILL.md says.
+
 **Move** → relocate, don't delete:
 - Agent scratchpads (`findings.md`, `*-analysis.md`, `*-notes.md`) → `docs/reports/<YYYY-MM-DD>-<slug>-artifacts/`
 - `PLAN.md` at root → `docs/plans/<YYYY-MM-DD>-<slug>.md`
