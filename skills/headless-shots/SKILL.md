@@ -32,3 +32,4 @@ Mint a session cookie the same way the app does (e.g. jose HS256 with `SESSION_S
 - `Emulation.setDeviceMetricsOverride` + `captureBeyondViewport` for full-page shots; cap height (~6000) or Chrome stalls.
 - After each save, wait until the button is enabled again and the status text actually changes before the next action — a click on a still-disabled button is silently dropped while the previous "saved" message stays on screen. Confirm each write with SQL.
 - Leave test rows in the DB for the user to inspect unless told otherwise.
+- **Static pages you hand to the user for review: serve with `scripts/serve-nocache.py <dir> [port]`, not `python3 -m http.server`.** The stdlib server sends no cache headers, so after you edit a JS/CSS file the user's normal refresh still runs the old copy while your headless run (fresh profile) sees the new one. (Seen: 「重新整理沒看到」 after a demo.js change; fixed only by a no-store server + Cmd+Shift+R once.)
