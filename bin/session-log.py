@@ -3,7 +3,7 @@
 
 One append-only, chronological file per session. Every line that starts a
 record looks like `[MM-DD HH:MM tag] …`; a record runs until the next such
-line. Tags: user assistant ask skill write error note compact.
+line. Tags: user assistant ask skill write agent error note compact.
 
 Hook subcommands (read hook JSON on stdin, print nothing unless noted):
   snapshot   PreToolUse(Bash)         git status+hashes of watched repos -> tmp
@@ -11,6 +11,8 @@ Hook subcommands (read hook JSON on stdin, print nothing unless noted):
              Write|Edit|MultiEdit|NotebookEdit -> [write]  path tool sha repo
              Bash  -> diff against snapshot   -> [write] per changed file
              Skill -> [skill];  failure event -> [error]
+  agent      PreToolUse(Agent|Task)   -> [agent] dispatch <type> — <description>
+             SubagentStop             -> [agent] done: minutes, tool calls, slowest tool result
   said       Stop                     append [user]/[ask]/[assistant]/[compact] from transcript
   reprint    SessionStart(compact|resume)  said + print the whole log (stdout -> context)
   warn       PreToolUse(Write|Edit|MultiEdit|NotebookEdit)  another session wrote this file
@@ -43,7 +45,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 PROJECTS_ROOT = Path.home() / ".claude" / "projects"
-TAGS = ("user", "assistant", "ask", "skill", "write", "web", "error", "note", "compact")
+TAGS = ("user", "assistant", "ask", "skill", "write", "web", "agent", "error", "note", "compact")
 RX_RECORD = re.compile(r"^\[(\d\d-\d\d \d\d:\d\d) (" + "|".join(TAGS) + r")\] ?(.*)$")
 ABS = re.compile(r"(/(?:Users|home|private/tmp|tmp)/[^\s'\"`;|&<>(){}]+)")
 # Claude Code caps EACH hook's stdout at 10,000 chars (official hooks doc; not configurable):
@@ -224,9 +226,20 @@ def hash_files(repo: str, rels: list[str]) -> dict[str, str]:
     return dict(zip(files, shas))
 
 
+def is_session_data(path: str) -> bool:
+    """~/.claude/projects/** except memory/: transcripts and logs that every running session
+    rewrites constantly. Once ~/.claude became a watched repo each Bash call logged all of
+    them (seen: 19,023 of 19,300 records in one log)."""
+    try:
+        rel = Path(os.path.realpath(path)).relative_to(os.path.realpath(PROJECTS_ROOT))
+    except ValueError:
+        return False
+    return "memory" not in rel.parts
+
+
 def snapshot_repo(repo: str) -> dict[str, str]:
     """relpath -> sha (or 'D' for deleted) for every dirty file."""
-    st = dirty_files(repo)
+    st = {r: c for r, c in dirty_files(repo).items() if not is_session_data(os.path.join(repo, r))}
     shas = hash_files(repo, list(st))
     return {r: shas.get(r, "D") for r in st}
 
@@ -357,8 +370,10 @@ def cmd_record(hook: dict) -> None:
     inp = hook.get("tool_input") or {}
 
     if hook.get("hook_event_name") == "PostToolUseFailure":
-        err = (hook.get("error") or "").strip().splitlines()
+        err = [l.strip() for l in (hook.get("error") or "").splitlines() if l.strip()]
         head = err[0][:200] if err else "(no message)"
+        if len(err) > 1 and re.fullmatch(r"Exit code \d+", err[0]):  # the reason is below it
+            head += " — " + err[-1][:200]
         what = inp.get("command") or inp.get("file_path") or inp.get("skill") or ""
         what = re.sub(r"\s+", " ", str(what))[:120]
         append(lp, "error", f"tool={tool} {what}\n  {head}{agent_suffix(hook)}")
@@ -414,6 +429,67 @@ def cmd_record(hook: dict) -> None:
                 if rel not in after and os.path.isfile(os.path.join(repo, rel)):
                     # was dirty, now clean: committed or reverted by this command
                     record_write(lp, hook, os.path.join(repo, rel), "Bash", "clean")
+
+
+def _iso(ts: str | None) -> float | None:
+    try:
+        from datetime import datetime
+        return datetime.fromisoformat((ts or "").replace("Z", "+00:00")).timestamp()
+    except ValueError:
+        return None
+
+
+def cmd_agent(hook: dict) -> None:
+    """PreToolUse(Agent|Task): [agent] dispatch. SubagentStop: [agent] done with how long it
+    ran, how many tool calls, and the slowest tool result (a call that waited many minutes
+    usually sat on a permission prompt)."""
+    lp = log_path(hook)
+    if not lp:
+        return
+    if hook.get("hook_event_name") != "SubagentStop":
+        inp = hook.get("tool_input") or {}
+        desc = re.sub(r"\s+", " ", str(inp.get("description") or inp.get("prompt") or ""))[:120]
+        kind = inp.get("subagent_type") or "general-purpose"
+        model = f" model={inp['model']}" if inp.get("model") else ""
+        append(lp, "agent", f"dispatch {kind}{model} — {desc}{agent_suffix(hook)}")
+        return
+    aid = hook.get("agent_id") or ""
+    tp = hook.get("agent_transcript_path") or str(
+        lp.parent / str(hook.get("session_id")) / "subagents" / f"agent-{aid}.jsonl")
+    first = last = None
+    calls, pending, worst = 0, {}, (0.0, "")
+    try:
+        lines = Path(tp).read_text(encoding="utf-8", errors="replace").splitlines()
+    except OSError:
+        lines = []
+    for line in lines:
+        try:
+            e = json.loads(line)
+        except ValueError:
+            continue
+        ts = _iso(e.get("timestamp"))
+        if ts is None:
+            continue
+        first, last = first or ts, ts
+        content = (e.get("message") or {}).get("content")
+        for b in content if isinstance(content, list) else []:
+            if not isinstance(b, dict):
+                continue
+            if b.get("type") == "tool_use":
+                calls += 1
+                i = b.get("input") or {}
+                what = i.get("command") or i.get("file_path") or i.get("url") or i.get("pattern") or ""
+                what = re.sub(r"\s+", " ", str(what))[:80]
+                pending[b.get("id")] = (ts, f"{b.get('name')} {what}".strip())
+            elif b.get("type") == "tool_result" and b.get("tool_use_id") in pending:
+                t0, what = pending.pop(b["tool_use_id"])
+                if ts - t0 > worst[0]:
+                    worst = (ts - t0, what)
+    kind = hook.get("agent_type") or "?"
+    ran = f" ran={round((last - first) / 60)}m calls={calls}" if first else ""
+    slow = f" slowest={round(worst[0] / 60)}m {worst[1]}" if worst[0] >= 120 else ""
+    stuck = f" unanswered={len(pending)}" if pending else ""
+    append(lp, "agent", f"done {kind} agent={aid[:8]}{ran}{slow}{stuck}")
 
 
 def _turns_from_transcript(hook: dict, lp: Path, st: dict) -> list[tuple[str, str, float | None]]:
@@ -1142,7 +1218,7 @@ def main(argv: list[str]) -> None:
             print(w, flush=True)
     try:
         {"snapshot": cmd_snapshot, "record": cmd_record, "said": cmd_said,
-         "reprint": cmd_reprint, "warn": cmd_warn, "index": cmd_index}[sub](hook)
+         "reprint": cmd_reprint, "warn": cmd_warn, "index": cmd_index, "agent": cmd_agent}[sub](hook)
     except KeyError:
         sys.exit(f"unknown subcommand {sub}")
     except Exception as exc:  # never break the session over a logging failure

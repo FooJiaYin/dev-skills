@@ -7,6 +7,8 @@ description: Surface agent-refinement suggestions based on friction observed dur
 
 Look back at this session and surface refinements that would make next time smoother.
 
+**First read the session log, not your memory of the conversation** — compaction drops most friction. `grep -v '^\[[0-9-]* [0-9:]* write\]' <log> > <scratchpad>/log.md` (`session-log.py show` prints the path's content; older logs are ~98% `[write]` noise), then Read it in chunks: every `[user]` / `[ask]` (corrections, "?", "太久了"), `[error]`, `[agent] done … slowest=`, `[note] improve:` and your own `[assistant]` promises ("之後會…") that never happened. Skip findings a previous improve already landed — check the target file first.
+
 Examples of friction worth surfacing:
 - A skill's instructions caused tool or MCP failures, missing preconditions discovered by failing, ambiguous instructions that needed user clarification, user correction or mid-skill corrections. 
 - Sequencing or handoffs between skills caused redundant work or wrong order.
