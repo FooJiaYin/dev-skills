@@ -3,7 +3,8 @@
 
     discord-dump.py <channel_id> <out.md> [--after YYYY-MM-DD]
 
-Token: Keychain `discord-bot-token`, else $DISCORD_BOT_TOKEN. The bot must be in the guild
+Token: Keychain `discord-bot-token`, else $DISCORD_BOT_TOKEN, else DISCORD_BOT_TOKEN= in
+~/.claude/channels/discord/.env. The bot must be in the guild
 and able to read the channel. Forum channels are supported (posts = threads).
 One line per message: `- [time] author: text  [附件…] [嵌入…] ↩reply_id ‹msg_id›`.
 Attachment URLs are signed CDN links that expire in ~24h — download them now if needed.
@@ -14,7 +15,9 @@ API = "https://discord.com/api/v10"
 TZ = datetime.timezone(datetime.timedelta(hours=8))
 EPOCH = 1420070400000
 
-p = argparse.ArgumentParser()
+p = argparse.ArgumentParser(epilog="Agents: run with run_in_background (large channels take minutes; "
+    "foreground runs get killed). Unless given a path, write to the scratchpad first, then move it to the "
+    "docs/discord/ of the project matching the `#name` printed on completion.")
 p.add_argument("channel")
 p.add_argument("out")
 p.add_argument("--after", help="only messages on/after this date (UTC+8)")
@@ -22,8 +25,16 @@ args = p.parse_args()
 
 r = subprocess.run(["security", "find-generic-password", "-s", "discord-bot-token", "-w"], capture_output=True, text=True)
 TOKEN = r.stdout.strip() or os.environ.get("DISCORD_BOT_TOKEN", "")
+ENV_FILE = os.path.expanduser("~/.claude/channels/discord/.env")
+if not TOKEN and os.path.exists(ENV_FILE):
+    for line in open(ENV_FILE):
+        m = re.match(r"\s*(?:export\s+)?DISCORD_BOT_TOKEN\s*=\s*(.+)", line)
+        if m:
+            TOKEN = m.group(1).strip().strip("'\"")
+            break
 if not TOKEN:
-    sys.exit("no token: security add-generic-password -U -a \"$USER\" -s discord-bot-token -w")
+    sys.exit(f"no token in Keychain `discord-bot-token`, $DISCORD_BOT_TOKEN, or {ENV_FILE}\n"
+             "save one: security add-generic-password -U -a \"$USER\" -s discord-bot-token -w")
 
 
 def get(path):
