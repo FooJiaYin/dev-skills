@@ -56,7 +56,7 @@ Four phases — **start-of-day sync**, **planning**, **wrap-up**, and **session 
 | [update-docs](skills/update-docs/SKILL.md) | wrap-up | Detection-driven docs updater. Scans the project's doc layout, classifies the diff, and proposes per-file edits. |
 | [quick-review](skills/quick-review/SKILL.md) | wrap-up | Lightweight review run at the end of every session. `codex review` on this session's diff, then a second pass with the shared review commons (`shared/review/commons.md`). Writes `REVIEW.md`. |
 | [align](skills/align/SKILL.md) | planning, wrap-up | Checks that what's built matches what was asked (transcript → meeting notes → task → plan). `start` before the plan; `end` at wrap-up checks the baseline item by item and writes unfinished / untested / open questions to `TODO.md`. |
-| [code-review](skills/code-review/SKILL.md) | before merge / on demand | Multi-agent review of a whole branch or large refactor. Routes reviewers by diff, verifies each finding, writes `REVIEW.md` tiered Critical/Warning/Suggestion/Nit. Also `tree` mode for architecture audits. |
+| [code-review](skills/code-review/SKILL.md) | before merge / on demand | Multi-agent review of a whole branch or large refactor. Routes reviewers by diff, verifies each finding, writes `REVIEW.md` (project root, gitignored) tiered Critical/Warning/Suggestion/Nit. Also `tree` mode for architecture audits. |
 | [report](skills/report/SKILL.md) | wrap-up | Distills the conversation, file changes, and decisions into `docs/reports/YYYY-MM-DD-[title].md`. `/report transcript` exports the raw conversation instead, listing the files read/modified. |
 | [rename-session](skills/rename-session/SKILL.md) | housekeeping | Renames the current Claude Code or Codex session with a short title. Auto-invoked after `report` runs. |
 | [wrap-up](skills/wrap-up/SKILL.md) | orchestrator | Two modes. **Full** runs `verify → update-docs → quick-review + align → report → rename-session → cleanup → commit → deploy → improve` for the primary developer. **Quick** skips quality/deploy gates and ships report + safe commit + push only — for time-constrained or git-illiterate collaborators, or when auto-invoked from `/sync`. |
@@ -120,7 +120,7 @@ These skills bridge between local code/docs and a shared Notion workspace (Roadm
 |---|---|
 | [cleanup-processes](skills/cleanup-processes/SKILL.md) | When the Mac is slow: a read-only check script groups what is eating memory, lists Claude sessions and listening ports, and splits candidates into close / ask / keep; close by pid, then report swap before/after. |
 | [find-session](skills/find-session/SKILL.md) | Search Claude Code or Codex sessions by topic or file-change evidence; `--open` refreshes/opens the log. Searches both by default; `--host` filters the source. |
-| [headless-shots](skills/headless-shots/SKILL.md) | Screenshot or drive a locally running web app via headless Chrome + CDP with a minted login cookie — fallback when the Playwright MCP browser is locked; write-path checks verified against the DB. |
+| [headless-shots](skills/headless-shots/SKILL.md) | Screenshot or drive a locally running web app via headless Chrome + CDP with a minted login cookie (cookie name / URL / Chrome binary via `SESSION_COOKIE` / `BASE_URL` / `CHROME`) — fallback when the Playwright MCP browser is locked; write-path checks verified against the DB. |
 
 ## Folder Structure
 
