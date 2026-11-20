@@ -74,6 +74,8 @@ When a task file is resolved:
 3. **Final section order:** `# Context` → `# Plan` → `# Changes Made` → `# Result` (→ `# Updates` / `# Unsolved Issues` if applicable).
 4. **Dev-authored notes inside `# Context`** are treated as part of context — they may be overwritten on the next `/fetch-task`. That's the convention; documented via the managed-marker comment.
 5. **Rename the file.** `docs/tasks/<slug>.md` → `docs/reports/<YYYY-MM-DD>-<slug>.md`. The frontmatter (`notion.page`, `notion.last_synced`) carries over unchanged.
+   - **Date = the report date.** Task files already start with `YYYY-MM-DD-` (the task's Notion Time date) — strip that prefix first so it isn't doubled.
+   - **Across directories.** The task file may sit in a parent folder's `docs/tasks/` (outside the git repo) while the report belongs in the code repo's `docs/reports/`. Look there too when resolving the target, then plain `mv` it to `<code repo>/docs/reports/<YYYY-MM-DD>-<slug>.md` (it's untracked in the parent). Same for the merge case above.
 
 ### Target = fresh
 

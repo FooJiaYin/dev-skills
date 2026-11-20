@@ -75,6 +75,10 @@ Meetings-DB title format is owned by `/upload-meeting` (it reads AGENTS.md's `Me
 
 **Reuse a prior import of the same source first.** Before treating rows as Standalone, grep `docs/tasks/_plan-*.md` (and `docs/reports/*`) for an earlier import of the same source (e.g. a feature-list / backlog import). If one exists, it usually holds the **parent-Feature notion ids**, the per-row property conventions (assignee policy, priority mapping, `# Context` body shape), and a list of already-created ids. Reuse those conventions and **dedup against its ids** instead of re-deriving from scratch or re-creating duplicates.
 
+**One plan per source.** If a non-archived `docs/tasks/_plan-*.md` already covers this source meeting or overlapping rows (another session may have made it), extend that plan instead of starting a parallel one; mark rows you move out of another plan `moved → <plan>`.
+
+**Carry over leftovers.** Also scan non-archived `docs/tasks/_plan-*.md` for unresolved rows (no ✅, not SKIP / DROP / TODO, or named as 未完成 in its `> **執行狀態` line) and re-present them in this plan, marked `from <old plan> #<row>`. Once every row of an old plan is resolved, move it to `docs/tasks/archive/`.
+
 In parallel:
 - `notion-fetch` the meeting page → body markdown, Participants, Project relation, **existing `Tasks` relation list** (for idempotency).
 - `notion-fetch` the Roadmap data source → **schema** (property names + types) AND query the `Current` view by name (exact match; fall back to the first non-Completed view). Collect the ~10–30 active task rows: Name, Status, Assignee, Type, Project, first ~200 chars of body.
@@ -352,7 +356,7 @@ Order matters:
 
 5. **Refresh the local file.** Meeting / treat-as-meeting only. **Local-file input → additive edits to the user's file**: append ` <mention-page url="<task-url>"/>` inside each annotated commitment (pipe-table cell: `| <text> <mention-page …/> |`), bump `last_synced`; never overwrite it with the Notion body. **Notion-URL input (mirror written in §3)** → `notion-fetch` the meeting page again and overwrite the mirror with the post-execution body + refresh `last_synced`. **Skip** for Standalone and custom-parent variants.
 
-6. **Write leftovers to `TODO.md`.** After execution, every commitment that was marked `TODO`, not approved, or not executed (e.g. a half-approved batch, a failed create) is appended to the repo's `TODO.md` (create at repo root if missing; `- [ ] <commitment>（來源：<meeting>，<date>）` in the matching section, see align §4). Nothing from the plan may disappear because the batch was only partly approved. Also check the existing `TODO.md`: if the meeting answered a Questions item, or settled or dropped some other item, delete or rewrite it. If an item now has a task, add the task link to it, and delete it only once the task is done.
+6. **Write leftovers to `TODO.md`.** After execution, every commitment that was marked `TODO` or that the user explicitly deferred is appended to the repo's `TODO.md`; rows that simply weren't run (a half-approved batch, a failed create) stay unresolved in the plan — `apply` writes them into the `> **執行狀態` line — and the next `/create-tasks` re-presents them (§3). Append them (create at repo root if missing; `- [ ] <commitment>（來源：<meeting>，<date>）` in the matching section, see align §4). Nothing from the plan may disappear because the batch was only partly approved. Also check the existing `TODO.md`: if the meeting answered a Questions item, or settled or dropped some other item, delete or rewrite it. If an item now has a task, add the task link to it, and delete it only once the task is done.
 
 ### 10. Post-create checkout picker
 

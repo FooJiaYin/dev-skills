@@ -128,6 +128,10 @@ Rules:
 
 This mirrors `/fetch-task`'s `notion.page` convention. §2's idempotency check reads the same field, so re-runs are detected.
 
+## 7. Backlink tasks created before this upload (local-file input only)
+
+Grep `docs/tasks/_plan-*.md` and `docs/tasks/archive/_plan-*.md` for plans whose source is this meeting file. For each of their `✅〔notion:<id>〕` tasks whose Discussions relation lacks this page, add it (merge into the existing relation, never drop). Print how many were linked.
+
 ## Hard constraints
 
 - **Only writes to the Meetings DB.** Custom-parent and standalone branches belong to `/create-tasks`; do not re-implement them here.

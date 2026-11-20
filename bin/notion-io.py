@@ -982,7 +982,32 @@ def apply(spec, sources, path, dry):
     print(f"done: {n['created']} created, {n['linked']} linked, {len(res['marks'])} marked, {len(fails)} problem(s) → {rpath}")
     for f in fails:
         print("  ✗ " + f)
+    if not dry:
+        open_keys = [t["key"] for t in spec["tasks"] if res["tasks"].get(t["key"], {}).get("status") not in ("created", "linked")]
+        plan_status(re.sub(r"\.json$", "", path) + ".md",
+                    f"> **執行狀態（{datetime.date.today().isoformat()}）**：created {n['created']} · linked {n['linked']} · "
+                    f"✗ {len(fails)}。未完成列：{', '.join(open_keys) or '無'}")
     return 1 if fails else 0
+
+
+def plan_status(md, line):
+    """Write/refresh the `> **執行狀態` line at the top of the sibling plan .md; never fails the run."""
+    try:
+        if not os.path.exists(md):
+            return
+        lines = open(md).read().split("\n")
+        i = next((n for n, l in enumerate(lines) if l.startswith("> **執行狀態")), None)
+        if i is not None:
+            lines[i] = line
+        else:
+            h = next((n for n, l in enumerate(lines[:10]) if l.startswith("# ")), None)
+            if h is None:
+                lines[0:0] = [line, ""]
+            else:
+                lines[h + 1:h + 1] = ["", line]
+        open(md, "w").write("\n".join(lines))
+    except Exception as e:
+        print(f"  (plan status line not written: {e})")
 
 
 def clean_rt(x):
