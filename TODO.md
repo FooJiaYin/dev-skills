@@ -31,6 +31,7 @@
 ## 需要人手操作
 
 - [ ] Codex 雲端還沒設 environment（`codex cloud list` 回 `No tasks found`，沒有 `ENV_ID`）：到 chatgpt.com/codex 連要用的 repo（UniLife／dropout-tech 哪些待定）。設好前分流規則的「Codex 雲端」那條走不了，改走 Codex 本機（來源：本 session 分流規則，2026-11-20）
+- [ ] 重裝 plugin（`claude plugin marketplace update dev-skills`，cache 還在 0.2.0）。重裝前先處理 Codex session `01a1f4fd`（國斯運動，11-20）未 commit 的「逐字稿改成單一 plain text code block」：`bin/notion-io.py`、`skills/upload-meeting/SKILL.md`，使用者說不要代為 commit（來源：本 session wrap-up，2026-11-21）
 - [ ] 暫定：雲端任務成果由 agent 讀 `codex cloud diff` 抽查後才 `apply`，而不是讓 Codex 直接開 PR；要改成開 PR 再說（來源：本 session 分流規則，2026-11-20）
 - [ ] 把 code-review 重設計的決定轉貼給 design session `ebd15042`（brief.md 只放設計素材、驗收流程進 plan、⑤ Flow 列用 `/align start`、quick-review 不用 impeccable）（來源：本 session 討論，2026-11-04）
 - [ ] `brew install gitleaks`（來源：本 session 決定，2026-11-04）
