@@ -11,7 +11,7 @@
 tasks.json format: skills/create-tasks/tasks-json.md.
 
 Token (first hit): --token-name / `Token: keychain <name>` in the nearest AGENTS.md → Keychain
-`notion-token` → $NOTION_TOKEN → NOTION_TOKEN= in the nearest .env. One token = one workspace; the
+`notion-token` → $NOTION_TOKEN → NOTION_TOKEN= in the nearest .env that has it. One token = one workspace; the
 integration must be shared with every DB / page it touches (page ⋯ → Connections).
 Exit codes: 0 ok · 1 some writes failed · 2 validation failed · 3 no token (use the MCP fallback) ·
 4 sync-report needs a user decision (message says which).
@@ -53,12 +53,20 @@ def find_token(name=None, start="."):
         name = m and m.group(1)
     tok = keychain(name) if name else ""
     tok = tok or keychain("notion-token") or os.environ.get("NOTION_TOKEN", "")
-    env = walk_up(".env", start)
-    if not tok and env:
+    # Keep climbing past .env files without NOTION_TOKEN (e.g. a project .env under an org-level one).
+    d = os.path.abspath(start)
+    while not tok:
+        env = walk_up(".env", d)
+        if not env:
+            break
         for line in open(env):
             m = re.match(r"\s*(?:export\s+)?NOTION_TOKEN\s*=\s*(.+)", line)
             if m:
                 tok = m.group(1).strip().strip("'\"")
+        parent = os.path.dirname(os.path.dirname(env))
+        if parent == os.path.dirname(env):
+            break
+        d = parent
     return tok
 
 
