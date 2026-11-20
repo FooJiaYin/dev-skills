@@ -45,6 +45,7 @@ If any edit touched a `SKILL.md` or skill supporting file, **commit it here — 
 2. `git diff <file>` each one — skill repos routinely carry other sessions' leftovers, so confirm every hunk is yours and commit with an explicit pathspec.
 3. Write a short report via `/report` to **`<skill repo>/docs/reports/YYYY-MM-DD-<title>.md`** — inside the repo, so it ships in the same commit. Not the parent folder.
 4. `AskUserQuestion` to confirm scope + message, then `git -C <repo> commit -m "improve(<skills>)：<摘要>" -- <files> <report>` + push per `wrap-up/commit.md`.
-5. Repo has org fork remotes → print one line: `N 筆 improve 未同步到 org forks，之後跑 /sync-org-forks`. Don't run it.
+5. Confirm `git -C <repo> status --short -- <files>` is empty; if not, tell the user — uncommitted improve edits pile up in the skill repo (seen 2026-11-21: 12 sessions' leftovers).
+6. Repo has org fork remotes → print one line: `N 筆 improve 未同步到 org forks，之後跑 /sync-org-forks`. Don't run it.
 
 Skip `/update-docs`, `rename-session` and deploy detection — a skill edit needs none of them, and `rename-session` would rename the *project* session.
