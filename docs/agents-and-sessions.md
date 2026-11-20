@@ -37,6 +37,25 @@
 
 ## 開新 session
 
-- **可以自己開新的本機 session**，不要回答做不到：把交接內容寫成 `docs/tasks/_handoff-<日期>-<主題>.md`，然後 `osascript` 叫 Terminal 執行 `cd <專案> && claude "$(cat '<交接檔>')"`（PATH 要含 `~/.local/bin`、nvm、Homebrew），開完用 `ListAgents` 確認新 session 出現。（Seen：使用者說「open new session and send msg to it」，先回做不到，被說「other session can do it, why you can't」。）
-- **開新 session 時就命名、指定 id**：`claude -n "<YYYY-MM-DD>-<主題>" --session-id "$(uuidgen | tr A-Z a-z)" "$(cat '<交接檔>')"`，把 id 和名稱記在交接檔與回報裡，事後不用猜誰是誰（`-n` 會顯示在提示框、`/resume` 清單與終端機標題）。ListAgents 只顯示 `<專案>-xx`，跟 `-n` 名稱是否連動未驗證；要發訊息時，交接檔開場加一句「開工前用 SendMessage 告訴 `<我的 ListAgents 名稱>` 你的 ListAgents 名稱」來對上；**寫交接檔前先自己 `ListAgents`，把自己的名稱與 `[ref]` 實際填進去，不要寫「找名稱含 `<專案>` 的另一個 session」**（seen：同專案有 7 個 session，接手方只能猜，報到與交付訊息都沒人回）。（Seen：商品圖片、報價單、9–10 月匯入三個 session 分不出誰是誰，同一則訊息發給兩個，其中一個回「不是我」。）
+- **Claude Code 與 Codex 都可以開**：使用者指定哪個就用哪個；未指定時依下方「依任務類型選工具」選。下方 Claude 指令是其中一種方式，不代表只能用 Claude。啟動前告知使用哪個工具；模型若有指定也一併遵守。
+- **依任務類型選工具**：
+
+  ```
+  這件事要不要邊做邊判斷？
+  ├─ 要（架構討論、除錯、需求不明）──────→ Claude Code 互動 session
+  └─ 不用、可排隊（修 bug、補測試、review）
+       ├─ 需要本機才有的東西？（本機 DB、dev server、Keychain secrets、
+       │   未 commit 的改動、不在 GitHub 的 repo）
+       │     ├─ 是 → Codex 本機（codex -C …）
+       │     └─ 否 → Codex 雲端（codex cloud exec）
+       └─ 使用者有指定 → 照指定
+  ```
+
+  - **Codex 雲端**：`codex cloud exec --env <ENV_ID> --branch <分支> "<任務>"`（`ENV_ID` 要先在 chatgpt.com/codex 連好 repo 才有）。雲端只看得到已 push 的分支，派之前先 push。用 `codex cloud status`／`diff` 輪詢進度，diff 讀過、抽查後才 `codex cloud apply`，不直接套用。
+  - **review**：`quick-review` 審的是未 commit 的改動，維持本機 `codex review`；雲端只用在整條分支的 review。
+  - Codex 不能跟 Claude 互傳訊息（見下方「跨工具交接」），所以只交給它不需要中途來回的工作。
+- **可以自己開新的本機 session**，不要回答做不到：把交接內容寫成 `docs/tasks/_handoff-<日期>-<主題>.md`，然後 `osascript` 叫 Terminal 執行選定工具的指令（PATH 要含該 CLI 所在目錄，如 `~/.local/bin`、nvm、Homebrew）。Claude：`cd '<專案>' && claude "$(cat '<交接檔>')"`；Codex：`codex -C '<專案>' "$(cat '<交接檔>')"`。開完確認新 session 已開始處理交接內容，不以 Terminal 開啟成功當成 agent 已開工。（Seen：使用者說「open new session and send msg to it」，先回做不到，被說「other session can do it, why you can't」。）
+- **Claude 開新 session 時就命名、指定 id**：`claude -n "<YYYY-MM-DD>-<主題>" --session-id "$(uuidgen | tr A-Z a-z)" "$(cat '<交接檔>')"`，把 id 和名稱記在交接檔與回報裡，事後不用猜誰是誰（`-n` 會顯示在提示框、`/resume` 清單與終端機標題）。ListAgents 只顯示 `<專案>-xx`，跟 `-n` 名稱是否連動未驗證；要發訊息時，交接檔開場加一句「開工前用 SendMessage 告訴 `<我的 ListAgents 名稱>` 你的 ListAgents 名稱」來對上；**寫交接檔前先自己 `ListAgents`，把自己的名稱與 `[ref]` 實際填進去，不要寫「找名稱含 `<專案>` 的另一個 session」**（seen：同專案有 7 個 session，接手方只能猜，報到與交付訊息都沒人回）。（Seen：商品圖片、報價單、9–10 月匯入三個 session 分不出誰是誰，同一則訊息發給兩個，其中一個回「不是我」。）
+- **Codex 的識別與確認**：先以本機 `codex --help` 確認支援參數；2026-11-20 本機版本支援 `-C` 與初始 prompt，沒有 Claude 的 `-n`、`--session-id`，不要混用。交接檔先記預定名稱，啟動後取得實際 session ID，再補回交接檔與回報；未取得時明記待確認，不自行產生 UUID 當成 Codex 的實際 ID。可用 `codex agents` 查看本機 session；此命令是互動介面，不假設支援 `--json`。
+- **跨工具交接**：`ListAgents`／`SendMessage` 是否能看到對方依當下工具而定，不假設 Claude 與 Codex 互通。若來源沒有可用的 peer 名稱／ref，交接檔明記來源工具與已知 ID，並指定專屬進度檔讓接手者開工即寫入、後續持續更新；主對話以 session 紀錄或進度檔核對已開工，不猜另一個同專案 session 是對方。
 - **交接檔裡的待決定項，接手後開工前就問。** 接手 session 讀完交接檔，把標成「待確認／拿不準就寫 TODO」的項目先用 `AskUserQuestion` 問掉，同時做不受影響的部分；不要留到 wrap-up 才問。寫交接檔的一方也寫明 wrap-up 用 Quick 還是 Full。（Seen：交接寫「台幣成本人工覆寫要不要給按鈕，拿不準就寫 TODO」，接手 session 做完、實測完才問，使用者選要做，多一輪實作與實測。）

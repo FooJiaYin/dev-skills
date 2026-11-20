@@ -26,6 +26,8 @@
 
 ## 需要人手操作
 
+- [ ] Codex 雲端還沒設 environment（`codex cloud list` 回 `No tasks found`，沒有 `ENV_ID`）：到 chatgpt.com/codex 連要用的 repo（UniLife／dropout-tech 哪些待定）。設好前分流規則的「Codex 雲端」那條走不了，改走 Codex 本機（來源：本 session 分流規則，2026-11-20）
+- [ ] 暫定：雲端任務成果由 agent 讀 `codex cloud diff` 抽查後才 `apply`，而不是讓 Codex 直接開 PR；要改成開 PR 再說（來源：本 session 分流規則，2026-11-20）
 - [ ] 把 code-review 重設計的決定轉貼給 design session `ebd15042`（brief.md 只放設計素材、驗收流程進 plan、⑤ Flow 列用 `/align start`、quick-review 不用 impeccable）（來源：本 session 討論，2026-11-04）
 - [ ] `brew install gitleaks`（來源：本 session 決定，2026-11-04）
 - [ ] 這台機器上三台 11/12 開的孤兒 Python 伺服器（port 8765／8790／8791，pid 82222／61155／67898，工作目錄在 sontis-ai）還沒關：auto mode 擋了 `kill`。自己跑 `kill 82222 61155 67898`，或切 default mode 後請 agent 關。`cleanup-processes` 列為「要問」的也還沒決定：4 個等回覆的 session、20 個瀏覽器自動化背景程式、port 8831／18442 兩台伺服器（來源：cleanup-processes 第一次實跑，2026-11-19）
