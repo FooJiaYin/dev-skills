@@ -1,11 +1,13 @@
 ---
 name: fetch-task
-description: Pull a Notion task into a local working file at docs/tasks/task-slug.md. Creates the file on first run; on subsequent runs, refreshes only the managed `# Context` section + frontmatter `last_synced` while preserving every other section byte-identical. With no args, shows a picker of the current user's active tasks (Current view, Assignee == me). Use when the user says "/fetch-task", "fetch task", "check out this Notion task", or passes a Notion task URL.
+description: Pull a Notion task into a local working file at docs/tasks/task-slug.md. Creates the file on first run; on subsequent runs, refreshes the managed `# Context` and task-definition blocks + frontmatter `last_synced` while preserving every other section byte-identical. With no args, shows a picker of the current user's active tasks (Current view, Assignee == me). Use when the user says "/fetch-task", "fetch task", "check out this Notion task", or passes a Notion task URL.
 ---
 
 # fetch-task — Notion task → local working file
 
 Authority: Notion is master. **This skill is read-only against Notion.** Never calls `notion-create-pages`, `notion-update-page`, or any write tool.
+
+Runs on: Codex and Claude Code with a Notion connector; portable across machines and OSes; if the legacy personal identity file is unavailable, ask for the Notion user ID rather than assuming an identity.
 
 ## Inputs
 
@@ -43,7 +45,7 @@ If config is missing → dispatch `/setup-notion`, then re-read and continue.
 
 #### 3a. Fetch
 
-`notion-fetch` the task page. Capture body markdown, Name, Status, current property values.
+`notion-fetch` the task page. Capture body markdown, Name, Status, current property values, including the complete `說明` rich-text property (or the schema-mapped description property). Preserve approved deliverables, acceptance criteria, dependencies, and scope boundaries without summarizing. If the property is absent or empty, use a body `# Task Definition` section when present. If both exist and disagree, report the conflict before writing; do not silently choose one. A missing/unreadable property is not evidence of an empty definition.
 
 #### 3b. Compute local path
 
@@ -55,7 +57,7 @@ If config is missing → dispatch `/setup-notion`, then re-read and continue.
 
 #### 3c. Write or refresh
 
-When transcribing the fetched body, strip `notion-fetch`'s wrapper tags (`<page>`, `<content>`, `<properties>`, `<ancestor-path>`, closing `</…>`) — write only the inner `# Context` markdown. The closing `</content>` in particular leaks into the file if copied verbatim.
+When transcribing the fetched body, strip `notion-fetch`'s wrapper tags (`<page>`, `<content>`, `<properties>`, `<ancestor-path>`, closing `</…>`) — extract the inner `# Context` markdown and task definition separately. On first fetch, also preserve other body sections such as `# Plan`. The closing `</content>` in particular leaks into the file if copied verbatim.
 
 **File doesn't exist (first fetch)** → write the full file:
 
@@ -86,10 +88,22 @@ _(This Notion task has no managed `# Context` section. Add working notes below u
 
 Exception: a task created by hand with `notion-create-pages` whose body *starts* with the meeting excerpt (e.g. a `來源：<mention>` line) lost its `# Context` H1 at create time (Notion strips a leading H1). Put that content under a local `# Context` instead of the placeholder, and tell the user to prepend the heading in Notion (`insert_content` at start) so `/sync-report` can match it. Creators avoid this with a leading blank line, as `/create-tasks` does.
 
+**Managed task definition (first fetch and refresh).** Keep the approved definition separate from verbatim meeting context, inside this explicitly owned block before `# Context`:
+
+```markdown
+<!-- fetch-task:definition:start -->
+# Task Definition
+
+[complete definition from 說明, or the body fallback; preserve wording, lists, links and line breaks]
+<!-- fetch-task:definition:end -->
+```
+
+On first fetch, include it when a definition exists; do not duplicate the fallback body section. On refresh, replace only the marked block. For older files without the markers, insert the block before `# Context`; if an unmarked local `# Task Definition` already exists, ask before adopting or replacing it. If upstream is confirmed empty, remove only the previously marked block. On read failure or ambiguous source, preserve the existing block and report an incomplete refresh. Never fold the definition into `# Context` or overwrite `# Plan`.
+
 **File exists (refresh mode)** → in-place edit:
-- Replace **only the `# Context` block** (from the `# Context` heading up to but not including the next `# `-level heading, or EOF) with the fresh content from Notion.
+- Refresh the marked task-definition block as above. Replace **only the `# Context` block** (from the `# Context` heading up to but not including the next `# `-level heading, or EOF) with the fresh content from Notion.
 - Update `notion.last_synced` in frontmatter.
-- Every other section is byte-identical before/after. `# Notes`, `# Plan`, `# Scratch`, anything the dev wrote outside `# Context` — untouched.
+- Outside the managed Context and marked task-definition blocks, every other section is byte-identical before/after. `# Notes`, `# Plan`, `# Scratch`, and all other developer-owned content stay untouched.
 - Frontmatter `notion.page` is **immutable** once set. Refreshes never rewrite it.
 - The managed-marker comment is preserved if present; not re-inserted if a dev deleted it.
 
@@ -113,7 +127,7 @@ Print one line per URL processed: `<path> · <action: created|refreshed|archived
 ## Hard constraints
 
 - **Read-only against Notion.** Never calls a Notion write tool.
-- **Local writes only inside `# Context` and frontmatter.** Every other section is byte-identical before/after refresh.
+- **Refresh writes only inside `# Context`, the explicitly marked task-definition block, and `notion.last_synced`.** The first migration may insert the definition block as specified above. Every other section remains byte-identical.
 - **`# Context` is unconditionally overwritten on refresh.** No diff prompt, no merge. The managed-marker comment documents the convention.
 - **Frontmatter `notion.page` is immutable** once set.
 - **Picker source is the `Current` view filtered by `Assignee == me`** — not a whole-Roadmap search.
