@@ -39,7 +39,7 @@
 
 - **統籌不 EnterWorktree。** 留在主 checkout，用 `git -C <整合用 worktree>` 與絕對路徑操作；進去之後 git 碰不到別的 worktree 和 main（subagent 也一樣），就查不了各線、也清不了 worktree。各線自己則照常進自己的 worktree。每次 commit 前 `git -C <worktree> branch --show-current` 確認。
 - **wrap-up 分工**：各線做 quick-review、報告、Notion 同步；`/update-docs`、`/align end` 可跳過，由統籌合併後對合併後的程式各跑一次（文件落差跨線，align 要合併後才對得到真程式；可每線一個唯讀 agent 平行）。各線交接檔要寫明這條，不要留白。
-- **收尾順序**：合併 → 統籌的 update-docs／align → 掃各線 worktree 沒追蹤的檔與各線 session 的 scratchpad，收回有用的（task 檔、進度檔、SDK 參考、實跑截圖）→ 提議移除已合併的 worktree、分支、本機資料庫（刪前問）。
+- **收尾順序**：合併 → 統籌的 update-docs／align → 掃各線 worktree 沒追蹤的檔與各線 session 的 scratchpad，收回有用的（task 檔、進度檔、SDK 參考、實跑截圖）→ 提議移除已合併的 worktree、分支、本機資料庫（刪前問）。**統籌收尾一定要自己整理 worktree 與 TODO.md**（使用者 2026-11-21）：worktree／分支／資料庫由統籌自己刪（不要丟 `!` 指令給使用者）；TODO.md 把各線分節的事項照下一步分回五類、刪已完成、合併重複，改前先給計劃。
 - （Seen 2026-11-21：統籌進了 worktree，約 10 次呼叫被擋、查不了各線狀態；各線交接沒寫 update-docs／align 誰做，使用者要求補跑；使用者還得自己問「worktree 呢」「其他 session 的暫存檔」。）
 
 ## 開新 session
