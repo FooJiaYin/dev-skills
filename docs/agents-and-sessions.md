@@ -35,6 +35,13 @@
 
 - **任務中途收到 peer session／subagent 的訊息，不代表任務結束**：處理完那則訊息就接著做原本的任務，不要回「No response requested」停下。工具呼叫失敗或被殺（exit 137、逾時）也一樣：改法重試（如改背景跑）或回報，不准默默停。（Seen：兩次在 peer 訊息後停住，我得打「?」；discord-dump 前景被殺後也停住，我得打「try」。）
 
+## 平行多線的統籌（多個 session 各在自己的 worktree，由一個統籌合併）
+
+- **統籌不 EnterWorktree。** 留在主 checkout，用 `git -C <整合用 worktree>` 與絕對路徑操作；進去之後 git 碰不到別的 worktree 和 main（subagent 也一樣），就查不了各線、也清不了 worktree。各線自己則照常進自己的 worktree。每次 commit 前 `git -C <worktree> branch --show-current` 確認。
+- **wrap-up 分工**：各線做 quick-review、報告、Notion 同步；`/update-docs`、`/align end` 可跳過，由統籌合併後對合併後的程式各跑一次（文件落差跨線，align 要合併後才對得到真程式；可每線一個唯讀 agent 平行）。各線交接檔要寫明這條，不要留白。
+- **收尾順序**：合併 → 統籌的 update-docs／align → 掃各線 worktree 沒追蹤的檔與各線 session 的 scratchpad，收回有用的（task 檔、進度檔、SDK 參考、實跑截圖）→ 提議移除已合併的 worktree、分支、本機資料庫（刪前問）。
+- （Seen 2026-11-21：統籌進了 worktree，約 10 次呼叫被擋、查不了各線狀態；各線交接沒寫 update-docs／align 誰做，使用者要求補跑；使用者還得自己問「worktree 呢」「其他 session 的暫存檔」。）
+
 ## 開新 session
 
 - **Claude Code 與 Codex 都可以開**：使用者指定哪個就用哪個；未指定時依下方「依任務類型選工具」選。下方 Claude 指令是其中一種方式，不代表只能用 Claude。啟動前告知使用哪個工具；模型若有指定也一併遵守。
