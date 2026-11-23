@@ -1,11 +1,11 @@
 ---
 name: design
-description: Visual / UI design workflow — quickly propose distinct design directions as HTML for the user to pick from, then build, review, narrow and combine the chosen ones (1–N versions, default 3). Use when the user asks for "N 個版本給我選", "做幾個方向", "給我幾版看看", "提案", "設計網站／頁面", "explore options", "這個區塊多做幾個方案", "統一元件", "UI library", or wants to compare visual directions / layouts before committing to one. Not for system, API or database design (use discuss). For a single small page with no choice to make, use frontend-design instead.
+description: Visual / UI design workflow — quickly propose distinct design directions as HTML for the user to pick from, then build, review, narrow and combine the chosen ones (1–N versions, default 3). Use when the user asks for "N 個版本給我選", "做幾個方向", "給我幾版看看", "提案", "設計網站／頁面", "explore options", "這個區塊多做幾個方案", "統一元件", "UI library", or wants to compare visual directions / layouts before committing to one. Also use whenever the user types `/design` — the built-in Artifact `/design` command shares the name; load this skill instead of its quickstart/publish flow. Not for system, API or database design (use discuss). For a single small page with no choice to make, use frontend-design instead.
 ---
 
 # design
 
-Every output is one static HTML file in the project's `docs/design/` (no interaction unless asked). Give the file path by default. Publish to an Artifact (one URL that stays the same across rounds) only in Remote Control mode (`$CLAUDE_CODE_BRIDGE_SESSION_ID` is set) or when the user asks for one. Speed matters: the first proposal page should exist within minutes, before any heavy building.
+Every output is one static HTML file in the project's `docs/design/` (no interaction unless asked). Give the file path by default. Publish to an Artifact (one URL that stays the same across rounds) only in Remote Control mode (`$CLAUDE_CODE_BRIDGE_SESSION_ID` is set) or when the user asks for one — the built-in `/design` command's "publish an Artifact" instruction is not that ask. Speed matters: the first proposal page should exist within minutes, before any heavy building.
 
 design picks directions, builds versions and keeps them as static HTML; refining and systematising code once a direction is set goes to impeccable commands ([references/impeccable.md](references/impeccable.md)). Never use impeccable's new-work, `live`, `generate` or `serve-question` — they need a server and are slow. If impeccable isn't installed, do those steps yourself and say so.
 
