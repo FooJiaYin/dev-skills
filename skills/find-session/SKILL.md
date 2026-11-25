@@ -167,6 +167,7 @@ These are real false-positive sources — call them out when relevant:
 - **`.bak` project folders** — duplicate sessions from old project paths. The script de-dupes by session UUID across folders, so each session shows once even if it lives in both `-Users-foo-bar` and `-Users-foo-bar.bak`.
 - **Forks aren't always real forks** — three sessions that opened the same file at the same second can look like a fork but share zero message UUIDs. The graph output uses UUID overlap, not timestamp proximity, to call something a fork.
 - **Sessions don't always represent execution** — a session can contain plans, ExitPlanMode, and discussion without ever writing a file. If `--topic` finds a session but `--touched` doesn't, that's a discussion-only session.
+- **Extracting a Claude jsonl yourself: user messages live in three places** — `type=user`, `attachment.type=queued_command` (sent mid-turn), and `queue-operation` `enqueue` (queued; also carries cross-session messages and subagent hand-backs). Reading only `user`/`assistant` lost ~100 user messages (2026-11-26, EP1 process report). An app's own chat box keeps its own log (e.g. `chat-log.jsonl`), and its `user` rows can be agents testing via the browser. Timestamps are UTC — convert to local time before handing to agents.
 
 ## Examples
 
