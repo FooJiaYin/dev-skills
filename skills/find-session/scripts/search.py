@@ -208,7 +208,11 @@ def scan_session(path: Path, topic: str | None, touched: str | None,
                 d = json.loads(line)
             except Exception:
                 continue
-            ts = (d.get("timestamp") or "")[:19]
+            if not isinstance(d, dict):
+                continue
+            # non-session jsonl (e.g. a history.jsonl backup) carries epoch-ms ints here
+            ts = d.get("timestamp")
+            ts = ts[:19] if isinstance(ts, str) else ""
             if ts:
                 first_ts = first_ts or ts
                 last_ts = ts
