@@ -360,7 +360,9 @@ Order matters:
 
 ### 10. Post-create checkout picker
 
-After successful execution, prompt via `AskUserQuestion` (multi-select):
+**If the user's approval also says to implement now** (e.g. "create all, fix each with subagents"), skip the picker and `/fetch-task` every created/linked task before dispatching any implementation — reports and `/sync-report` need the task files. _(2026-11-26: skipped, user asked "fetched tasks?" after deploy.)_
+
+Otherwise, after successful execution, prompt via `AskUserQuestion` (multi-select):
 
 - Question: "Check out which of these tasks locally?"
 - Options: `AskUserQuestion` caps at 4. ≤3 tasks → one per task (Name as label) + "None — done". More → grouped buckets: "All N assigned to me" / "All N" / "None — done"; individual picks go through the auto-provided Other (paste URLs).
