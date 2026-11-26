@@ -177,6 +177,36 @@ def scan_log(log: Path, sid: str, topic: str | None, touched: str | None,
     }
 
 
+def topic_needles(topic: str) -> list[bytes] | None:
+    """Lower-cased byte strings, one of which every file with a topic match must
+    contain; None when the topic can't be prefiltered safely.
+
+    The match runs on decoded JSON text, the prefilter on raw file bytes, so the
+    topic must read the same in both: no characters JSON escapes (quote, backslash,
+    slash, control), and no non-ASCII letters with case (bytes.lower() is ASCII-only).
+    Non-ASCII text may be stored raw or as \\uXXXX, so both forms are needles.
+    """
+    if any(c in '"\\/' or ord(c) < 32 for c in topic):
+        return None
+    if any(ord(c) > 127 and c.lower() != c.upper() for c in topic):
+        return None
+    low = topic.lower()
+    needles = {low.encode("utf-8"), json.dumps(low)[1:-1].encode("ascii")}
+    return sorted(needles)
+
+
+def may_contain_topic(path: Path, topic: str) -> bool:
+    """Cheap whole-file check before the line-by-line parse (most files don't match)."""
+    needles = topic_needles(topic)
+    if needles is None:
+        return True
+    try:
+        data = path.read_bytes().lower()
+    except OSError:
+        return True
+    return any(n in data for n in needles)
+
+
 def scan_session(path: Path, topic: str | None, touched: str | None,
                  since: str | None, until: str | None) -> dict | None:
     """Scan one session. Prefers `<sid>.log.md` next to the jsonl when it exists
@@ -185,7 +215,10 @@ def scan_session(path: Path, topic: str | None, touched: str | None,
     A hit means: at least one matching event AND timestamp is within [since,until].
     """
     log = path.with_name(path.stem + ".log.md")
-    if log.is_file() and "subagents" not in path.parts:
+    use_log = log.is_file() and "subagents" not in path.parts
+    if topic and not may_contain_topic(log if use_log else path, topic):
+        return None
+    if use_log:
         return scan_log(log, path.stem, topic, touched, since, until)
     if topic:
         topic_re = re.compile(re.escape(topic), re.I)
