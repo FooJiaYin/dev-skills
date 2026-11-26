@@ -21,6 +21,7 @@
 - [ ] Notion 託管圖片連結約 1 小時失效：腳本讀頁面時順便下載（來源：notion-io plan 延後，2026-11-11）
 - [ ] `cleanup-processes` 的 `check.py` 有三個分支沒實跑過（寫的時候機器上沒有這些情況）：無畫面／帶自動化參數的 Chrome、colima 開著時「VM 上限 vs 容器實際用量」、idle 超過 1 小時的 session。下次遇到時對一次輸出（來源：cleanup-processes 交件報告，2026-11-19）
 - [ ] `session-log.py` 的 `[agent]` hook 只手動加在這台的 `~/.claude/settings.json`（PreToolUse `Agent|Task|Workflow`、SubagentStop），repo 的安裝文件沒有記載；Claude 這邊的 session-log hook 設定整套都沒有文件（只有 Codex 的 `docs/hooks-codex-session-log.md`）。換一台機器不會生效也不會報錯（來源：使用者問「換台電腦可以跑嗎」，2026-11-19）
+- [ ] EnterWorktree（約 2.1.331 起）會把 transcript 存到 `<repo>--claude-worktrees-<名稱>` 的 project 資料夾，主專案 session 清單看不到；現在只能事後跑 `bin/merge-worktree-sessions.py <repo>` 搬回（不要對還在跑的 session 搬，用 `--skip`）。沒做：①「worktree project 資料夾 symlink 到主專案資料夾」實測（風險：進 worktree 時若複製舊檔到同一檔可能清空）、② SessionEnd hook 自動搬、③ `agents-and-sessions.md`「主目錄開再 EnterWorktree」那段改寫（照做仍會落到 worktree）（來源：sontis-ai session 500fcc39，2026-11-26）
 - [ ] 延後、等 `cleanup-processes` 用過再決定要不要做：(1) 工作紀錄加 `[proc]`，記下 session 用背景方式開了哪些 server／容器；(2) SessionEnd hook 關掉自己開的；(3) PreToolUse 上的門檻提醒（swap 用掉八成以上時提醒跑 `cleanup-processes`，十分鐘內只提醒一次）；(4) 主對話自己的慢指令記進工作紀錄（現在只有 agent 的 `slowest=`）（來源：本 session 討論，2026-11-19）
 
 ## 待客戶確認
