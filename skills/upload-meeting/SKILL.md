@@ -68,6 +68,8 @@ The §5-2 block builder consumes the resolved transcript from this step. Do not 
 
 **Local file + Notion token → script.** After §4 / §4b, run (`run_in_background`; the body and transcript never pass through you): `<dev-skills-root>/bin/notion-io.py upload-meeting <note.md> --db <Meetings DB URL> --title "<title>" --props '{"<date prop>": "YYYY-MM-DD", "<participants prop>": ["<uuid>", …], "<project prop>": ["<id>"]}' [--transcript <file>]`. The title may contain `<date start="YYYY-MM-DD" />`. Guests can go straight into people properties. It creates the page, writes the body, adds the 逐字稿 toggle, and writes §6's frontmatter. For an existing page missing the toggle, use `--page <url> --transcript <file>`. Exit 3 (no token) or pasted/Docs input → the MCP path below.
 
+**"No token" is the script's verdict, not yours.** Run it from the note's repo and take exit 3 as the only evidence — it also searches `.env` files in ancestor directories (an org-level `NOTION_TOKEN` often sits one level above the repo). Do not check Keychain / `$NOTION_TOKEN` by hand and conclude there is none; when delegating, put this in the brief. _(2026-11-27: two agents skipped the script after a hand check; the token was in the parent `.env`. Body and transcript went through the model — 39 and 83 minutes, and 6 transcript characters were silently converted.)_
+
 One `notion-create-pages` call. 
 
 ### 5-1. Properties
@@ -98,6 +100,8 @@ Notion's markdown spec makes the `<meeting-notes>` transcript section read-only 
   ```
 
 Long transcripts: create the page with the notes first, then append the toggle via `notion-update-page` `insert_content` (position end). No transcript → omit the toggle.
+
+MCP path only: after inserting, fetch the toggle's text and compare it with the sidecar by script (not by eye) — retyping converts characters (簡→繁). `last_synced` comes from `date`, never an estimate. The meeting page holds the note and transcript only; a plan or report goes there only when the user names that page for it.
 
 ### 5-3. Body
 
