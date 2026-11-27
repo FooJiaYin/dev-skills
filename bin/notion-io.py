@@ -1142,7 +1142,13 @@ def sync_report(path, page=None, status=None, github=None, gprop=None, when=None
     if not page:
         raise Stop("no --page and no notion.page in the report frontmatter")
     pid = nid(page)
-    body = [l for l in strip_frontmatter(lines) if not re.match(r"^\s*<!--.*-->\s*$", l)]
+    body = strip_frontmatter(lines)
+    # fetch-task's managed `# Task Definition` mirrors the task's 說明 property, not its body: drop it,
+    # or it blocks the leading-section skip below and the task gets a second `# Context`
+    if "<!-- fetch-task:definition:start -->" in body and "<!-- fetch-task:definition:end -->" in body:
+        a, b = body.index("<!-- fetch-task:definition:start -->"), body.index("<!-- fetch-task:definition:end -->")
+        body = body[:a] + body[b + 1:]
+    body = [l for l in body if not re.match(r"^\s*<!--.*-->\s*$", l)]
     spath = re.sub(r"\.md$", "", path) + ".sync.json"
     st = json.load(open(spath)) if os.path.exists(spath) else {}
     save = lambda: dry or json.dump(st, open(spath, "w"), ensure_ascii=False, indent=1)

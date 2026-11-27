@@ -13,7 +13,7 @@ SESSION_COOKIE=<cookieName> BASE_URL=http://localhost:3000 node scripts/shoot.mj
 ```
 Set `SESSION_COOKIE` to the app's session cookie name (default `session`) and `BASE_URL` if it isn't `http://localhost:3000`; `drive-example.mjs` reads the same two variables. Full-page PNG per path; `Read` the PNGs and fix what you see.
 
-Mint a session cookie the same way the app does (e.g. jose HS256 with `SESSION_SECRET` from `.env.local`; find the payload shape in the app's `session.ts`) — never reuse a real user's browser cookie.
+Mint a session cookie the same way the app does (e.g. jose HS256 with `SESSION_SECRET` from `.env.local`; find the payload shape in the app's `session.ts`) — never reuse a real user's browser cookie. Keep the token in a shell variable passed straight to these scripts; don't put it in Playwright MCP `browser_run_code_unsafe` (inline `code` or `filename`) — the tool echoes the whole script, token included, into the transcript (seen 2026-11-27, twice in one session).
 
 ## Viewport shots with scroll / hover steps
 `node scripts/steps.mjs <url> <outPrefix> <w> <h> <mobile 0|1> '<steps json>'` — viewport-sized JPEGs after each scripted step (`js`, `mouse`, `wait`, `shot`), for responsive widths (e.g. 1440×900 and 390×844 with touch), scroll-driven animations and hover states. No cookie; for authenticated pages set it in a `js` step or use `shoot.mjs`. Run several widths in parallel (`&` … `wait`) and tile the JPEGs into one sheet before `Read`ing them. Use this instead of resizing the Claude-in-Chrome window, which refuses sizes outside the screen bounds.
